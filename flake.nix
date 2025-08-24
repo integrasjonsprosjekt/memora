@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     treefmt-nix.url = "github:numtide/treefmt-nix";
   };
@@ -36,6 +36,7 @@
 
             # Web
             deno
+            nodejs_24
 
             # Formatting
             treefmt
@@ -51,7 +52,8 @@
           shellHook = ''
             GO_VERSION=$(go version | awk '{print $3}')
 
-            printf '\n> Go version: %s\n\n' "$GO_VERSION"
+            printf '\n> Go   version: %s\n' "$(go version | awk '{print $3}')"
+            printf '> Node version: %s\n\n' "$(node --version)"
           '';
         };
       }
