@@ -44,9 +44,6 @@
             # Nix
             alejandra
             deadnix
-
-            # Building using Docker Compose with Bake
-            docker-buildx
           ];
 
           shellHook = ''
