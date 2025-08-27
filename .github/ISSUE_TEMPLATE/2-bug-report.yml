@@ -1,4 +1,5 @@
 name: "Bug Report"
+title: "[Bug] "
 description: "Report a problem or unexpected behavior"
 labels: ["type:bug"]
 body:
@@ -7,10 +8,7 @@ body:
       value: |
         > [!IMPORTANT]
         > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-  - type: markdown
-    attributes:
-      value: |
-        ### Bug Report
+
         Please provide as much detail as possible to help us reproduce and fix the issue.
   - type: input
     id: summary
@@ -36,7 +34,7 @@ body:
     attributes:
       label: "Actual Behavior"
       description: "What actually happened?"
-  - type: textarea
+  - type: input
     id: environment
     attributes:
       label: "Environment"

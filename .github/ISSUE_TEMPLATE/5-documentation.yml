@@ -1,4 +1,5 @@
 name: "Documentation"
+title: "[Docs] "
 description: "Create or update documentation"
 labels: ["type:documentation"]
 body:
@@ -7,17 +8,8 @@ body:
       value: |
         > [!IMPORTANT]
         > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-  - type: markdown
-    attributes:
-      value: |
-        ### Documentation
+
         Use this template when creating new docs, updating existing ones, or improving clarity.
-  - type: input
-    id: title
-    attributes:
-      label: "Title"
-      description: "Short, descriptive title for this documentation task."
-      placeholder: "e.g. Update API authentication guide"
   - type: textarea
     id: description
     attributes:

@@ -1,4 +1,5 @@
 name: "Discussion"
+title: "[Discussion] "
 description: "Propose an idea or start a technical/product conversation"
 labels: ["type:discussion"]
 body:
@@ -7,17 +8,8 @@ body:
       value: |
         > [!IMPORTANT]
         > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-  - type: markdown
-    attributes:
-      value: |
-        ### Discussion
+
         Use this template to capture ideas, questions, or proposals before turning them into actionable work.
-  - type: input
-    id: title
-    attributes:
-      label: "Discussion Title"
-      description: "Short, descriptive title."
-      placeholder: "e.g. Should we migrate to React Query?"
   - type: textarea
     id: context
     attributes:

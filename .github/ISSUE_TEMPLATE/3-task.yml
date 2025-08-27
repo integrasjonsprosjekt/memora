@@ -1,4 +1,5 @@
 name: "Task / Chore"
+title: "[Task] "
 description: "For technical tasks, maintenance, or chores"
 labels: ["type:task"]
 body:
@@ -7,16 +8,8 @@ body:
       value: |
         > [!IMPORTANT]
         > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-  - type: markdown
-    attributes:
-      value: |
-        ### Task / Chore
+
         Use this template for non-user-facing work such as refactoring, upgrades, or internal improvements.
-  - type: input
-    id: title
-    attributes:
-      label: "Task Title"
-      description: "Short, descriptive title for the task."
   - type: textarea
     id: description
     attributes:
