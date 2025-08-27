@@ -1,0 +1,1 @@
+export { OiiaiTrigger } from "./OiiaiTrigger";
