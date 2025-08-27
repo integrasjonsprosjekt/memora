@@ -1,0 +1,38 @@
+name: "User Story"
+description: "Create a new user story"
+labels: ["type:feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
+  - type: markdown
+    attributes:
+      value: |
+        ### User Story
+        Use this template to describe a feature from an end-user perspective.
+  - type: input
+    id: title
+    attributes:
+      label: "Story Title"
+      description: "Short, descriptive name for this story."
+      placeholder: "e.g. As a shopper, I want to save items to a wishlist so I can purchase later"
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "Describe the user story in the format: As a [user], I want [goal], so that [benefit]."
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: "Acceptance Criteria"
+      description: "List clear, testable conditions that must be met."
+      placeholder: |
+        - [ ] Condition 1
+        - [ ] Condition 2
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Additional Notes"
+      description: "Any relevant context, design links, or related issues."

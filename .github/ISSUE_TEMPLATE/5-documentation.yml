@@ -1,0 +1,35 @@
+name: "Documentation"
+description: "Create or update documentation"
+labels: ["type:documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
+  - type: markdown
+    attributes:
+      value: |
+        ### Documentation
+        Use this template when creating new docs, updating existing ones, or improving clarity.
+  - type: input
+    id: title
+    attributes:
+      label: "Title"
+      description: "Short, descriptive title for this documentation task."
+      placeholder: "e.g. Update API authentication guide"
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "What needs to be documented or updated? Why is it important?"
+  - type: textarea
+    id: audience
+    attributes:
+      label: "Intended Audience"
+      description: "Who is this documentation for? (e.g., developers, designers, end-users)"
+  - type: textarea
+    id: location
+    attributes:
+      label: "Documentation Location"
+      description: "Where should this documentation live? (link to file, wiki, or repo section)"

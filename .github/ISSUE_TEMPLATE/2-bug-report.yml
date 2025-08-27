@@ -1,0 +1,49 @@
+name: "Bug Report"
+description: "Report a problem or unexpected behavior"
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
+  - type: markdown
+    attributes:
+      value: |
+        ### Bug Report
+        Please provide as much detail as possible to help us reproduce and fix the issue.
+  - type: input
+    id: summary
+    attributes:
+      label: "Summary"
+      description: "Brief description of the bug."
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to Reproduce"
+      description: "How can we reproduce the problem?"
+      placeholder: |
+        1. Go to...
+        2. Click on...
+        3. See error...
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: "What should have happened?"
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual Behavior"
+      description: "What actually happened?"
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Provide details (OS, browser, app version, etc.)"
+      placeholder: "e.g. macOS 13, Chrome 120, v1.2.3"
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots/Logs"
+      description: "Attach screenshots, error messages, or logs if available."

@@ -1,0 +1,37 @@
+name: "Task / Chore"
+description: "For technical tasks, maintenance, or chores"
+labels: ["type:task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
+  - type: markdown
+    attributes:
+      value: |
+        ### Task / Chore
+        Use this template for non-user-facing work such as refactoring, upgrades, or internal improvements.
+  - type: input
+    id: title
+    attributes:
+      label: "Task Title"
+      description: "Short, descriptive title for the task."
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "What needs to be done and why?"
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: "Acceptance Criteria"
+      description: "What does success look like?"
+      placeholder: |
+        - [ ] Condition 1
+        - [ ] Condition 2
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "Dependencies / Blockers"
+      description: "List any related tasks, PRs, or issues."
