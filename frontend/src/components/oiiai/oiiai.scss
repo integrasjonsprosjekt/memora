@@ -1,0 +1,141 @@
+$initial-delay: 1.5s;
+$fast-spin-duration: 1.65s;
+$hold-duration: 1.25s;
+$slow-spin-duration: 2.4s;
+$hold-delay: $initial-delay + $fast-spin-duration;
+$slow-spin-delay: $initial-delay + $fast-spin-duration + $hold-duration;
+
+$fast-multiplier: 10;
+$slow-multiplier: 2;
+
+.oiiai {
+  animation:
+    spinHorizontalFast $fast-spin-duration linear $initial-delay 1 normal,
+    hold $hold-duration linear $hold-delay 1 normal,
+    spinHorizontal $slow-spin-duration linear $slow-spin-delay 1 normal;
+}
+
+@-moz-keyframes spinHorizontal {
+  0% {
+    -moz-transform: rotateY(0deg);
+  }
+
+  100% {
+    -moz-transform: rotateY($slow-multiplier * 360deg);
+  }
+}
+
+@keyframes spinHorizontal {
+  0% {
+    transform: rotateY(0deg);
+  }
+
+  100% {
+    transform: rotateY($slow-multiplier * 360deg);
+  }
+}
+
+@-ms-keyframes spinHorizontal {
+  0% {
+    -ms-transform: rotateY(0deg);
+  }
+
+  100% {
+    -ms-transform: rotateY($slow-multiplier * 360deg);
+  }
+}
+
+@-o-keyframes spinHorizontal {
+  0% {
+    -o-transform: rotateY(0deg);
+  }
+
+  100% {
+    -o-transform: rotateY($slow-multiplier * 360deg);
+  }
+}
+
+@-webkit-keyframes spinHorizontal {
+  0% {
+    -webkit-transform: rotateY(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotateY($slow-multiplier * 360deg);
+  }
+}
+
+@keyframes hold {
+  0%, 100% {
+    transform: rotateY(0deg);
+  }
+}
+
+@-webkit-keyframes hold {
+  0%, 100% {
+    -webkit-transform: rotateY(0deg);
+  }
+}
+
+@-moz-keyframes hold {
+  0%, 100% {
+    -moz-transform: rotateY(0deg);
+  }
+}
+
+@-ms-keyframes hold {
+  0%, 100% {
+    -ms-transform: rotateY(0deg);
+  }
+}
+
+@-o-keyframes hold {
+  0%, 100% {
+    -o-transform: rotateY(0deg);
+  }
+}
+
+@keyframes spinHorizontalFast {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY($fast-multiplier * 360deg);
+  }
+}
+
+@-webkit-keyframes spinHorizontalFast {
+  0% {
+    -webkit-transform: rotateY(0deg);
+  }
+  100% {
+    -webkit-transform: rotateY($fast-multiplier * 360deg);
+  }
+}
+
+@-moz-keyframes spinHorizontalFast {
+  0% {
+    -moz-transform: rotateY(0deg);
+  }
+  100% {
+    -moz-transform: rotateY($fast-multiplier * 360deg);
+  }
+}
+
+@-ms-keyframes spinHorizontalFast {
+  0% {
+    -ms-transform: rotateY(0deg);
+  }
+  100% {
+    -ms-transform: rotateY($fast-multiplier * 360deg);
+  }
+}
+
+@-o-keyframes spinHorizontalFast {
+  0% {
+    -o-transform: rotateY(0deg);
+  }
+  100% {
+    -o-transform: rotateY($fast-multiplier * 360deg);
+  }
+}

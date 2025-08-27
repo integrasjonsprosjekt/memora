@@ -9,6 +9,7 @@ import { NavMain } from "@/components/nav-main";
 import { NavActions } from "@/components/nav-actions";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
+import { OiiaiTrigger } from "@/components/oiiai";
 import {
   Sidebar,
   SidebarContent,
@@ -72,6 +73,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
             <Link href="/">
+              <OiiaiTrigger targetId="logo">
+                  <div id="logo" className="flex flex-row cursor-pointer">
                     <div className="bg-sidebar-accent text-xs border-border border-1 wrap-anywhere text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                       <Image
                         src="/logo.svg"
@@ -84,6 +87,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <span className="truncate font-bold">Memora</span>
                       <span className="truncate text-xs">Flashcards</span>
                     </div>
+                  </div>
+              </OiiaiTrigger>
                 </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
