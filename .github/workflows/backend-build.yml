@@ -1,4 +1,4 @@
-name: Deploy Images to GHCR
+name: Build and Deploy Backend Image
 
 on:
   workflow_dispatch:
@@ -20,6 +20,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          file: ./backend/Dockerfile
+          context: "{{defaultContext}}:backend"
           push: true
           tags: ghcr.io/integrasjonsprosjekt/memora-api:latest
