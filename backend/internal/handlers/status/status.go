@@ -8,6 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Status page for the API
+// @Description Returns version and uptime
+// @Tags Health
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router api/v1/status [get]
 // Returns status of the service, and the services used by it
 func GetStatus(c *gin.Context) {
 	status := Status{

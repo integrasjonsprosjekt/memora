@@ -1,0 +1,19 @@
+info:
+  contact: {}
+paths:
+  /api/v1/status:
+    get:
+      description: Returns version and uptime
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Status page for the API
+      tags:
+      - Health
+swagger: "2.0"

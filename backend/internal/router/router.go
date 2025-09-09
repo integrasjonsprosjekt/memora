@@ -2,6 +2,7 @@ package router
 
 import (
 	"memora/internal/config"
+	"memora/internal/handlers/docs"
 	"memora/internal/handlers/status"
 	"memora/internal/middleware"
 
@@ -23,6 +24,8 @@ func New() *gin.Engine {
 	{
 		v1.GET("/status", status.GetStatus)
 	}
-
+	{
+		v1.GET("/docs", docs.GetDocs)
+	}
 	return router
 }
