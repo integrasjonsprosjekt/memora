@@ -22,7 +22,7 @@ func GetEnv(key, defaultValue string) string {
 }
 
 func Init() {
-	Port = GetEnv("APP_PORT", GetEnv("PORT", "8080"))
+	Port = GetEnv("APP_PORT", "8080")
 	Host = GetEnv("APP_HOST", "0.0.0.0")
 
 	level, err := ParseLogLevel(GetEnv("LOG_LEVEL", "info"))
