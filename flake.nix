@@ -46,11 +46,14 @@
             deadnix
           ];
 
-          shellHook = ''
-            GO_VERSION=$(go version | awk '{print $3}')
+          env = {
+            COMPOSE_PROFILES = "dev";
+          };
 
-            printf '\n> Go   version: %s\n' "$(go version | awk '{print $3}')"
-            printf '> Node version: %s\n\n' "$(node --version)"
+          shellHook = ''
+            printf '\n> Go version:        %s\n' "$(go version | awk '{print $3}')"
+            printf '> Node version:      %s\n' "$(node --version)"
+            printf '> $COMPOSE_PROFILES: %s\n\n' "$COMPOSE_PROFILES"
           '';
         };
       }
