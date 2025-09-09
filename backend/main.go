@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 
 	// firebase "memora/internal/firebase"
 
@@ -16,16 +15,16 @@ func init() {
 }
 
 func main() {
-	handler := router.New()
+	r := router.New()
 
 	// firebaseClient, err := firebase.Init()
 	// if err != nil {
 	// 	log.Panic(err)
 	// }
+	addr := fmt.Sprintf("%s:%s", config.Host, config.Port)
+	log.Printf("Starting HTTP server on %s...\n", addr)
 
-	log.Printf("Starting HTTP server on %s:%s...\n", config.Host, config.Port)
-	log.Fatal(http.ListenAndServe(
-		fmt.Sprintf("%s:%s", config.Host, config.Port),
-		handler,
-	))
+	if err := r.Run(addr); err != nil {
+		log.Fatal(err)
+	}
 }
