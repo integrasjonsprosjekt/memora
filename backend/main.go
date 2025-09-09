@@ -21,6 +21,9 @@ func main() {
 	// if err != nil {
 	// 	log.Panic(err)
 	// }
+
+	router.Route(r)
+
 	addr := fmt.Sprintf("%s:%s", config.Host, config.Port)
 	log.Printf("Starting HTTP server on %s...\n", addr)
 
