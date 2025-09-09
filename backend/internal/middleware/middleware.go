@@ -2,66 +2,46 @@ package middleware
 
 import (
 	"log"
+	"memora/internal/config"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // CORS adds CORS-related headers to the response
-func CORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+func CORS() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusOK)
 			return
 		}
-
-		next.ServeHTTP(w, r)
-	})
+		c.Next()
+	}
 }
 
-// JSON Sets the Content-Type header to application/json
-func JSON(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		next.ServeHTTP(w, r)
-	})
-}
-
-// Logging logs incoming requests
-func Logging(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Logging() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		start := time.Now()
 
-		// Wrap the ResponseWriter to capture status code
-		wrapped := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
-
-		next.ServeHTTP(wrapped, r)
+		c.Next()
 
 		duration := time.Since(start)
-		log.Printf("%s %s %d %v", r.Method, r.URL.Path, wrapped.statusCode, duration)
-	})
-}
+		status := c.Writer.Status()
+		clientIP := c.ClientIP()
+		log.Printf("Got request: %s %s %d %s %v", c.Request.Method, c.Request.URL.Path, status, clientIP, duration)
 
-// responseWriter wraps http.ResponseWriter to capture status code
-type responseWriter struct {
-	http.ResponseWriter
-	statusCode int
-}
-
-func (rw *responseWriter) WriteHeader(code int) {
-	rw.statusCode = code
-	rw.ResponseWriter.WriteHeader(code)
-}
-
-// Chain combines multiple middleware functions
-func Chain(middlewares ...func(http.Handler) http.Handler) func(http.Handler) http.Handler {
-	return func(final http.Handler) http.Handler {
-		for i := len(middlewares) - 1; i >= 0; i-- {
-			final = middlewares[i](final)
+		if config.CurrentLevel == config.LogLevelDebug {
+			log.Println("Request details")
+			for name, values := range c.Request.Header {
+				for _, value := range values {
+					log.Printf("Header: %s=%s", name, value)
+				}
+			}
 		}
-		return final
 	}
 }
