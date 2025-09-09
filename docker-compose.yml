@@ -1,0 +1,69 @@
+x-dev: &dev
+  profiles:
+    - dev
+  networks:
+    - app
+  restart: "no"
+
+x-prod: &prod
+  profiles:
+    - prod
+  networks:
+    - app
+  restart: unless-stopped
+
+x-backend: &backend
+  hostname: backend
+  container_name: backend
+  networks:
+    - memora
+  environment:
+    GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/service-account-key.json
+    APP_HOST: 0.0.0.0
+    PORT: 8080
+  env_file:
+    - path: ./backend/.env
+      required: false
+  secrets:
+    - source: service-account-key
+      target: service-account-key.json
+
+services:
+  backend-dev:
+    <<: [*dev, *backend]
+    image: golang:1.25
+    ports:
+      - ${APP_PORT:-8080}:${APP_PORT:-8080}
+    environment:
+      GO_ENV: development
+      LOG_LEVEL: debug
+    volumes:
+      - ./backend:/usr/src/app:ro
+    working_dir: /usr/src/app
+    command: ["go", "run", "."]
+
+  backend-prod:
+    <<: [*prod, *backend]
+    build: ./backend
+    environment:
+      GO_ENV: production
+      LOG_LEVEL: warn
+
+  nginx:
+    <<: [*prod]
+    build: ./nginx
+    hostname: nginx
+    container_name: nginx
+    depends_on:
+      - backend-prod
+    ports:
+      - 80:80
+      - 443:443
+
+networks:
+  app:
+    driver: bridge
+
+secrets:
+  service-account-key:
+    file: ${GOOGLE_APPLICATION_CREDENTIALS:-./backend/service-account-key.json}
