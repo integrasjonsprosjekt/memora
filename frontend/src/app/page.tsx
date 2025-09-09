@@ -15,10 +15,24 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { MDXRemote } from "next-mdx-remote-client/rsc";
+import remarkGfm from 'remark-gfm';
+import styles from "@/styles/modules/markdown.module.scss";
 
 export default async function Page() {
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+
+  const markdown = `
+# Markdown Test
+
+Some **bold text**, some *italic text*.
+
+A list with:
+- item 1
+- item 2
+- item 3
+    `;
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
@@ -49,13 +63,11 @@ export default async function Page() {
             <ModeToggle />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-          </div>
-          <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+        <div className={`${styles.markdown}`}>
+          <MDXRemote
+            source={markdown}
+            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>
