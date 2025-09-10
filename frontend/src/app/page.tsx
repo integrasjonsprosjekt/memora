@@ -15,10 +15,84 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { MDXRemote } from "next-mdx-remote-client/rsc";
+import remarkGfm from 'remark-gfm';
+import styles from "@/styles/modules/markdown.module.css";
 
 export default async function Page() {
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+
+  const markdown = `
+  # Markdown Test
+
+  ## Emphasis
+  Some **bold text**, some *italic text*, and some ***bold italic text***.
+  You can also ~~strikethrough~~ text.
+
+  ## Lists
+
+  ### Unordered List
+  - Item 1
+  - Item 2
+    - Subitem 2a
+    - Subitem 2b
+  - Item 3
+
+  ### Ordered List
+  1. First
+  2. Second
+  3. Third
+
+  ## Links
+  - [OpenAI](https://www.openai.com)
+  - Inline link: [Google](https://www.google.com)
+
+  ## Images
+  ![Sample Image](https://via.placeholder.com/150)
+
+  ## Code
+
+  ### Inline Code
+  Here is some \`inline code\` within a sentence.
+
+  ### Code Block
+  \`\`\`javascript
+  console.log("Hello, world!");
+  function add(a, b) {
+    return a + b;
+  }
+  \`\`\`
+
+  ### Syntax Highlighting
+  \`\`\`python
+  def greet(name):
+      return f"Hello, {name}!"
+  \`\`\`
+
+  ## Blockquotes
+  > This is a blockquote.
+  > It can span multiple lines.
+  >> Nested blockquote example.
+
+  ## Tables
+  | Name       | Age | Occupation   |
+  |------------|-----|--------------|
+  | Alice      | 25  | Engineer     |
+  | Bob        | 30  | Designer     |
+  | Charlie    | 22  | Student      |
+
+  ## Horizontal Rule
+  ---
+  Another section after the horizontal rule.
+
+  ## Task List
+  - [x] Completed task
+  - [ ] Incomplete task
+  - [ ] Another task
+
+  `;
+
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
@@ -49,13 +123,11 @@ export default async function Page() {
             <ModeToggle />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-          </div>
-          <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+        <div className={styles.markdown}>
+          <MDXRemote
+            source={markdown}
+            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>
