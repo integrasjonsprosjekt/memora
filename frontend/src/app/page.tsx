@@ -17,22 +17,82 @@ import {
 } from "@/components/ui/sidebar";
 import { MDXRemote } from "next-mdx-remote-client/rsc";
 import remarkGfm from 'remark-gfm';
-import styles from "@/styles/modules/markdown.module.scss";
+import styles from "@/styles/modules/markdown.module.css";
 
 export default async function Page() {
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
   const markdown = `
-# Markdown Test
+  # Markdown Test
 
-Some **bold text**, some *italic text*.
+  ## Emphasis
+  Some **bold text**, some *italic text*, and some ***bold italic text***.
+  You can also ~~strikethrough~~ text.
 
-A list with:
-- item 1
-- item 2
-- item 3
-    `;
+  ## Lists
+
+  ### Unordered List
+  - Item 1
+  - Item 2
+    - Subitem 2a
+    - Subitem 2b
+  - Item 3
+
+  ### Ordered List
+  1. First
+  2. Second
+  3. Third
+
+  ## Links
+  - [OpenAI](https://www.openai.com)
+  - Inline link: [Google](https://www.google.com)
+
+  ## Images
+  ![Sample Image](https://via.placeholder.com/150)
+
+  ## Code
+
+  ### Inline Code
+  Here is some \`inline code\` within a sentence.
+
+  ### Code Block
+  \`\`\`javascript
+  console.log("Hello, world!");
+  function add(a, b) {
+    return a + b;
+  }
+  \`\`\`
+
+  ### Syntax Highlighting
+  \`\`\`python
+  def greet(name):
+      return f"Hello, {name}!"
+  \`\`\`
+
+  ## Blockquotes
+  > This is a blockquote.
+  > It can span multiple lines.
+  >> Nested blockquote example.
+
+  ## Tables
+  | Name       | Age | Occupation   |
+  |------------|-----|--------------|
+  | Alice      | 25  | Engineer     |
+  | Bob        | 30  | Designer     |
+  | Charlie    | 22  | Student      |
+
+  ## Horizontal Rule
+  ---
+  Another section after the horizontal rule.
+
+  ## Task List
+  - [x] Completed task
+  - [ ] Incomplete task
+  - [ ] Another task
+
+  `;
+
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
@@ -63,7 +123,7 @@ A list with:
             <ModeToggle />
           </div>
         </header>
-        <div className={`${styles.markdown}`}>
+        <div className={styles.markdown}>
           <MDXRemote
             source={markdown}
             options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
