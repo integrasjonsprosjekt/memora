@@ -14,6 +14,7 @@ func New() *gin.Engine {
 
 	router.Use(gin.Recovery())
 	router.Use(middleware.CORS())
+	router.Use(middleware.Logging())
 
 	return router
 }
