@@ -1,3 +1,13 @@
+definitions:
+  status.Status:
+    properties:
+      uptime:
+        description: Indicates the duration of the service uptime
+        type: integer
+      version:
+        description: Version of the service
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -10,9 +20,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/status.Status'
       summary: Status page for the API
       tags:
       - Health

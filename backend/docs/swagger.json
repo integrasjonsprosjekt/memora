@@ -18,12 +18,24 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/status.Status"
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "status.Status": {
+            "type": "object",
+            "properties": {
+                "uptime": {
+                    "description": "Indicates the duration of the service uptime",
+                    "type": "integer"
+                },
+                "version": {
+                    "description": "Version of the service",
+                    "type": "string"
                 }
             }
         }

@@ -331,5 +331,3 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/go,vim,emacs,linux,macos,react,nextjs,windows,jetbrains+all,visualstudiocode,direnv
-
-/backend/.env
