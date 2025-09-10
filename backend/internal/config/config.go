@@ -1,17 +1,22 @@
 package config
 
 import (
-	"os"
 	"log"
+	"memora/internal/firebase"
+	"os"
 	"time"
+
+	"cloud.google.com/go/firestore"
+	"github.com/joho/godotenv"
 )
 
 var (
-	Port         string
-	Host         string
-	CurrentLevel LogLevel
-	StartTime    time.Time
-	BasePath     = "/api/v1"
+	Port           string
+	Host           string
+	CurrentLevel   LogLevel
+	StartTime      time.Time
+	BasePath       = "/api/v1"
+	FirebaseClient *firestore.Client
 )
 
 func GetEnv(key, defaultValue string) string {
@@ -22,6 +27,11 @@ func GetEnv(key, defaultValue string) string {
 }
 
 func Init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
 	Port = GetEnv("APP_PORT", GetEnv("PORT", "8080"))
 	Host = GetEnv("APP_HOST", "0.0.0.0")
 
@@ -32,7 +42,9 @@ func Init() {
 	CurrentLevel = level
 
 	StartTime = time.Now()
+
+	FirebaseClient, err = firebase.Init()
+	if err != nil {
+		log.Panic(err)
+	}
 }
-
-
-

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	// firebase "memora/internal/firebase"
-
 	"memora/internal/config"
 	"memora/internal/router"
 )
@@ -16,11 +14,6 @@ func init() {
 
 func main() {
 	r := router.New()
-
-	// firebaseClient, err := firebase.Init()
-	// if err != nil {
-	// 	log.Panic(err)
-	// }
 
 	router.Route(r)
 
