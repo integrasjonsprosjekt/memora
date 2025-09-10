@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/status": {
+        "/api/v1/status": {
             "get": {
                 "description": "Returns version and uptime",
                 "produces": [
@@ -29,12 +29,24 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/status.Status"
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "status.Status": {
+            "type": "object",
+            "properties": {
+                "uptime": {
+                    "description": "Indicates the duration of the service uptime",
+                    "type": "integer"
+                },
+                "version": {
+                    "description": "Version of the service",
+                    "type": "string"
                 }
             }
         }
