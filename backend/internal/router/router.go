@@ -27,8 +27,6 @@ func Route(c *gin.Engine) {
 	v1 := c.Group("/api/v1")
 	{
 		v1.GET("/status", status.GetStatus)
-	}
-	{
 		v1.GET("/docs", docs.GetDocs)
 	}
 }
