@@ -1,0 +1,34 @@
+name: Sync files to Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - CONTRIBUTING.md
+      - .github/workflows/sync-wiki.yml
+  workflow_dispatch:
+
+concurrency:
+  group: publish-wiki
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stage Contributing.md for wiki
+        run: |
+          mkdir -p wiki
+          cp -f README.md wiki/Home.md
+          cp -f CONTRIBUTING.md wiki/Contributing.md
+
+      - name: Publish to GitHub Wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v5
+        with:
+          disable-empty-commits: true
