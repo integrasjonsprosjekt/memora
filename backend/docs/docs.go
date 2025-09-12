@@ -170,7 +170,7 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Create a user and return their ID",
+                "summary": "Create a user and returns their ID",
                 "parameters": [
                     {
                         "description": "User info",
@@ -183,10 +183,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/users.ReturnID"
                         }
                     }
                 }
@@ -194,7 +194,7 @@ const docTemplate = `{
         },
         "/api/v1/users/{id}": {
             "get": {
-                "description": "Return user information",
+                "description": "Returns user information",
                 "produces": [
                     "application/json"
                 ],
