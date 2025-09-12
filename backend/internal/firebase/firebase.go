@@ -25,3 +25,4 @@ func Init() (*firestore.Client, error) {
 	}
 	return client, nil
 }
+
