@@ -1,6 +1,7 @@
-package firebase
+package firebase_test
 
 import (
+	"memora/internal/firebase"
 	"os"
 	"testing"
 )
@@ -38,7 +39,7 @@ func TestInit(t *testing.T) {
 	t.Run("missing GOOGLE_APPLICATION_CREDENTIALS", func(t *testing.T) {
 		defer setTestCredentials(t, nil)()
 
-		client, err := Init()
+		client, err := firebase.Init()
 
 		if err == nil {
 			t.Error("Expected error when GOOGLE_APPLICATION_CREDENTIALS is not set, got nil")
@@ -59,7 +60,7 @@ func TestInit(t *testing.T) {
 		testCredPath := "/tmp/test-credentials.json"
 		defer setTestCredentials(t, &testCredPath)()
 
-		client, err := Init()
+		client, err := firebase.Init()
 
 		// We expect this to fail because the credentials file doesn't exist,
 		// but it should NOT fail with our specific "GOOGLE_APPLICATION_CREDENTIALS not set" error
@@ -91,7 +92,7 @@ func TestInitWithValidCredentials(t *testing.T) {
 
 	defer setTestCredentials(t, &credPath)()
 
-	client, err := Init()
+	client, err := firebase.Init()
 
 	if err != nil {
 		t.Fatalf("Expected successful initialization with valid credentials, got error: %v", err)
@@ -121,7 +122,7 @@ func BenchmarkInit(t *testing.B) {
 	t.ResetTimer()
 
 	for i := 0; i < t.N; i++ {
-		client, err := Init()
+		client, err := firebase.Init()
 		if err != nil {
 			t.Fatalf("Benchmark failed: %v", err)
 		}
