@@ -170,7 +170,7 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Create a user and return their ID",
+                "summary": "Create a user and returns their ID",
                 "parameters": [
                     {
                         "description": "User info",
@@ -183,10 +183,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/users.ReturnID"
                         }
                     }
                 }
@@ -194,7 +194,7 @@ const docTemplate = `{
         },
         "/api/v1/users/{id}": {
             "get": {
-                "description": "Return user information",
+                "description": "Returns user information",
                 "produces": [
                     "application/json"
                 ],
@@ -210,104 +210,10 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "delete": {
-                "description": "Return card information",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Deletes a user from firestore by their ID",
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            },
-            "patch": {
-                "description": "Updates/replaces data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Patch the users' data by ID",
-                "parameters": [
-                    {
-                        "description": "User info",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.PatchUser"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
             }
         }
     },
     "definitions": {
-        "models.AnyCard": {
-            "type": "object",
-            "properties": {
-                "blanksCard": {
-                    "$ref": "#/definitions/models.BlanksCard"
-                },
-                "frontBackCard": {
-                    "description": "This tells Swagger that the response can be one of these types\n@swagger:oneOf",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.FrontBackCard"
-                        }
-                    ]
-                },
-                "multipleChoiceCard": {
-                    "$ref": "#/definitions/models.MultipleChoiceCard"
-                },
-                "orderedCard": {
-                    "$ref": "#/definitions/models.OrderedCard"
-                }
-            }
-        },
-        "models.BlanksCard": {
-            "type": "object",
-            "required": [
-                "answers",
-                "question",
-                "type"
-            ],
-            "properties": {
-                "answers": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "question": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
         "models.CreateUser": {
             "type": "object",
             "required": [
@@ -327,95 +233,14 @@ const docTemplate = `{
                 }
             }
         },
-        "models.FrontBackCard": {
-            "type": "object",
-            "required": [
-                "back",
-                "front",
-                "type"
-            ],
-            "properties": {
-                "back": {
-                    "type": "string"
-                },
-                "front": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.MultipleChoiceCard": {
-            "type": "object",
-            "required": [
-                "options",
-                "type"
-            ],
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "options": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "boolean"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.OrderedCard": {
-            "type": "object",
-            "required": [
-                "options",
-                "type"
-            ],
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "options": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.PatchUser": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 12
-                }
-            }
-        },
-        "models.ReturnID": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
         "models.User": {
             "type": "object",
+            "required": [
+                "email",
+                "id",
+                "name",
+                "password"
+            ],
             "properties": {
                 "email": {
                     "type": "string"
@@ -440,6 +265,14 @@ const docTemplate = `{
                 },
                 "version": {
                     "description": "Version of the service",
+                    "type": "string"
+                }
+            }
+        },
+        "users.ReturnID": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 }
             }
