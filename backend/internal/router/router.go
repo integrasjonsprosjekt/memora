@@ -30,6 +30,7 @@ func Route(c *gin.Engine, userRepo *services.UserService) {
 		{
 			usersRoute.GET("/:id", users.GetUser(userRepo))
 			usersRoute.POST("/", users.CreateUser(userRepo))
+			usersRoute.PATCH("/:id", users.PatchUser(userRepo))
 		}
 	}
 }

@@ -18,4 +18,5 @@ type User struct {
 type UserRepository interface {
 	AddUser(ctx context.Context, u CreateUser) (string, error)
 	GetUser(ctx context.Context, id string) (User, error)
+	UpdateUser(ctx context.Context, update map[string]interface{}, id string) error
 }

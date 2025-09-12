@@ -74,3 +74,35 @@ func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 		})
 	}
 }
+
+func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		var updates map[string]interface{}
+
+		if err := c.ShouldBindBodyWithJSON(&updates); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid JSON",
+			})
+			return
+		}
+
+		err := userRepo.UpdateUser(c.Request.Context(), updates, id)
+		if err != nil {
+			if errors.Is(err, models.ErrInvalidUser) {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": "invalid JSON",
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "internal server error",
+			})
+
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "User updated succesfully",
+		})
+	}
+}
