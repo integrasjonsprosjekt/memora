@@ -60,3 +60,37 @@ func (s *UserService) UpdateUser(
 func (s *UserService) DeleteUser(ctx context.Context, id string) error {
 	return s.repo.DeleteUser(ctx, id)
 }
+
+func (s *UserService) UpdateUser(ctx context.Context, update map[string]interface{}, id string) error {
+	if !validatePatch(update) {
+		return models.ErrInvalidUser
+	}
+
+	err := s.repo.UpdateUser(ctx, update, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func validatePatch(u map[string]interface{}) bool {
+	var schema = map[string]string{
+		"name":     "string",
+		"email":    "string",
+		"password": "string",
+	}
+
+	for k, v := range u {
+		value, exists := schema[k]
+		if !exists {
+			return false
+		}
+		switch value {
+		case "string":
+			if _, ok := v.(string); !ok || v == "" {
+				return false
+			}
+		}
+	}
+	return true
+}
