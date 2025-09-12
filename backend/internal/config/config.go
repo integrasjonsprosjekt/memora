@@ -2,7 +2,6 @@ package config
 
 import (
 	"log"
-	"memora/internal/firebase"
 	"os"
 	"time"
 
@@ -42,9 +41,4 @@ func Init() {
 	CurrentLevel = level
 
 	StartTime = time.Now()
-
-	FirebaseClient, err = firebase.Init()
-	if err != nil {
-		log.Panic(err)
-	}
 }

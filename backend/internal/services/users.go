@@ -21,3 +21,11 @@ func (s *UserService) RegisterNewUser(ctx context.Context, user models.CreateUse
 
 	return id, nil
 }
+
+func (s *UserService) GetUser(ctx context.Context, id string) (models.User, error) {
+	user, err := s.repo.GetUser(ctx, id)
+	if err != nil {
+		return models.User{}, err
+	}
+	return user, nil
+}
