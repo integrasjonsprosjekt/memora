@@ -32,6 +32,11 @@ definitions:
         type: string
       password:
         type: string
+    required:
+    - email
+    - id
+    - name
+    - password
     type: object
   status.Status:
     properties:
@@ -160,16 +165,16 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            $ref: '#/definitions/models.User'
-      summary: Create a user and return their ID
+            $ref: '#/definitions/users.ReturnID'
+      summary: Create a user and returns their ID
       tags:
       - Users
   /api/v1/users/{id}:
     get:
-      description: Return user information
+      description: Returns user information
       produces:
       - application/json
       responses:
@@ -178,25 +183,6 @@ paths:
           schema:
             $ref: '#/definitions/models.User'
       summary: GET a user from firestore by their ID
-      tags:
-      - Users
-    patch:
-      consumes:
-      - application/json
-      description: Updates/replaces data
-      parameters:
-      - description: User info
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/models.PatchUser'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-      summary: Patch the users' data by ID
       tags:
       - Users
 swagger: "2.0"

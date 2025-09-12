@@ -159,7 +159,7 @@
                 "tags": [
                     "Users"
                 ],
-                "summary": "Create a user and return their ID",
+                "summary": "Create a user and returns their ID",
                 "parameters": [
                     {
                         "description": "User info",
@@ -172,10 +172,10 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/users.ReturnID"
                         }
                     }
                 }
@@ -183,7 +183,7 @@
         },
         "/api/v1/users/{id}": {
             "get": {
-                "description": "Return user information",
+                "description": "Returns user information",
                 "produces": [
                     "application/json"
                 ],
@@ -268,6 +268,12 @@
         },
         "models.User": {
             "type": "object",
+            "required": [
+                "email",
+                "id",
+                "name",
+                "password"
+            ],
             "properties": {
                 "email": {
                     "type": "string"
