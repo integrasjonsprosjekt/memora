@@ -32,7 +32,6 @@ func (r *FirestoreUserRepo) AddUser(ctx context.Context, u models.CreateUser) (s
 	return id.ID, err
 }
 
-// GetUser implements UserRepository.
 func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User, error) {
 	var userStruct = models.User{}
 	user, err := r.client.Collection(internal.USERS_COLLECTION).Doc(id).Get(ctx)
@@ -48,3 +47,18 @@ func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User
 	return userStruct, nil
 }
 
+func (r *FirestoreUserRepo) UpdateUser(ctx context.Context, u map[string]interface{}, id string) error {
+	docRef := r.client.Collection(internal.USERS_COLLECTION).Doc(id)
+
+	var update []firestore.Update
+
+	for k, v := range u {
+		update = append(update, firestore.Update{Path: k, Value: v})
+	}
+
+	_, err := docRef.Update(ctx, update)
+	if err != nil {
+		return err
+	}
+	return nil
+}
