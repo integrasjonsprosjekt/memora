@@ -1,4 +1,33 @@
 definitions:
+  models.CreateUser:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  models.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - id
+    - name
+    - password
+    type: object
   status.Status:
     properties:
       uptime:
@@ -6,6 +35,11 @@ definitions:
         type: integer
       version:
         description: Version of the service
+        type: string
+    type: object
+  users.ReturnID:
+    properties:
+      id:
         type: string
     type: object
 info:
@@ -24,4 +58,39 @@ paths:
       summary: Status page for the API
       tags:
       - Health
+  /api/v1/users:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user
+      parameters:
+      - description: User info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/users.ReturnID'
+      summary: Create a user and returns their ID
+      tags:
+      - Users
+  /api/v1/users/{id}:
+    get:
+      description: Returns user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: GET a user from firestore by their ID
+      tags:
+      - Users
 swagger: "2.0"
