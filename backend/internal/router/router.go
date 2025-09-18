@@ -1,6 +1,7 @@
 package router
 
 import (
+	"log/slog"
 	"memora/internal/config"
 	"memora/internal/handlers/docs"
 	"memora/internal/handlers/status"
@@ -12,9 +13,11 @@ import (
 func New() *gin.Engine {
 	router := gin.New()
 
+	logger := slog.Default()
+
 	router.Use(gin.Recovery())
 	router.Use(middleware.CORS())
-	router.Use(middleware.Logging())
+	router.Use(middleware.Logging(logger))
 
 	return router
 }

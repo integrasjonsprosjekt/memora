@@ -1,12 +1,13 @@
 package middleware
 
 import (
-	"log"
+	"log/slog"
 	"memora/internal/config"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // CORS adds CORS-related headers to the response
@@ -24,23 +25,47 @@ func CORS() gin.HandlerFunc {
 	}
 }
 
-func Logging() gin.HandlerFunc {
+func Logging(logger *slog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
+
+		reqID := uuid.New().String()
+		c.Set("reqID", reqID)
 
 		c.Next()
 
 		duration := time.Since(start)
-		status := c.Writer.Status()
-		clientIP := c.ClientIP()
-		log.Printf("Got request: %s %s %d %s %v", c.Request.Method, c.Request.URL.Path, status, clientIP, duration)
 
-		if config.CurrentLevel == config.LogLevelDebug {
-			log.Println("Request details")
-			for name, values := range c.Request.Header {
-				for _, value := range values {
-					log.Printf("Header: %s=%s", name, value)
-				}
+		switch config.CurrentLevel {
+		case config.LogLevelDebug:
+			logger.Debug("Request completed",
+				"reqID", reqID,
+				"method", c.Request.Method,
+				"path", c.Request.URL.Path,
+				"query", c.Request.URL.RawQuery,
+				"status", c.Writer.Status(),
+				"duration", duration,
+				"client_ip", c.ClientIP(),
+				"user_agent", c.Request.UserAgent(),
+				"response_size", c.Writer.Size(),
+				"errors", c.Errors.String(),
+			)
+		case config.LogLevelInfo:
+			logger.Info("Request completed",
+				"reqID", reqID,
+				"method", c.Request.Method,
+				"path", c.Request.URL.Path,
+				"query", c.Request.URL.RawQuery,
+				"status", c.Writer.Status(),
+				"duration", duration,
+			)
+		case config.LogLevelWarn:
+			for _, e := range c.Errors.ByType(gin.ErrorTypeBind) {
+				logger.Warn("Binding error", "reqID", reqID, "error", e.Error())
+			}
+		case config.LogLevelError:
+			for _, e := range c.Errors {
+				logger.Error("Request error", "reqID", reqID, "error", e.Error())
 			}
 		}
 	}
