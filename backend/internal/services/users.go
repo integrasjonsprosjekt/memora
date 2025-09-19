@@ -63,7 +63,7 @@ func (s *UserService) DeleteUser(ctx context.Context, id string) error {
 
 func (s *UserService) UpdateUser(ctx context.Context, update map[string]interface{}, id string) error {
 	if !validatePatch(update) {
-		return models.ErrInvalidUser
+		return customerror.ErrInvalidUser
 	}
 
 	err := s.repo.UpdateUser(ctx, update, id)

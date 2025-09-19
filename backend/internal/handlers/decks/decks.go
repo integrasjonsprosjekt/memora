@@ -1,7 +1,7 @@
 package decks
 
 import (
-	"errors"
+	customerror "memora/internal/customError"
 	"memora/internal/models"
 	"memora/internal/services"
 	"net/http"
@@ -21,17 +21,7 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		}
 
 		id, err := deckRepo.RegisterNewDeck(c.Request.Context(), content)
-		if err != nil {
-			switch {
-			case errors.Is(err, models.ErrUserNotFound):
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error": "user does not exist",
-				})
-			default:
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "internal server error",
-				})
-			}
+		if customerror.HandleError(c, err) {
 			return
 		}
 		c.JSON(http.StatusOK, models.ReturnID{

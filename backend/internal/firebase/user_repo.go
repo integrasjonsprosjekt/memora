@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"memora/internal"
+	customerror "memora/internal/customError"
 	"memora/internal/models"
 
 	"cloud.google.com/go/firestore"
@@ -31,7 +32,7 @@ func (r *FirestoreUserRepo) AddUser(ctx context.Context, u models.CreateUser) (s
 		return "", nil
 	}
 	if doc != nil {
-		return "", models.ErrInvalidUser
+		return "", customerror.ErrInvalidUser
 	}
 
 	id, _, err := r.client.Collection(internal.USERS_COLLECTION).Add(ctx, u)
@@ -42,7 +43,7 @@ func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User
 	var userStruct = models.User{}
 	user, err := r.client.Collection(internal.USERS_COLLECTION).Doc(id).Get(ctx)
 	if err != nil {
-		return models.User{}, models.ErrUserNotFound
+		return models.User{}, customerror.ErrUserNotFound
 	}
 	if err := user.DataTo(&userStruct); err != nil {
 		return models.User{}, fmt.Errorf("unable to marshal user")
