@@ -14,6 +14,12 @@ type FirestoreUserRepo struct {
 	client *firestore.Client
 }
 
+type UserRepository interface {
+	AddUser(ctx context.Context, u models.CreateUser) (string, error)
+	GetUser(ctx context.Context, id string) (models.User, error)
+	UpdateUser(ctx context.Context, update map[string]interface{}, id string) error
+}
+
 func NewFirestoreUserRepo(client *firestore.Client) *FirestoreUserRepo {
 	return &FirestoreUserRepo{client: client}
 }
