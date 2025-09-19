@@ -1,4 +1,5 @@
 package internal
 
 const USERS_COLLECTION = "users"
-const DECK_COLLECTION = "decks"
+const DECKS_COLLECTION = "decks"
+const CARDS_COLLECTION = "cards"

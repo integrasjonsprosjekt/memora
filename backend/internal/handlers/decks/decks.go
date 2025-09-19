@@ -39,3 +39,21 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		c.JSON(http.StatusOK, deck)
 	}
 }
+
+func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var body models.UpdateDeck
+
+		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid body",
+			})
+			return
+		}
+
+		err := deckRepo.UpdateDeck(c.Request.Context(), c.Param("id"), body)
+		if customerror.HandleError(c, err) {
+			return
+		}
+	}
+}

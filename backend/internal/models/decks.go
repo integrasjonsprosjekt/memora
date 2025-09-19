@@ -20,3 +20,7 @@ type Deck struct {
 	SharedEmails []string                 `firestore:"shared_emails"`
 	Cards        []*firestore.DocumentRef `firestore:"cards"`
 }
+
+type UpdateDeck struct {
+	Cards []Card `firestore:"cards"`
+}
