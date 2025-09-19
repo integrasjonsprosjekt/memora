@@ -2,7 +2,6 @@ package firebase
 
 import (
 	"context"
-	"fmt"
 	"memora/internal"
 	customerror "memora/internal/customError"
 	"memora/internal/models"
@@ -43,10 +42,10 @@ func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User
 	var userStruct = models.User{}
 	user, err := r.client.Collection(internal.USERS_COLLECTION).Doc(id).Get(ctx)
 	if err != nil {
-		return models.User{}, customerror.ErrUserNotFound
+		return userStruct, customerror.ErrNotFound
 	}
 	if err := user.DataTo(&userStruct); err != nil {
-		return models.User{}, fmt.Errorf("unable to marshal user")
+		return models.User{}, err
 	}
 
 	userStruct.ID = id

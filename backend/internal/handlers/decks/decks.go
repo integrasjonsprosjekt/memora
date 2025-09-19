@@ -29,3 +29,13 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		})
 	}
 }
+
+func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		deck, err := deckRepo.GetOneDeck(c.Request.Context(), c.Param("id"))
+		if customerror.HandleError(c, err) {
+			return
+		}
+		c.JSON(http.StatusOK, deck)
+	}
+}
