@@ -59,10 +59,6 @@ func Logging(logger *slog.Logger) gin.HandlerFunc {
 				"status", c.Writer.Status(),
 				"duration", duration,
 			)
-		case config.LogLevelWarn:
-			for _, e := range c.Errors.ByType(gin.ErrorTypeBind) {
-				logger.Warn("Binding error", "reqID", reqID, "error", e.Error())
-			}
 		case config.LogLevelError:
 			for _, e := range c.Errors {
 				logger.Error("Request error", "reqID", reqID, "error", e.Error())
