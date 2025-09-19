@@ -38,3 +38,7 @@ func (s *DeckService) GetOneDeck(ctx context.Context, id string) (models.DeckRes
 	}
 	return resp, nil
 }
+
+func (s *DeckService) UpdateDeck(ctx context.Context, id string, update models.UpdateDeck) error {
+	return s.repo.UpdateDeck(ctx, id, update)
+}
