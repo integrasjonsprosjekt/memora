@@ -2,6 +2,8 @@ package firebase
 
 import (
 	"context"
+	"memora/internal"
+	"memora/internal/models"
 
 	"cloud.google.com/go/firestore"
 )
@@ -11,7 +13,7 @@ type FirestoreDeckRepo struct {
 }
 
 type DeckRepository interface {
-	AddDeck(ctx context.Context) (string, error)
+	AddDeck(ctx context.Context, deck models.CreateDeck) (string, error)
 }
 
 func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
@@ -19,6 +21,12 @@ func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
 }
 
 // AddDeck implements DeckRepository.
-func (f *FirestoreDeckRepo) AddDeck(ctx context.Context) (string, error) {
-	panic("unimplemented")
+func (r *FirestoreDeckRepo) AddDeck(ctx context.Context, deck models.CreateDeck) (string, error) {
+	_, err := r.client.Collection(internal.USERS_COLLECTION).Doc(deck.Owner_id).Get(ctx)
+	if err != nil {
+		return "", models.ErrUserNotFound
+	}
+
+	returnID, _, err := r.client.Collection(internal.DECK_COLLECTION).Add(ctx, deck)
+	return returnID.ID, err
 }
