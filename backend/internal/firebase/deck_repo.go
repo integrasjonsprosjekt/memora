@@ -3,6 +3,7 @@ package firebase
 import (
 	"context"
 	"memora/internal"
+	customerror "memora/internal/customError"
 	"memora/internal/models"
 
 	"cloud.google.com/go/firestore"
@@ -24,7 +25,7 @@ func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
 func (r *FirestoreDeckRepo) AddDeck(ctx context.Context, deck models.CreateDeck) (string, error) {
 	_, err := r.client.Collection(internal.USERS_COLLECTION).Doc(deck.Owner_id).Get(ctx)
 	if err != nil {
-		return "", models.ErrUserNotFound
+		return "", customerror.ErrUserNotFound
 	}
 
 	returnID, _, err := r.client.Collection(internal.DECK_COLLECTION).Add(ctx, deck)
