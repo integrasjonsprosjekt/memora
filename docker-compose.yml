@@ -3,6 +3,7 @@ x-dev: &dev
     - dev
   networks:
     - app
+  working_dir: /usr/src/app
   restart: "no"
 
 x-prod: &prod
@@ -15,8 +16,6 @@ x-prod: &prod
 x-backend: &backend
   hostname: backend
   container_name: backend
-  networks:
-    - memora
   environment:
     GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/service-account-key.json
     APP_HOST: 0.0.0.0
@@ -27,6 +26,13 @@ x-backend: &backend
   secrets:
     - source: service-account-key
       target: service-account-key.json
+
+x-frontend: &frontend
+  hostname: frontend
+  container_name: frontend
+  env_file:
+    - path: ./frontend/.env
+      required: false
 
 services:
   backend-dev:
@@ -39,7 +45,6 @@ services:
       LOG_LEVEL: debug
     volumes:
       - ./backend:/usr/src/app:ro
-    working_dir: /usr/src/app
     command: ["go", "run", "."]
 
   backend-prod:
@@ -49,6 +54,19 @@ services:
       GO_ENV: production
       LOG_LEVEL: warn
 
+  frontend-dev:
+    <<: [*dev, *frontend]
+    image: node:24-alpine
+    ports:
+      - ${APP_PORT:-3000}:${APP_PORT:-3000}
+    volumes:
+      - ./frontend:/usr/src/app
+    command: ["npm", "run", "dev"]
+
+  frontend-prod:
+    <<: [*prod, *frontend]
+    build: ./frontend
+
   nginx:
     <<: [*prod]
     build: ./nginx
@@ -56,13 +74,13 @@ services:
     container_name: nginx
     depends_on:
       - backend-prod
+      - frontend-prod
     ports:
       - 80:80
       - 443:443
 
 networks:
   app:
-    driver: bridge
 
 secrets:
   service-account-key:
