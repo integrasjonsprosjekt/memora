@@ -9,7 +9,8 @@ body:
         > [!IMPORTANT]
         > PR title must exactly match the source branch name (e.g., `feature/add-auth`)
 
-        Labels, type, projects, etc., are handled by the linked issue, and are not required here.
+        Remember to assign the PR to yourself, and request a review from the appropriate project members.\
+        Other attributes like labels, type, projects, etc., are handled by the linked issue, and are not required here.
 
   - type: input
     id: linked-issue
