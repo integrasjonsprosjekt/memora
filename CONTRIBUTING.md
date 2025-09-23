@@ -18,6 +18,13 @@ The Nix flake makes all required tools available from the development shell.
 
 All code has to pass linting and formatting checks to be merged into the default branch.
 
+### Git hooks
+
+We use [husky](https://github.com/typicode/husky) to manage our Git hooks. This ensures the proper linting, formatting, and convention checks are run before pushing code to a remote.
+
+If you're using the Nix flake, husky is automatically initialized for you.\
+Otherwise, you will have to run `npx husky` once to properly set up husky locally.
+
 ## Naming conventions
 
 ### Commits

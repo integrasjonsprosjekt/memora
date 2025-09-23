@@ -44,6 +44,10 @@
             # Nix
             alejandra
             deadnix
+
+            # Git
+            # husky # Outdated, will not work with new major
+            git-conventional-commits
           ];
 
           shellHook = ''
@@ -51,6 +55,8 @@
 
             printf '\n> Go   version: %s\n' "$(go version | awk '{print $3}')"
             printf '> Node version: %s\n\n' "$(node --version)"
+
+            npx husky
           '';
         };
       }
