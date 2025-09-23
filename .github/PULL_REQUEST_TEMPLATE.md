@@ -6,9 +6,10 @@ Delete this comment block before submitting.
 -->
 
 ## Checklist
+
+- [ ] Relevant issue(s) linked (e.g., `Closes #<issue-number>`)
+- [ ] Follows the [CONTRIBUTING.md](https://github.com/integrasjonsprosjekt/memora/blob/main/CONTRIBUTING.md) guideline
 - [ ] New functionality tested
 - [ ] Relevant tests added/updated
-- [ ] Branch and Pull Request names follow [naming convention](https://github.com/integrasjonsprosjekt/memora/blob/main/CONTRIBUTING.md)
 - [ ] No merge conflicts
 - [ ] Documentation updated
-- [ ] Relevant issue(s) linked (e.g., `Closes #<issue-number>`)
