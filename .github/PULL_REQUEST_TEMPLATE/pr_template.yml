@@ -1,0 +1,42 @@
+name: Pull Request
+description: Template for pull requests
+title: ""
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > PR title must exactly match the source branch name (e.g., `feature/add-auth`)
+
+        Labels, type, projects, etc., are handled by the linked issue, and are not required here.
+
+  - type: input
+    id: linked-issue
+    attributes:
+      label: Linked Issue
+      description: |
+        Issue number this PR addresses.
+
+        If this issue closes the addressed issue, use `Closes #<issue-number>`.
+        For more information, see the [GitHub documentation](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword).
+      placeholder: "Closes #123"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: New functionality tested
+          required: true
+        - label: Relevant tests added/updated
+          required: true
+        - label: Branch and Pull Request names follow [naming convention](https://github.com/integrasjonsprosjekt/memora/blob/main/CONTRIBUTING.md)
+          required: true
+        - label: No merge conflicts
+          required: true
+        - label: Documentation updated
+          required: true
+
