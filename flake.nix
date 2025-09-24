@@ -33,6 +33,7 @@
             go
             gopls
             gotools
+            golangci-lint
 
             # Web
             deno
