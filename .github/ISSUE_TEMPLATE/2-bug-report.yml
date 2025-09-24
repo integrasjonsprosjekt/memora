@@ -3,13 +3,6 @@ title: "[Bug] "
 description: "Report a problem or unexpected behavior"
 labels: ["type:bug"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        > [!IMPORTANT]
-        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-
-        Please provide as much detail as possible to help us reproduce and fix the issue.
   - type: input
     id: summary
     attributes:

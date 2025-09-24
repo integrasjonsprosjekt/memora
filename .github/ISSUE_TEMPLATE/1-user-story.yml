@@ -3,13 +3,6 @@ title: "[Feature] "
 description: "Create a new user story"
 labels: ["type:feature"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        > [!IMPORTANT]
-        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-
-        Use this template to describe a feature from an end-user perspective.
   - type: textarea
     id: description
     attributes:

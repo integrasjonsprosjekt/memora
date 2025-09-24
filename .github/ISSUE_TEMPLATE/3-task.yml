@@ -3,13 +3,6 @@ title: "[Task] "
 description: "For technical tasks, maintenance, or chores"
 labels: ["type:task"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        > [!IMPORTANT]
-        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-
-        Use this template for non-user-facing work such as refactoring, upgrades, or internal improvements.
   - type: textarea
     id: description
     attributes:

@@ -3,13 +3,6 @@ title: "[Docs] "
 description: "Create or update documentation"
 labels: ["type:documentation"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        > [!IMPORTANT]
-        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-
-        Use this template when creating new docs, updating existing ones, or improving clarity.
   - type: textarea
     id: description
     attributes:
