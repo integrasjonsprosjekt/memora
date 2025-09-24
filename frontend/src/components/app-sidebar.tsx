@@ -72,8 +72,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-            <Link href="/">
-              <OiiaiTrigger targetId="logo">
+              <Link href="/">
+                <OiiaiTrigger targetId="logo">
                   <div id="logo" className="flex flex-row cursor-pointer">
                     <div className="bg-sidebar-accent text-xs border-border border-1 wrap-anywhere text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                       <Image
@@ -88,8 +88,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <span className="truncate text-xs">Flashcards</span>
                     </div>
                   </div>
-              </OiiaiTrigger>
-                </Link>
+                </OiiaiTrigger>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

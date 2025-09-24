@@ -1,8 +1,8 @@
 package config
 
 import (
-	"os"
 	"log"
+	"os"
 	"time"
 )
 
@@ -33,6 +33,3 @@ func Init() {
 
 	StartTime = time.Now()
 }
-
-
-
