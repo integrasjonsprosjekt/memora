@@ -3,13 +3,6 @@ title: "[Discussion] "
 description: "Propose an idea or start a technical/product conversation"
 labels: ["type:discussion"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        > [!IMPORTANT]
-        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-
-        Use this template to capture ideas, questions, or proposals before turning them into actionable work.
   - type: textarea
     id: context
     attributes:

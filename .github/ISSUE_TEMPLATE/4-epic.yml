@@ -3,13 +3,6 @@ title: "[Epic] "
 description: "Large body of work broken down into stories/tasks"
 labels: ["type:epic"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        > [!IMPORTANT]
-        > Please add appropriate **area**, **priority**, and **size** labels before submitting this issue.
-
-        Use this template to track a big initiative composed of multiple user stories, tasks, or bugs.
   - type: textarea
     id: description
     attributes:
