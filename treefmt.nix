@@ -44,6 +44,9 @@ in {
     prettier = {
       inherit (frontend) includes;
       enable = true;
+      settings.pluginSearchDirs = [
+        "frontend"
+      ];
     };
   };
 }
