@@ -17,10 +17,10 @@ const (
 )
 
 var logLevels = map[string]LogLevel{
-	"error":   LogLevelError,
-	"warn":    LogLevelWarn,
-	"info":    LogLevelInfo,
-	"debug":   LogLevelDebug,
+	"error": LogLevelError,
+	"warn":  LogLevelWarn,
+	"info":  LogLevelInfo,
+	"debug": LogLevelDebug,
 }
 
 var logLevelNames = slices.Collect(maps.Keys(logLevels))
@@ -40,5 +40,9 @@ func ParseLogLevel(level string) (LogLevel, error) {
 	if logLevel, ok := logLevels[strings.ToLower(level)]; ok {
 		return logLevel, nil
 	}
-	return LogLevelInfo, fmt.Errorf("invalid log level: %s (valid options: %s)", level, strings.Join(logLevelNames, ", "))
+	return LogLevelInfo, fmt.Errorf(
+		"invalid log level: %s (valid options: %s)",
+		level,
+		strings.Join(logLevelNames, ", "),
+	)
 }

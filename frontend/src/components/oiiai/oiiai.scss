@@ -66,31 +66,36 @@ $slow-multiplier: 2;
 }
 
 @keyframes hold {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotateY(0deg);
   }
 }
 
 @-webkit-keyframes hold {
-  0%, 100% {
+  0%,
+  100% {
     -webkit-transform: rotateY(0deg);
   }
 }
 
 @-moz-keyframes hold {
-  0%, 100% {
+  0%,
+  100% {
     -moz-transform: rotateY(0deg);
   }
 }
 
 @-ms-keyframes hold {
-  0%, 100% {
+  0%,
+  100% {
     -ms-transform: rotateY(0deg);
   }
 }
 
 @-o-keyframes hold {
-  0%, 100% {
+  0%,
+  100% {
     -o-transform: rotateY(0deg);
   }
 }

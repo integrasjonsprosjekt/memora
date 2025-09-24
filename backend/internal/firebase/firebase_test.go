@@ -56,7 +56,9 @@ func TestInit(t *testing.T) {
 		// We expect this to fail because the credentials file doesn't exist,
 		// but it should NOT fail with our specific "GOOGLE_APPLICATION_CREDENTIALS not set" error
 		if err != nil && err.Error() == "GOOGLE_APPLICATION_CREDENTIALS not set" {
-			t.Error("Should not fail with 'GOOGLE_APPLICATION_CREDENTIALS not set' error when env var is set")
+			t.Error(
+				"Should not fail with 'GOOGLE_APPLICATION_CREDENTIALS not set' error when env var is set",
+			)
 		}
 
 		// Since we're using a fake credentials file, the client should be nil due to Firebase initialization failure
@@ -72,7 +74,9 @@ func TestInit(t *testing.T) {
 func TestInitWithValidCredentials(t *testing.T) {
 	credPath := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if credPath == "" {
-		t.Skip("Skipping test with valid credentials. Set GOOGLE_APPLICATION_CREDENTIALS to run this test.")
+		t.Skip(
+			"Skipping test with valid credentials. Set GOOGLE_APPLICATION_CREDENTIALS to run this test.",
+		)
 	}
 
 	defer setTestCredentials(&credPath)()
