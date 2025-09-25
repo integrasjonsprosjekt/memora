@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
-import createMDX from "@next/mdx";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
-};
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md'],
+  // Add any other Next.js config here
+}
 
 export default nextConfig;
