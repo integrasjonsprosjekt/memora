@@ -15,9 +15,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { MDXRemote } from "next-mdx-remote-client/rsc";
-import remarkGfm from 'remark-gfm';
-import styles from "@/styles/modules/markdown.module.css";
+import MarkdownRenderer from "@/components/Markdown/MarkdownRenderer";
 
 export default async function Page() {
   const cookieStore = await cookies();
@@ -123,12 +121,7 @@ export default async function Page() {
             <ModeToggle />
           </div>
         </header>
-        <div className={styles.markdown}>
-          <MDXRemote
-            source={markdown}
-            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
-          />
-        </div>
+        <MarkdownRenderer content={markdown} />
       </SidebarInset>
     </SidebarProvider>
   );
