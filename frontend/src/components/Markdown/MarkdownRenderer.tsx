@@ -1,5 +1,6 @@
 import {markdownToHtml} from "@/components/Markdown/markdown";
 import styles from "./markdown.module.css";
+import "highlight.js/styles/github-dark.css";
 
 type MarkdownProps = {
   content: string;
