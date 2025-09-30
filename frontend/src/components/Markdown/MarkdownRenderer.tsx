@@ -26,5 +26,10 @@ export async function markdownToHtml(markdown: string): Promise<string> {
 
 export async function MarkdownRenderer({ content }: MarkdownProps) {
   const html = await markdownToHtml(content);
-  return <div className={styles.markdown} dangerouslySetInnerHTML={{ __html: html }} />;
+  return (
+    <div
+      className={styles.markdown}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 }
