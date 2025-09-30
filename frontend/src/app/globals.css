@@ -18,8 +18,9 @@
 }
 
 :root {
-  --background: oklch(0.9831 0.008 278.6398);
-  --foreground: oklch(0.2795 0.0368 260.031);
+  @import "highlight.js/styles/github.css";
+  --background: oklch(0.9831 0.0080 278.6398);
+  --foreground: oklch(0.2795 0.0368 260.0310);
   --card: oklch(0.9654 0.0164 274.8224);
   --card-foreground: oklch(0.2795 0.0368 260.031);
   --popover: oklch(0.9654 0.0164 274.8224);
@@ -72,6 +73,7 @@
 }
 
 .dark {
+  @import "highlight.js/styles/github-dark.css";
   --background: oklch(0.1296 0.0274 261.6924);
   --foreground: oklch(0.8452 0 0);
   --card: oklch(0.2784 0.0335 257.672);
@@ -179,6 +181,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

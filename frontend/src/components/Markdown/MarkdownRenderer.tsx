@@ -5,8 +5,7 @@ import remarkRehype from "remark-rehype";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeStringify from "rehype-stringify";
 import rehypeHighlight from "rehype-highlight";
-import styles from "./markdown.module.css";
-import "highlight.js/styles/github-dark.css";
+import styles from "./Markdown.module.css";
 
 type MarkdownProps = {
   content: string;
@@ -25,7 +24,7 @@ export async function markdownToHtml(markdown: string): Promise<string> {
   return String(file);
 }
 
-export default async function MarkdownRenderer({content}: MarkdownProps) {
+export async function MarkdownRenderer({ content }: MarkdownProps) {
   const html = await markdownToHtml(content);
   return <div className={styles.markdown} dangerouslySetInnerHTML={{ __html: html }} />;
 }
