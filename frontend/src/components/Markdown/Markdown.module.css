@@ -1,0 +1,115 @@
+.markdown {
+    /* Paragraphs */
+    p {
+        margin-block-start: 0.5em;
+        margin-block-end: 0.5em;
+    }
+
+    /* Headings */
+    h1 {
+        font-size: 2em;
+        font-weight: bold;
+        margin-block: 0.5em 0;
+    }
+    h2 {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-block: 0.5em 0;
+    }
+    h3 {
+        font-size: 1.17em;
+        font-weight: bold;
+        margin-block: 0.5em 0;
+    }
+    h4 {
+        font-size: 1em;
+        font-weight: bold;
+        margin-block: 0.5em 0;
+    }
+    h5 {
+        font-size: 0.83em;
+        font-weight: bold;
+        margin-block: 0.5em 0;
+    }
+    h6 {
+        font-size: 0.75em;
+        font-weight: bold;
+        margin-block: 0.5em 0;
+    }
+
+    /* Lists */
+    ul,
+    ol {
+        margin-block-start: 0.5em;
+        margin-block-end: 0.5em;
+        padding-inline-start: 1.2em;
+    }
+
+    li {
+        margin-block-start: 0.25em;
+        margin-block-end: 0.25em;
+    }
+
+    /* Links */
+    a {
+        text-decoration: underline;
+    }
+
+    /* Code blocks */
+    code {
+        font-size: 0.95em;
+        border: 1px solid var(--color-border);
+    }
+    &:not(pre) code {
+        border-radius: 5px;
+        padding: 0 5px;
+    }
+
+    pre {
+        font-size: 0.95em;
+        margin-block: 0.5em 0;
+        overflow: auto;
+        padding: 0.5em;
+
+        code {
+            border-radius: 10px;
+        }
+    }
+
+    /* Blockquotes */
+    blockquote {
+        margin-block: 0.5em 0;
+        padding-inline-start: 1em;
+        border-inline-start: 3px solid #ccc;
+        color: #666;
+        font-style: italic;
+    }
+
+    /* Tables */
+    table {
+        border-collapse: collapse;
+        margin-block: 0.5em 0;
+    }
+
+    th,
+    td {
+        border: 1px solid #ddd;
+        padding: 0.3em 0.5em;
+        text-align: left;
+    }
+
+    /* Horizontal rules */
+    hr {
+        margin-block: 0.5em;
+        border: none;
+        border-top: 1px solid #ccc;
+    }
+
+    /* Images */
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0.5em 0;
+    }
+}

@@ -15,7 +15,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import MarkdownRenderer from "@/components/Markdown/MarkdownRenderer";
+import { MarkdownRenderer } from "@/components/Markdown"
 
 export default async function Page() {
   const cookieStore = await cookies();
