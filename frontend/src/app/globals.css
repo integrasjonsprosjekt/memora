@@ -19,8 +19,8 @@
 
 :root {
   @import "highlight.js/styles/github.css";
-  --background: oklch(0.9831 0.0080 278.6398);
-  --foreground: oklch(0.2795 0.0368 260.0310);
+  --background: oklch(0.9831 0.008 278.6398);
+  --foreground: oklch(0.2795 0.0368 260.031);
   --card: oklch(0.9654 0.0164 274.8224);
   --card-foreground: oklch(0.2795 0.0368 260.031);
   --popover: oklch(0.9654 0.0164 274.8224);

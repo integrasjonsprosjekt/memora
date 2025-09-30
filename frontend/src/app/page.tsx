@@ -15,7 +15,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { MarkdownRenderer } from "@/components/Markdown"
+import { MarkdownRenderer } from "@/components/Markdown";
 
 export default async function Page() {
   const cookieStore = await cookies();
@@ -90,7 +90,6 @@ export default async function Page() {
   - [ ] Another task
 
   `;
-
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
