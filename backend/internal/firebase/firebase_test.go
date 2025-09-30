@@ -8,27 +8,35 @@ import (
 // setTestCredentials sets the GOOGLE_APPLICATION_CREDENTIALS environment variable
 // and returns a cleanup function that restores the original value
 // If credPath is nil, the environment variable is unset
-func setTestCredentials(credPath *string) func() {
+func setTestCredentials(t *testing.T, credPath *string) func() {
 	originalValue, exists := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
 
 	if credPath == nil {
-		os.Unsetenv("GOOGLE_APPLICATION_CREDENTIALS")
+		if err := os.Unsetenv("GOOGLE_APPLICATION_CREDENTIALS"); err != nil {
+			t.Fatalf("Failed to unset GOOGLE_APPLICATION_CREDENTIALS: %v", err)
+		}
 	} else {
-		os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", *credPath)
+		if err := os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", *credPath); err != nil {
+			t.Fatalf("Failed to set GOOGLE_APPLICATION_CREDENTIALS: %v", err)
+		}
 	}
 
 	return func() {
 		if exists {
-			os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", originalValue)
+			if err := os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", originalValue); err != nil {
+				t.Errorf("Failed to restore GOOGLE_APPLICATION_CREDENTIALS: %v", err)
+			}
 		} else {
-			os.Unsetenv("GOOGLE_APPLICATION_CREDENTIALS")
+			if err := os.Unsetenv("GOOGLE_APPLICATION_CREDENTIALS"); err != nil {
+				t.Errorf("Failed to unset GOOGLE_APPLICATION_CREDENTIALS: %v", err)
+			}
 		}
 	}
 }
 
 func TestInit(t *testing.T) {
 	t.Run("missing GOOGLE_APPLICATION_CREDENTIALS", func(t *testing.T) {
-		defer setTestCredentials(nil)()
+		defer setTestCredentials(t, nil)()
 
 		client, err := Init()
 
@@ -49,7 +57,7 @@ func TestInit(t *testing.T) {
 	t.Run("with GOOGLE_APPLICATION_CREDENTIALS set", func(t *testing.T) {
 		// Set a test value (this will still fail Firebase initialization, but passes the env var check)
 		testCredPath := "/tmp/test-credentials.json"
-		defer setTestCredentials(&testCredPath)()
+		defer setTestCredentials(t, &testCredPath)()
 
 		client, err := Init()
 
@@ -64,7 +72,9 @@ func TestInit(t *testing.T) {
 		// Since we're using a fake credentials file, the client should be nil due to Firebase initialization failure
 		if client != nil {
 			// If we somehow get a client, make sure to close it
-			client.Close()
+			if err := client.Close(); err != nil {
+				t.Errorf("Failed to close client: %v", err)
+			}
 		}
 	})
 }
@@ -79,7 +89,7 @@ func TestInitWithValidCredentials(t *testing.T) {
 		)
 	}
 
-	defer setTestCredentials(&credPath)()
+	defer setTestCredentials(t, &credPath)()
 
 	client, err := Init()
 
@@ -91,7 +101,11 @@ func TestInitWithValidCredentials(t *testing.T) {
 		t.Fatal("Expected non-nil client with valid credentials")
 	}
 
-	defer client.Close()
+	defer func() {
+		if err := client.Close(); err != nil {
+			t.Errorf("Failed to close client: %v", err)
+		}
+	}()
 }
 
 // BenchmarkInit benchmarks the Init function
@@ -102,7 +116,7 @@ func BenchmarkInit(t *testing.B) {
 		t.Skip("Skipping benchmark. Set GOOGLE_APPLICATION_CREDENTIALS to run this benchmark.")
 	}
 
-	defer setTestCredentials(&credPath)()
+	defer setTestCredentials(t, &credPath)()
 
 	t.ResetTimer()
 
@@ -112,7 +126,9 @@ func BenchmarkInit(t *testing.B) {
 			t.Fatalf("Benchmark failed: %v", err)
 		}
 		if client != nil {
-			client.Close()
+			if err := client.Close(); err != nil {
+				t.Errorf("Failed to close client: %v", err)
+			}
 		}
 	}
 }
