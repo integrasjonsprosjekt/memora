@@ -8,7 +8,7 @@ import (
 // setTestCredentials sets the GOOGLE_APPLICATION_CREDENTIALS environment variable
 // and returns a cleanup function that restores the original value
 // If credPath is nil, the environment variable is unset
-func setTestCredentials(t *testing.T, credPath *string) func() {
+func setTestCredentials(t testing.TB, credPath *string) func() {
 	originalValue, exists := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
 
 	if credPath == nil {
