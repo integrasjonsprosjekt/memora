@@ -52,7 +52,7 @@
           ];
 
           shellHook = ''
-            export COMPOSE_PROFILES=''${COMPOSE_PROFILES:-dev};
+            export COMPOSE_PROFILES="''${COMPOSE_PROFILES:-dev}";
 
             printf '\n> Go version:        %s\n' "$(go version | awk '{print $3}')"
             printf '> Node version:      %s\n' "$(node --version)"
