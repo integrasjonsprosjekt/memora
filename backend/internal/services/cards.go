@@ -97,6 +97,10 @@ func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) 
 	return nil
 }
 
+func (s *CardService) DeleteCard(ctx context.Context, id string) error {
+	return s.repo.DeleteCard(ctx, id)
+}
+
 func getCardStruct(data []byte, errorOnFail error) (models.Card, error) {
 	var cardType models.CardType
 

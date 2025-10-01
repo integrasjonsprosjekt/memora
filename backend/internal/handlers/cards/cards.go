@@ -55,3 +55,16 @@ func PutCard(cardRepo *services.CardService) gin.HandlerFunc {
 		}
 	}
 }
+
+func DeleteCard(cardRepo *services.CardService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		err := cardRepo.DeleteCard(c.Request.Context(), id)
+		if errors.HandleError(c, err) {
+			return
+		}
+		
+		c.Status(http.StatusNoContent)
+	}
+}
