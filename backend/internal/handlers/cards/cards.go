@@ -39,3 +39,19 @@ func GetCard(cardRepo *services.CardService) gin.HandlerFunc {
 		c.JSON(http.StatusOK, card)
 	}
 }
+
+func PutCard(cardRepo *services.CardService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		rawData, err := c.GetRawData()
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		err = cardRepo.UpdateCard(c.Request.Context(), rawData, id)
+		if errors.HandleError(c, err) {
+			return
+		}
+	}
+}
