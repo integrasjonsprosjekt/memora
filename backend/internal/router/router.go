@@ -49,5 +49,6 @@ func Route(c *gin.Engine, services *services.Services) {
 	{
 		userRoute.GET("/:id", users.GetUser(services.Users))
 		userRoute.POST("/", users.CreateUser(services.Users))
+		userRoute.PATCH("/:id", users.PatchUser(services.Users))
 	}
 }
