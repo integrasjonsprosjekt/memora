@@ -26,3 +26,16 @@ func CreateCard(cardRepo *services.CardService) gin.HandlerFunc {
 		})
 	}
 }
+
+func GetCard(cardRepo *services.CardService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		card, err := cardRepo.GetCard(c.Request.Context(), id)
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		c.JSON(http.StatusOK, card)
+	}
+}
