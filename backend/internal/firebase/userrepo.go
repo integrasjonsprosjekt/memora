@@ -14,6 +14,7 @@ type UserRepository interface {
 	AddUser(ctx context.Context, u models.CreateUser) (string, error)
 	GetUser(ctx context.Context, id string) (models.User, error)
 	UpdateUser(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
+	DeleteUser(ctx context.Context, id string) error
 }
 
 type FirestoreUserRepo struct {
@@ -69,6 +70,20 @@ func (r *FirestoreUserRepo) UpdateUser(
 	}
 
 	_, err = docRef.Update(ctx, firestoreUpdates)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *FirestoreUserRepo) DeleteUser(ctx context.Context, id string) error {
+	docRef := r.client.Collection(config.UsersCollection).Doc(id)
+	_, err := docRef.Get(ctx)
+	if err != nil {
+		return errors.ErrInvalidId
+	}
+
+	_, err = docRef.Delete(ctx)
 	if err != nil {
 		return err
 	}

@@ -57,3 +57,7 @@ func (s *UserService) UpdateUser(
 	}
 	return nil
 }
+
+func (s *UserService) DeleteUser(ctx context.Context, id string) error {
+	return s.repo.DeleteUser(ctx, id)
+}
