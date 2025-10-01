@@ -12,6 +12,7 @@ type CardRepository interface {
 	CreateCard(ctx context.Context, card any) (string, error)
 	GetCard(ctx context.Context, id string) (map[string]any, error)
 	UpdateCard(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
+	DeleteCard(ctx context.Context, id string) error
 }
 
 type FirestoreCardRepo struct {
@@ -31,7 +32,6 @@ func (r *FirestoreCardRepo) GetCard(ctx context.Context, id string) (map[string]
 	return doc.Data(), nil
 }
 
-
 func (r *FirestoreCardRepo) CreateCard(ctx context.Context, card any) (string, error) {
 	id, _, err := r.client.Collection(config.CardsCollection).Add(ctx, card)
 	return id.ID, err
@@ -50,4 +50,15 @@ func (r *FirestoreCardRepo) UpdateCard(ctx context.Context, firestoreUpdates []f
 		return err
 	}
 	return nil
+}
+
+func (r *FirestoreCardRepo) DeleteCard(ctx context.Context, id string) error {
+	docRef := r.client.Collection(config.CardsCollection).Doc(id)
+	_, err := docRef.Get(ctx)
+	if err != nil {
+		return errors.ErrInvalidId
+	}
+
+	_, err = docRef.Delete(ctx)
+	return err
 }
