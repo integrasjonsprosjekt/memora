@@ -63,38 +63,46 @@ func (s *CardService) CreateCard(ctx context.Context, rawData []byte) (string, e
 	return s.repo.CreateCard(ctx, card)
 }
 
-func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) error {
+func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) (any, error) {
 	card, err := getCardStruct(rawData, errors.ErrInvalidCard)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	originalCard, err := s.repo.GetCard(ctx, id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	t, ok := originalCard["type"].(string)
 	if !ok {
-		return fmt.Errorf("internal server error")
+		return nil, fmt.Errorf("internal server error")
 	}
 
 	if t != card.GetType() {
-		return errors.ErrInvalidCard
+		return nil, errors.ErrInvalidCard
 	}
 
 	if err := s.validate.Struct(card); err != nil {
-		return errors.ErrInvalidCard
+		return nil, errors.ErrInvalidCard
 	}
 
 	update, err := utils.StructToUpdate(card)
 	if err != nil {
-		return errors.ErrInvalidCard
+		return nil, errors.ErrInvalidCard
 	}
 
-	s.repo.UpdateCard(ctx, update, id)
+	err = s.repo.UpdateCard(ctx, update, id)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil
+	returnCard, err := s.GetCard(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return returnCard, nil
 }
 
 func (s *CardService) DeleteCard(ctx context.Context, id string) error {
