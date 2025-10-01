@@ -2,17 +2,9 @@ name: Style
 
 on:
   pull_request:
-    paths:
-      - "frontend/**"
-      - "backend/**"
-      - ".github/workflows/style-checks.yml"
   push:
     branches:
       - main
-    paths:
-      - "frontend/**"
-      - "backend/**"
-      - ".github/workflows/style-checks.yml"
 
 jobs:
   flake-checks:
