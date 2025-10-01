@@ -51,3 +51,18 @@ func (r *FirestoreUserRepo) AddUser(ctx context.Context, u models.CreateUser) (s
 	id, _, err := r.client.Collection(config.UsersCollection).Add(ctx, u)
 	return id.ID, err
 }
+
+func (r *FirestoreUserRepo) UpdateUser(ctx context.Context, firestoreUpdates []firestore.Update, id string) error {
+	docRef := r.client.Collection(config.UsersCollection).Doc(id)
+
+	_, err := docRef.Get(ctx)
+	if err != nil {
+		return errors.ErrInvalidId
+	}
+
+	_, err = docRef.Update(ctx, firestoreUpdates)
+	if err != nil {
+		return err
+	}
+	return nil
+}
