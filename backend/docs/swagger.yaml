@@ -12,6 +12,16 @@ definitions:
     - name
     - password
     type: object
+  models.PatchUser:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 12
+        type: string
+    type: object
   models.User:
     properties:
       email:
@@ -22,11 +32,6 @@ definitions:
         type: string
       password:
         type: string
-    required:
-    - email
-    - id
-    - name
-    - password
     type: object
   status.Status:
     properties:
@@ -155,16 +160,16 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            $ref: '#/definitions/users.ReturnID'
-      summary: Create a user and returns their ID
+            $ref: '#/definitions/models.User'
+      summary: Create a user and return their ID
       tags:
       - Users
   /api/v1/users/{id}:
     get:
-      description: Returns user information
+      description: Return user information
       produces:
       - application/json
       responses:
@@ -173,6 +178,25 @@ paths:
           schema:
             $ref: '#/definitions/models.User'
       summary: GET a user from firestore by their ID
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Updates/replaces data
+      parameters:
+      - description: User info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.PatchUser'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Patch the users' data by ID
       tags:
       - Users
 swagger: "2.0"
