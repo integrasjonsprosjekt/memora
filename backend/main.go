@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	// firebase "memora/internal/firebase"
-
 	"memora/internal/config"
+	"memora/internal/firebase"
 	"memora/internal/router"
+	"memora/internal/services"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func init() {
@@ -15,14 +17,19 @@ func init() {
 }
 
 func main() {
+	client, err := firebase.Init()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	validate := validator.New()
+
+	repos := firebase.NewRepositories(client)
+	services := services.NewServices(repos, validate)
+
 	r := router.New()
 
-	// firebaseClient, err := firebase.Init()
-	// if err != nil {
-	// 	log.Panic(err)
-	// }
-
-	router.Route(r)
+	router.Route(r, services)
 
 	if err := r.Run(fmt.Sprintf("%s:%s", config.Host, config.Port)); err != nil {
 		log.Fatal(err)
