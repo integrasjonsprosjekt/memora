@@ -37,7 +37,11 @@ func (s *UserService) RegisterNewUser(ctx context.Context, user models.CreateUse
 	return id, nil
 }
 
-func (s *UserService) UpdateUser(ctx context.Context, updateStruct models.PatchUser, id string) error {
+func (s *UserService) UpdateUser(
+	ctx context.Context,
+	updateStruct models.PatchUser,
+	id string,
+) error {
 	if err := s.validate.Struct(updateStruct); err != nil {
 		return errors.ErrInvalidUser
 	}
