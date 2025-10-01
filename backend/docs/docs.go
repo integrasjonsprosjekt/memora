@@ -170,7 +170,7 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Create a user and returns their ID",
+                "summary": "Create a user and return their ID",
                 "parameters": [
                     {
                         "description": "User info",
@@ -183,10 +183,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.ReturnID"
+                            "$ref": "#/definitions/models.User"
                         }
                     }
                 }
@@ -194,7 +194,7 @@ const docTemplate = `{
         },
         "/api/v1/users/{id}": {
             "get": {
-                "description": "Returns user information",
+                "description": "Return user information",
                 "produces": [
                     "application/json"
                 ],
@@ -208,6 +208,35 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/models.User"
                         }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates/replaces data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Patch the users' data by ID",
+                "parameters": [
+                    {
+                        "description": "User info",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.PatchUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -233,14 +262,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.PatchUser": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 12
+                }
+            }
+        },
         "models.User": {
             "type": "object",
-            "required": [
-                "email",
-                "id",
-                "name",
-                "password"
-            ],
             "properties": {
                 "email": {
                     "type": "string"
