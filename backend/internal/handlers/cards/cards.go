@@ -49,10 +49,12 @@ func PutCard(cardRepo *services.CardService) gin.HandlerFunc {
 			return
 		}
 
-		err = cardRepo.UpdateCard(c.Request.Context(), rawData, id)
+		card, err := cardRepo.UpdateCard(c.Request.Context(), rawData, id)
 		if errors.HandleError(c, err) {
 			return
 		}
+
+		c.JSON(http.StatusOK, card)
 	}
 }
 
@@ -64,7 +66,7 @@ func DeleteCard(cardRepo *services.CardService) gin.HandlerFunc {
 		if errors.HandleError(c, err) {
 			return
 		}
-		
+
 		c.Status(http.StatusNoContent)
 	}
 }
