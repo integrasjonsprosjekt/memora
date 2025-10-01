@@ -40,7 +40,7 @@ func Route(c *gin.Engine, services *services.Services) {
 	}
 	cardRoute := v1.Group("/cards")
 	{
-		cardRoute.GET("")
+		cardRoute.GET("/:id", cards.GetCard(services.Cards))
 		cardRoute.POST("/", cards.CreateCard(services.Cards))
 	}
 }

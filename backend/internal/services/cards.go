@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
@@ -26,6 +27,27 @@ type CardService struct {
 
 func NewCardService(repo firebase.CardRepository, validate *validator.Validate) *CardService {
 	return &CardService{repo: repo, validate: validate}
+}
+
+func (s *CardService) GetCard(ctx context.Context, id string) (any, error) {
+	doc, err := s.repo.GetCard(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	raw, err := json.Marshal(doc)
+	if err != nil {
+		return nil, err
+	}
+
+	card, err := getCardStruct(raw, fmt.Errorf("internal server error"))
+	if err != nil {
+		return nil, err
+	}
+
+	card.SetID(id)
+
+	return card, nil
 }
 
 func (s *CardService) CreateCard(ctx context.Context, rawData []byte) (string, error) {
