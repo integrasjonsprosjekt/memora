@@ -1,4 +1,38 @@
 definitions:
+  models.CreateUser:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  models.PatchUser:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 12
+        type: string
+    type: object
+  models.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
   status.Status:
     properties:
       uptime:
@@ -24,4 +58,58 @@ paths:
       summary: Status page for the API
       tags:
       - Health
+  /api/v1/users:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user
+      parameters:
+      - description: User info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Create a user and return their ID
+      tags:
+      - Users
+  /api/v1/users/{id}:
+    get:
+      description: Return user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: GET a user from firestore by their ID
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Updates/replaces data
+      parameters:
+      - description: User info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.PatchUser'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Patch the users' data by ID
+      tags:
+      - Users
 swagger: "2.0"
