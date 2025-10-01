@@ -13,6 +13,7 @@ import (
 type UserRepository interface {
 	AddUser(ctx context.Context, u models.CreateUser) (string, error)
 	GetUser(ctx context.Context, id string) (models.User, error)
+	UpdateUser(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
 }
 
 type FirestoreUserRepo struct {
