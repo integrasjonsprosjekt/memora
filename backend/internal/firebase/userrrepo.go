@@ -12,6 +12,7 @@ import (
 
 type UserRepository interface {
 	AddUser(ctx context.Context, u models.CreateUser) (string, error)
+	GetUser(ctx context.Context, id string) (models.User, error)
 }
 
 type FirestoreUserRepo struct {
@@ -20,6 +21,21 @@ type FirestoreUserRepo struct {
 
 func NewFirestoreUserRepo(client *firestore.Client) *FirestoreUserRepo {
 	return &FirestoreUserRepo{client: client}
+}
+
+func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User, error) {
+	var userStruct = models.User{}
+	user, err := r.client.Collection(config.UsersCollection).Doc(id).Get(ctx)
+	if err != nil {
+		return models.User{}, errors.ErrNotFound
+	}
+	if err := user.DataTo(&userStruct); err != nil {
+		return models.User{}, err
+	}
+
+	userStruct.ID = id
+
+	return userStruct, nil
 }
 
 func (r *FirestoreUserRepo) AddUser(ctx context.Context, u models.CreateUser) (string, error) {
