@@ -90,3 +90,16 @@ func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 		})
 	}
 }
+
+func DeleteUser(userRepo *services.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		err := userRepo.DeleteUser(c.Request.Context(), id)
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		c.Status(http.StatusNoContent)
+	}
+}
