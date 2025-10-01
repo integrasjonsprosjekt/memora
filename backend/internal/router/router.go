@@ -5,6 +5,7 @@ import (
 	"memora/internal/config"
 	"memora/internal/handlers/docs"
 	"memora/internal/handlers/status"
+	"memora/internal/handlers/users"
 	"memora/internal/middleware"
 	"memora/internal/services"
 
@@ -28,5 +29,9 @@ func Route(c *gin.Engine, services *services.Services) {
 	{
 		v1.GET("/status", status.GetStatus)
 		v1.GET("/docs", docs.GetDocs)
+	}
+	userRoute := v1.Group("/users")
+	{
+		userRoute.GET("/:id", users.GetUser(services.Users))
 	}
 }
