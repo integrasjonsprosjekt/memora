@@ -2,8 +2,10 @@ package services
 
 import (
 	"context"
+	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
+	"memora/internal/utils"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -33,4 +35,21 @@ func (s *UserService) RegisterNewUser(ctx context.Context, user models.CreateUse
 	}
 
 	return id, nil
+}
+
+func (s *UserService) UpdateUser(ctx context.Context, updateStruct models.PatchUser, id string) error {
+	if err := s.validate.Struct(updateStruct); err != nil {
+		return errors.ErrInvalidUser
+	}
+
+	update, err := utils.StructToUpdate(updateStruct)
+	if err != nil {
+		return errors.ErrInvalidUser
+	}
+
+	err = s.repo.UpdateUser(ctx, update, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
