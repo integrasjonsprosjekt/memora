@@ -1,7 +1,9 @@
 package services
 
 import (
+	"context"
 	"memora/internal/firebase"
+	"memora/internal/models"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -16,4 +18,12 @@ func NewServices(repos *firebase.Repositories, validate *validator.Validate) *Se
 		Users: NewUserService(repos.User, validate),
 		Cards: NewCardService(repos.Card, validate),
 	}
+}
+
+func (s *UserService) GetUser(ctx context.Context, id string) (models.User, error) {
+	user, err := s.repo.GetUser(ctx, id)
+	if err != nil {
+		return models.User{}, err
+	}
+	return user, nil
 }
