@@ -42,5 +42,7 @@ func Route(c *gin.Engine, services *services.Services) {
 	{
 		cardRoute.GET("/:id", cards.GetCard(services.Cards))
 		cardRoute.POST("/", cards.CreateCard(services.Cards))
+		cardRoute.PUT("/:id", cards.PutCard(services.Cards))
+		cardRoute.DELETE("/:id", cards.DeleteCard(services.Cards))
 	}
 }
