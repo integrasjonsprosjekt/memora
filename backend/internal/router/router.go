@@ -6,6 +6,7 @@ import (
 	"memora/internal/handlers/docs"
 	"memora/internal/handlers/status"
 	"memora/internal/middleware"
+	"memora/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +23,7 @@ func New() *gin.Engine {
 	return router
 }
 
-func Route(c *gin.Engine) {
+func Route(c *gin.Engine, services *services.Services) {
 	v1 := c.Group(config.BasePath)
 	{
 		v1.GET("/status", status.GetStatus)

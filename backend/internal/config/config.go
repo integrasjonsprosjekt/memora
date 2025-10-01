@@ -4,14 +4,18 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 var (
-	Port         string
-	Host         string
-	CurrentLevel LogLevel
-	StartTime    time.Time
-	BasePath     = "/api/v1"
+	Port            string
+	Host            string
+	CurrentLevel    LogLevel
+	StartTime       time.Time
+	BasePath        = "/api/v1"
+	UsersCollection string
+	CardsCollection string
 )
 
 func GetEnv(key, defaultValue string) string {
@@ -22,8 +26,14 @@ func GetEnv(key, defaultValue string) string {
 }
 
 func Init() {
-	Port = GetEnv("APP_PORT", "8080")
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
+	Port = GetEnv("APP_PORT", GetEnv("PORT", "8080"))
 	Host = GetEnv("APP_HOST", "0.0.0.0")
+	UsersCollection = GetEnv("USERS_COLLECTION", "users")
+	CardsCollection = GetEnv("CARDS_COLLECTION", "cards")
 
 	level, err := ParseLogLevel(GetEnv("LOG_LEVEL", "info"))
 	if err != nil {
