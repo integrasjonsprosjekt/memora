@@ -3,6 +3,7 @@ package router
 import (
 	"log/slog"
 	"memora/internal/config"
+	"memora/internal/handlers/cards"
 	"memora/internal/handlers/docs"
 	"memora/internal/handlers/status"
 	"memora/internal/handlers/users"
@@ -36,5 +37,10 @@ func Route(c *gin.Engine, services *services.Services) {
 		userRoute.POST("/", users.CreateUser(services.Users))
 		userRoute.PATCH("/:id", users.PatchUser(services.Users))
 		userRoute.DELETE("/:id", users.DeleteUser(services.Users))
+	}
+	cardRoute := v1.Group("/cards")
+	{
+		cardRoute.GET("")
+		cardRoute.POST("/", cards.CreateCard(services.Cards))
 	}
 }

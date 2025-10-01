@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateCard(cardRepo services.CardService) gin.HandlerFunc {
+func CreateCard(cardRepo *services.CardService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rawData, err := c.GetRawData()
 		if errors.HandleError(c, err) {
