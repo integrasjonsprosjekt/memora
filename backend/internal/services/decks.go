@@ -63,8 +63,18 @@ func (s *DeckService) GetOneDeck(ctx context.Context, id string) (models.DeckRes
 	}, nil
 }
 
-func (s *DeckService) UpdateDeck(ctx context.Context, id string, update models.UpdateDeck) error {
-	return s.repo.UpdateDeck(ctx, id, update)
+func (s *DeckService) UpdateDeck(ctx context.Context, deckID string, update models.UpdateDeck) error {
+	switch update.Operation {
+	case "add":
+		for _, id := range update.CardID {
+			return s.repo.AddCardToDeck(ctx, deckID, id)
+		}
+	case "remove":
+		for _, id := range update.CardID {
+			return s.repo.RemoveCardFromDeck(ctx, deckID, id)
+		}
+	}
+	return errors.ErrInvalidUser
 }
 
 func getCardStructFromData(m map[string]any, errorOnFail error) (models.Card, error) {
