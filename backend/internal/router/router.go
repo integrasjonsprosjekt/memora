@@ -48,6 +48,7 @@ func Route(c *gin.Engine, services *services.Services) {
 		deckRoute := v1.Group("/decks")
 		{
 			deckRoute.GET("/:id", decks.GetDeck(services.Decks))
+			deckRoute.PATCH("/:id", decks.PatchDeck(services.Decks))
 		}
 	}
 }

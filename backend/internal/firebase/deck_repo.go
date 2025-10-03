@@ -17,7 +17,8 @@ type FirestoreDeckRepo struct {
 type DeckRepository interface {
 	AddDeck(ctx context.Context, deck models.CreateDeck) (string, error)
 	GetOneDeck(ctx context.Context, id string) (models.Deck, error)
-	UpdateDeck(ctx context.Context, id string, update models.UpdateDeck) error
+	RemoveCardFromDeck(ctx context.Context, deckID, cardID string) error
+	AddCardToDeck(ctx context.Context, deckID, cardID string) error
 }
 
 func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
@@ -42,10 +43,64 @@ func (r *FirestoreDeckRepo) GetOneDeck(
 	return utils.FetchByID[models.Deck](r.client, ctx, config.DecksCollection, id)
 }
 
-func (r *FirestoreDeckRepo) UpdateDeck(
+func (r *FirestoreDeckRepo) RemoveCardFromDeck(
 	ctx context.Context,
-	id string,
-	update models.UpdateDeck,
+	deckID, cardID string,
 ) error {
+	deckExists, err := utils.CheckIfDocumentExists(r.client, ctx, config.DecksCollection, deckID)
+	if err != nil {
+		return err
+	}
+
+	cardExists, err := utils.CheckIfDocumentExists(r.client, ctx, config.CardsCollection, cardID)
+	if err != nil {
+		return err
+	}
+
+	if !deckExists || !cardExists {
+		return errors.ErrInvalidId
+	}
+
+	deckRef := r.client.Collection(config.DecksCollection).Doc(deckID)
+	cardRef := r.client.Collection(config.CardsCollection).Doc(cardID)
+
+	_, err = deckRef.Update(ctx, []firestore.Update{
+		{Path: "cards", Value: firestore.ArrayRemove(cardRef)},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *FirestoreDeckRepo) AddCardToDeck(
+	ctx context.Context,
+	deckID, cardID string,
+) error {
+	deckExists, err := utils.CheckIfDocumentExists(r.client, ctx, config.DecksCollection, deckID)
+	if err != nil {
+		return err
+	}
+
+	cardExists, err := utils.CheckIfDocumentExists(r.client, ctx, config.CardsCollection, cardID)
+	if err != nil {
+		return err
+	}
+
+	if !deckExists || !cardExists {
+		return errors.ErrInvalidId
+	}
+
+	deckRef := r.client.Collection(config.DecksCollection).Doc(deckID)
+	cardRef := r.client.Collection(config.CardsCollection).Doc(cardID)
+
+	_, err = deckRef.Update(ctx, []firestore.Update{
+		{Path: "cards", Value: firestore.ArrayUnion(cardRef)},
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

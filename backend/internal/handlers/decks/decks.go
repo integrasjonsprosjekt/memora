@@ -1,6 +1,7 @@
 package decks
 
 import (
+	"log"
 	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/services"
@@ -52,6 +53,8 @@ func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			})
 			return
 		}
+
+		log.Println(body)
 
 		err := deckRepo.UpdateDeck(c.Request.Context(), c.Param("id"), body)
 		if errors.HandleError(c, err) {

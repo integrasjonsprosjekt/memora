@@ -22,5 +22,7 @@ type Deck struct {
 }
 
 type UpdateDeck struct {
-	Cards []Card `firestore:"cards"`
+	Title     string   `json:"title"`
+	Operation string   `json:"operation"`
+	CardID    []string `json:"card_id"`
 }
