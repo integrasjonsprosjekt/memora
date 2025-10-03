@@ -8,14 +8,14 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("could not find id")
-	ErrInvalidUser  = errors.New("invalid user data")
-	ErrorMap        = map[error]struct {
+	ErrNotFound    = errors.New("could not find id")
+	ErrInvalidUser = errors.New("invalid user data")
+	ErrorMap       = map[error]struct {
 		Status  int
 		Message string
 	}{
-		ErrNotFound: {Status: http.StatusBadRequest, Message: "did not find document"},
-		ErrInvalidUser:  {Status: http.StatusBadRequest, Message: "invalid user data"},
+		ErrNotFound:    {Status: http.StatusBadRequest, Message: "did not find document"},
+		ErrInvalidUser: {Status: http.StatusBadRequest, Message: "invalid user data"},
 	}
 )
 
