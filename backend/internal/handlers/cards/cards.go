@@ -9,6 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Create a card
+// @Description Creates a new card in Firestore and returns its ID
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Param card body object true "Card info (can be MultipleChoiceCard, FrontBackCard, OrderedCard, or BlanksCard)"
+// @Success 201 {object} models.ReturnID
+// @Router /api/v1/cards [post]
 func CreateCard(cardRepo *services.CardService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rawData, err := c.GetRawData()
@@ -27,6 +35,14 @@ func CreateCard(cardRepo *services.CardService) gin.HandlerFunc {
 	}
 }
 
+// @Summary Get a card
+// @Description Retrieves card information from Firestore by its ID
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Param id path string true "Card ID"
+// @Success 200 {object} models.AnyCard
+// @Router /api/v1/cards/{id} [get]
 func GetCard(cardRepo *services.CardService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -40,6 +56,14 @@ func GetCard(cardRepo *services.CardService) gin.HandlerFunc {
 	}
 }
 
+// @Summary Update a card
+// @Description Updates card data in Firestore by ID
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Param id path string true "Card ID"
+// @Success 200 {object} models.AnyCard
+// @Router /api/v1/cards/{id} [patch]
 func PutCard(cardRepo *services.CardService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -58,6 +82,14 @@ func PutCard(cardRepo *services.CardService) gin.HandlerFunc {
 	}
 }
 
+// @Summary Delete a card
+// @Description Deletes a card from Firestore by its ID
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Param id path string true "Card ID"
+// @Success 204
+// @Router /api/v1/cards/{id} [delete]
 func DeleteCard(cardRepo *services.CardService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")

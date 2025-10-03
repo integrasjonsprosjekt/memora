@@ -16,7 +16,7 @@ import (
 var cardRegistry = map[string]func() models.Card{
 	utils.BLANKS_CARD:          func() models.Card { return &models.BlanksCard{} },
 	utils.FRONT_BACK_CARD:      func() models.Card { return &models.FrontBackCard{} },
-	utils.MULTIPLE_CHOICE_CARD: func() models.Card { return &models.MutlipleChoiceCard{} },
+	utils.MULTIPLE_CHOICE_CARD: func() models.Card { return &models.MultipleChoiceCard{} },
 	utils.ORDERED_CARD:         func() models.Card { return &models.OrderedCard{} },
 }
 

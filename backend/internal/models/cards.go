@@ -7,14 +7,23 @@ type Card interface {
 	SetID(id string)
 }
 
-type MutlipleChoiceCard struct {
+type AnyCard struct {
+	// This tells Swagger that the response can be one of these types
+	// @swagger:oneOf
+	FrontBackCard       FrontBackCard
+	MultipleChoiceCard  MultipleChoiceCard
+	OrderedCard         OrderedCard
+	BlanksCard          BlanksCard
+}
+
+type MultipleChoiceCard struct {
 	ID      string          `json:"id,omitempty" firestore:"-"`
 	Type    string          `json:"type" validate:"required" firestore:"type"`
 	Options map[string]bool `json:"options" validate:"required" firestore:"options"`
 }
 
-func (m MutlipleChoiceCard) GetType() string  { return utils.MULTIPLE_CHOICE_CARD }
-func (m *MutlipleChoiceCard) SetID(id string) { m.ID = id }
+func (m MultipleChoiceCard) GetType() string  { return utils.MULTIPLE_CHOICE_CARD }
+func (m *MultipleChoiceCard) SetID(id string) { m.ID = id }
 
 type FrontBackCard struct {
 	ID    string `json:"id,omitempty" firestore:"-"`

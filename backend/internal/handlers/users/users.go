@@ -91,6 +91,13 @@ func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 	}
 }
 
+// @Summary Deletes a user from firestore by their ID
+// @Description Return card information
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 204
+// @Router /api/v1/users/{id} [delete]
 func DeleteUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
