@@ -7,13 +7,13 @@ type Card interface {
 	SetID(id string)
 }
 
+// This tells Swagger that the response can be one of these types
 type AnyCard struct {
-	// This tells Swagger that the response can be one of these types
 	// @swagger:oneOf
-	FrontBackCard       FrontBackCard
-	MultipleChoiceCard  MultipleChoiceCard
-	OrderedCard         OrderedCard
-	BlanksCard          BlanksCard
+	FrontBackCard      FrontBackCard
+	MultipleChoiceCard MultipleChoiceCard
+	OrderedCard        OrderedCard
+	BlanksCard         BlanksCard
 }
 
 type MultipleChoiceCard struct {
