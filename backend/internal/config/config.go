@@ -16,6 +16,7 @@ var (
 	BasePath        = "/api/v1"
 	UsersCollection string
 	CardsCollection string
+	DecksCollection string
 )
 
 func GetEnv(key, defaultValue string) string {
@@ -34,6 +35,7 @@ func Init() {
 	Host = GetEnv("APP_HOST", "0.0.0.0")
 	UsersCollection = GetEnv("USERS_COLLECTION", "users")
 	CardsCollection = GetEnv("CARDS_COLLECTION", "cards")
+	CardsCollection = GetEnv("DECKS_COLLECTION", "cards")
 
 	level, err := ParseLogLevel(GetEnv("LOG_LEVEL", "info"))
 	if err != nil {
