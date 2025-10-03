@@ -42,27 +42,20 @@ func (r *FirestoreCardRepo) UpdateCard(
 	firestoreUpdates []firestore.Update,
 	id string,
 ) error {
-	docRef := r.client.Collection(config.CardsCollection).Doc(id)
-
-	_, err := docRef.Get(ctx)
-	if err != nil {
-		return errors.ErrInvalidId
-	}
-
-	_, err = docRef.Update(ctx, firestoreUpdates)
-	if err != nil {
-		return err
-	}
-	return nil
+	return utils.UpdateDocumentInDB(
+		r.client,
+		ctx,
+		config.CardsCollection,
+		id,
+		firestoreUpdates,
+	)
 }
 
 func (r *FirestoreCardRepo) DeleteCard(ctx context.Context, id string) error {
-	docRef := r.client.Collection(config.CardsCollection).Doc(id)
-	_, err := docRef.Get(ctx)
-	if err != nil {
-		return errors.ErrInvalidId
-	}
-
-	_, err = docRef.Delete(ctx)
-	return err
+	return utils.DeleteDocumentInDB(
+		r.client,
+		ctx,
+		config.CardsCollection,
+		id,
+	)
 }
