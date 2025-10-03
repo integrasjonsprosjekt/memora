@@ -5,6 +5,7 @@ import (
 	"memora/internal/config"
 	"memora/internal/errors"
 	"memora/internal/models"
+	"memora/internal/utils"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -26,18 +27,14 @@ func NewFirestoreUserRepo(client *firestore.Client) *FirestoreUserRepo {
 }
 
 func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User, error) {
-	var userStruct = models.User{}
-	user, err := r.client.Collection(config.UsersCollection).Doc(id).Get(ctx)
+	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id)
 	if err != nil {
-		return models.User{}, errors.ErrNotFound
-	}
-	if err := user.DataTo(&userStruct); err != nil {
-		return models.User{}, err
+		return user, err
 	}
 
-	userStruct.ID = id
+	user.ID = id
 
-	return userStruct, nil
+	return user, nil
 }
 
 func (r *FirestoreUserRepo) AddUser(ctx context.Context, u models.CreateUser) (string, error) {
@@ -47,14 +44,13 @@ func (r *FirestoreUserRepo) AddUser(ctx context.Context, u models.CreateUser) (s
 		Documents(ctx)
 	doc, err := iter.Next()
 	if err != nil && err != iterator.Done {
-		return "", nil
+		return "", err
 	}
 	if doc != nil {
 		return "", errors.ErrInvalidUser
 	}
 
-	id, _, err := r.client.Collection(config.UsersCollection).Add(ctx, u)
-	return id.ID, err
+	return utils.AddToDB(r.client, ctx, config.UsersCollection, u)
 }
 
 func (r *FirestoreUserRepo) UpdateUser(

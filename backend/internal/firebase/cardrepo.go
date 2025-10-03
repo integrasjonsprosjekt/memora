@@ -4,6 +4,7 @@ import (
 	"context"
 	"memora/internal/config"
 	"memora/internal/errors"
+	"memora/internal/utils"
 
 	"cloud.google.com/go/firestore"
 )
@@ -33,11 +34,14 @@ func (r *FirestoreCardRepo) GetCard(ctx context.Context, id string) (map[string]
 }
 
 func (r *FirestoreCardRepo) CreateCard(ctx context.Context, card any) (string, error) {
-	id, _, err := r.client.Collection(config.CardsCollection).Add(ctx, card)
-	return id.ID, err
+	return utils.AddToDB(r.client, ctx, config.CardsCollection, card)
 }
 
-func (r *FirestoreCardRepo) UpdateCard(ctx context.Context, firestoreUpdates []firestore.Update, id string) error {
+func (r *FirestoreCardRepo) UpdateCard(
+	ctx context.Context,
+	firestoreUpdates []firestore.Update,
+	id string,
+) error {
 	docRef := r.client.Collection(config.CardsCollection).Doc(id)
 
 	_, err := docRef.Get(ctx)
