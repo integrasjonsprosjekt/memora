@@ -34,10 +34,17 @@ func (r *FirestoreDeckRepo) AddDeck(ctx context.Context, deck models.CreateDeck)
 	return returnID.ID, err
 }
 
-func (r *FirestoreDeckRepo) GetOneDeck(ctx context.Context, id string) (models.DeckResponse, error) {
+func (r *FirestoreDeckRepo) GetOneDeck(
+	ctx context.Context,
+	id string,
+) (models.DeckResponse, error) {
 	return models.DeckResponse{}, nil
 }
 
-func (r *FirestoreDeckRepo) UpdateDeck(ctx context.Context, id string, update models.UpdateDeck) error {
+func (r *FirestoreDeckRepo) UpdateDeck(
+	ctx context.Context,
+	id string,
+	update models.UpdateDeck,
+) error {
 	return nil
 }
