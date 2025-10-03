@@ -32,3 +32,40 @@ func AddToDB[T any](
 	id, _, err := client.Collection(collection).Add(ctx, data)
 	return id.ID, err
 }
+
+func UpdateDocumentInDB(
+	client *firestore.Client,
+	ctx context.Context,
+	collection, id string,
+	updates []firestore.Update,
+) error {
+	docRef := client.Collection(collection).Doc(id)
+	_, err := docRef.Get(ctx)
+	if err != nil {
+		return errors.ErrInvalidId
+	}
+
+	_, err = docRef.Update(ctx, updates)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteDocumentInDB(
+	client *firestore.Client,
+	ctx context.Context,
+	collection, id string,
+) error {
+	docRef := client.Collection(collection).Doc(id)
+	_, err := docRef.Get(ctx)
+	if err != nil {
+		return errors.ErrInvalidId
+	}
+
+	_, err = docRef.Delete(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
