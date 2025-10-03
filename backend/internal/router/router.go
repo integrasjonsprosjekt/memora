@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"memora/internal/config"
 	"memora/internal/handlers/cards"
+	"memora/internal/handlers/decks"
 	"memora/internal/handlers/docs"
 	"memora/internal/handlers/status"
 	"memora/internal/handlers/users"
@@ -30,19 +31,23 @@ func Route(c *gin.Engine, services *services.Services) {
 	{
 		v1.GET("/status", status.GetStatus)
 		v1.GET("/docs", docs.GetDocs)
-	}
-	userRoute := v1.Group("/users")
-	{
-		userRoute.GET("/:id", users.GetUser(services.Users))
-		userRoute.POST("/", users.CreateUser(services.Users))
-		userRoute.PATCH("/:id", users.PatchUser(services.Users))
-		userRoute.DELETE("/:id", users.DeleteUser(services.Users))
-	}
-	cardRoute := v1.Group("/cards")
-	{
-		cardRoute.GET("/:id", cards.GetCard(services.Cards))
-		cardRoute.POST("/", cards.CreateCard(services.Cards))
-		cardRoute.PUT("/:id", cards.PutCard(services.Cards))
-		cardRoute.DELETE("/:id", cards.DeleteCard(services.Cards))
+		userRoute := v1.Group("/users")
+		{
+			userRoute.GET("/:id", users.GetUser(services.Users))
+			userRoute.POST("/", users.CreateUser(services.Users))
+			userRoute.PATCH("/:id", users.PatchUser(services.Users))
+			userRoute.DELETE("/:id", users.DeleteUser(services.Users))
+		}
+		cardRoute := v1.Group("/cards")
+		{
+			cardRoute.GET("/:id", cards.GetCard(services.Cards))
+			cardRoute.POST("/", cards.CreateCard(services.Cards))
+			cardRoute.PUT("/:id", cards.PutCard(services.Cards))
+			cardRoute.DELETE("/:id", cards.DeleteCard(services.Cards))
+		}
+		deckRoute := v1.Group("/decks")
+		{
+			deckRoute.GET("/:id", decks.GetDeck(services.Decks))
+		}
 	}
 }

@@ -35,7 +35,7 @@ func Init() {
 	Host = GetEnv("APP_HOST", "0.0.0.0")
 	UsersCollection = GetEnv("USERS_COLLECTION", "users")
 	CardsCollection = GetEnv("CARDS_COLLECTION", "cards")
-	CardsCollection = GetEnv("DECKS_COLLECTION", "cards")
+	DecksCollection = GetEnv("DECKS_COLLECTION", "decks")
 
 	level, err := ParseLogLevel(GetEnv("LOG_LEVEL", "info"))
 	if err != nil {

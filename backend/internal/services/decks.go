@@ -2,16 +2,21 @@ package services
 
 import (
 	"context"
+	"encoding/json"
+	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type DeckService struct {
-	repo firebase.DeckRepository
+	repo     firebase.DeckRepository
+	validate *validator.Validate
 }
 
-func NewDeckService(repo firebase.DeckRepository) *DeckService {
-	return &DeckService{repo: repo}
+func NewDeckService(repo firebase.DeckRepository, validate *validator.Validate) *DeckService {
+	return &DeckService{repo: repo, validate: validate}
 }
 
 func (s *DeckService) RegisterNewDeck(ctx context.Context, deck models.CreateDeck) (string, error) {
@@ -28,17 +33,45 @@ func (s *DeckService) RegisterNewDeck(ctx context.Context, deck models.CreateDec
 }
 
 func (s *DeckService) GetOneDeck(ctx context.Context, id string) (models.DeckResponse, error) {
-	resp, err := s.repo.GetOneDeck(ctx, id)
+	var response models.DeckResponse
+	deck, err := s.repo.GetOneDeck(ctx, id)
 	if err != nil {
-		return resp, err
+		return response, err
 	}
 
-	if resp.SharedEmails == nil {
-		resp.SharedEmails = []string{}
+	var cards []models.Card
+	for _, ref := range deck.Cards {
+		snap, err := ref.Get(ctx)
+		if err != nil {
+			return models.DeckResponse{}, err
+		}
+
+		card, err := getCardStructFromData(snap.Data(), errors.ErrInvalidCard)
+		if err != nil {
+			return models.DeckResponse{}, nil
+		}
+		card.SetID(snap.Ref.ID)
+
+		cards = append(cards, card)
 	}
-	return resp, nil
+
+	return models.DeckResponse{
+		ID:           id,
+		OwnerID:      deck.OwnerID,
+		SharedEmails: deck.SharedEmails,
+		Cards:        cards,
+	}, nil
 }
 
 func (s *DeckService) UpdateDeck(ctx context.Context, id string, update models.UpdateDeck) error {
 	return s.repo.UpdateDeck(ctx, id, update)
+}
+
+func getCardStructFromData(m map[string]any, errorOnFail error) (models.Card, error) {
+	data, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	return GetCardStruct(data, errorOnFail)
 }

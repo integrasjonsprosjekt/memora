@@ -40,7 +40,7 @@ func (s *CardService) GetCard(ctx context.Context, id string) (any, error) {
 		return nil, err
 	}
 
-	card, err := getCardStruct(raw, fmt.Errorf("internal server error"))
+	card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (s *CardService) GetCard(ctx context.Context, id string) (any, error) {
 }
 
 func (s *CardService) CreateCard(ctx context.Context, rawData []byte) (string, error) {
-	card, err := getCardStruct(rawData, errors.ErrInvalidCard)
+	card, err := GetCardStruct(rawData, errors.ErrInvalidCard)
 	if err != nil {
 		return "", err
 	}
@@ -64,7 +64,7 @@ func (s *CardService) CreateCard(ctx context.Context, rawData []byte) (string, e
 }
 
 func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) (any, error) {
-	card, err := getCardStruct(rawData, errors.ErrInvalidCard)
+	card, err := GetCardStruct(rawData, errors.ErrInvalidCard)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (s *CardService) DeleteCard(ctx context.Context, id string) error {
 	return s.repo.DeleteCard(ctx, id)
 }
 
-func getCardStruct(data []byte, errorOnFail error) (models.Card, error) {
+func GetCardStruct(data []byte, errorOnFail error) (models.Card, error) {
 	var cardType models.CardType
 
 	if err := json.Unmarshal(data, &cardType); err != nil {
