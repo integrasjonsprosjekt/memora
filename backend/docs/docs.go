@@ -15,6 +15,129 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/cards": {
+            "post": {
+                "description": "Creates a new card in Firestore and returns its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Create a card",
+                "parameters": [
+                    {
+                        "description": "Card info (can be MultipleChoiceCard, FrontBackCard, OrderedCard, or BlanksCard)",
+                        "name": "card",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.ReturnID"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cards/{id}": {
+            "get": {
+                "description": "Retrieves card information from Firestore by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Get a card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AnyCard"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a card from Firestore by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Delete a card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates card data in Firestore by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Update a card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AnyCard"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/status": {
             "get": {
                 "description": "Returns version and uptime",
@@ -88,6 +211,24 @@ const docTemplate = `{
                     }
                 }
             },
+            "delete": {
+                "description": "Return card information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Deletes a user from firestore by their ID",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
             "patch": {
                 "description": "Updates/replaces data",
                 "consumes": [
@@ -120,6 +261,53 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.AnyCard": {
+            "type": "object",
+            "properties": {
+                "blanksCard": {
+                    "$ref": "#/definitions/models.BlanksCard"
+                },
+                "frontBackCard": {
+                    "description": "This tells Swagger that the response can be one of these types\n@swagger:oneOf",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.FrontBackCard"
+                        }
+                    ]
+                },
+                "multipleChoiceCard": {
+                    "$ref": "#/definitions/models.MultipleChoiceCard"
+                },
+                "orderedCard": {
+                    "$ref": "#/definitions/models.OrderedCard"
+                }
+            }
+        },
+        "models.BlanksCard": {
+            "type": "object",
+            "required": [
+                "answers",
+                "question",
+                "type"
+            ],
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateUser": {
             "type": "object",
             "required": [
@@ -139,6 +327,70 @@ const docTemplate = `{
                 }
             }
         },
+        "models.FrontBackCard": {
+            "type": "object",
+            "required": [
+                "back",
+                "front",
+                "type"
+            ],
+            "properties": {
+                "back": {
+                    "type": "string"
+                },
+                "front": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MultipleChoiceCard": {
+            "type": "object",
+            "required": [
+                "options",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "boolean"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.OrderedCard": {
+            "type": "object",
+            "required": [
+                "options",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "models.PatchUser": {
             "type": "object",
             "properties": {
@@ -151,6 +403,14 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 12
+                }
+            }
+        },
+        "models.ReturnID": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
                 }
             }
         },

@@ -1,4 +1,36 @@
 definitions:
+  models.AnyCard:
+    properties:
+      blanksCard:
+        $ref: '#/definitions/models.BlanksCard'
+      frontBackCard:
+        allOf:
+        - $ref: '#/definitions/models.FrontBackCard'
+        description: |-
+          This tells Swagger that the response can be one of these types
+          @swagger:oneOf
+      multipleChoiceCard:
+        $ref: '#/definitions/models.MultipleChoiceCard'
+      orderedCard:
+        $ref: '#/definitions/models.OrderedCard'
+    type: object
+  models.BlanksCard:
+    properties:
+      answers:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      question:
+        type: string
+      type:
+        type: string
+    required:
+    - answers
+    - question
+    - type
+    type: object
   models.CreateUser:
     properties:
       email:
@@ -12,6 +44,49 @@ definitions:
     - name
     - password
     type: object
+  models.FrontBackCard:
+    properties:
+      back:
+        type: string
+      front:
+        type: string
+      id:
+        type: string
+      type:
+        type: string
+    required:
+    - back
+    - front
+    - type
+    type: object
+  models.MultipleChoiceCard:
+    properties:
+      id:
+        type: string
+      options:
+        additionalProperties:
+          type: boolean
+        type: object
+      type:
+        type: string
+    required:
+    - options
+    - type
+    type: object
+  models.OrderedCard:
+    properties:
+      id:
+        type: string
+      options:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    required:
+    - options
+    - type
+    type: object
   models.PatchUser:
     properties:
       email:
@@ -20,6 +95,11 @@ definitions:
         type: string
       password:
         minLength: 12
+        type: string
+    type: object
+  models.ReturnID:
+    properties:
+      id:
         type: string
     type: object
   models.User:
@@ -45,6 +125,88 @@ definitions:
 info:
   contact: {}
 paths:
+  /api/v1/cards:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new card in Firestore and returns its ID
+      parameters:
+      - description: Card info (can be MultipleChoiceCard, FrontBackCard, OrderedCard,
+          or BlanksCard)
+        in: body
+        name: card
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ReturnID'
+      summary: Create a card
+      tags:
+      - Cards
+  /api/v1/cards/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a card from Firestore by its ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a card
+      tags:
+      - Cards
+    get:
+      consumes:
+      - application/json
+      description: Retrieves card information from Firestore by its ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AnyCard'
+      summary: Get a card
+      tags:
+      - Cards
+    patch:
+      consumes:
+      - application/json
+      description: Updates card data in Firestore by ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AnyCard'
+      summary: Update a card
+      tags:
+      - Cards
   /api/v1/status:
     get:
       description: Returns version and uptime
@@ -81,6 +243,18 @@ paths:
       tags:
       - Users
   /api/v1/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Return card information
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Deletes a user from firestore by their ID
+      tags:
+      - Users
     get:
       description: Return user information
       produces:
