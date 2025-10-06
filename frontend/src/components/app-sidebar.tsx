@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { CalendarClock, Boxes, PieChart, Send } from "lucide-react";
+import * as React from 'react';
+import { CalendarClock, Boxes, PieChart, CircleQuestionMark, BookText } from 'lucide-react';
 
-import Image from "next/image";
-import Link from "next/link";
-import { NavMain } from "@/components/nav-main";
-import { NavActions } from "@/components/nav-actions";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
-import { OiiaiTrigger } from "@/components/oiiai";
+import Image from 'next/image';
+import Link from 'next/link';
+import { NavMain } from '@/components/nav-main';
+import { NavActions } from '@/components/nav-actions';
+import { NavSecondary } from '@/components/nav-secondary';
+import { NavUser } from '@/components/nav-user';
+import { OiiaiTrigger } from '@/components/oiiai';
 import {
   Sidebar,
   SidebarContent,
@@ -18,49 +18,86 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 
 const data = {
   user: {
-    name: "user",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: 'user',
+    email: 'm@example.com',
+    avatar: '/logo.svg',
   },
   actions: [
     {
-      name: "Dashboard",
-      url: "#",
+      name: 'Dashboard',
+      url: '/dashboard',
       icon: PieChart,
     },
     {
-      name: "Today",
-      url: "#",
+      name: 'Today',
+      url: '/today',
       icon: CalendarClock,
     },
   ],
   decks: [
     {
-      title: "Objektorientert Programmering",
-      url: "#",
+      title: 'Objektorientert Programmering',
+      url: '/decks/1',
       isActive: true,
       icon: Boxes,
       items: [
         {
-          title: "Overview",
-          url: "#",
+          title: 'Overview',
+          url: '/decks/1/dashboard',
         },
         {
-          title: "Today",
-          url: "#",
+          title: 'Today',
+          url: '/decks/1/today',
+        },
+      ],
+    },
+    {
+      title: 'Avansert Programmering',
+      url: '/decks/2',
+      isActive: false,
+      icon: Boxes,
+      items: [
+        {
+          title: 'Overview',
+          url: '/decks/1/dashboard',
+        },
+        {
+          title: 'Today',
+          url: '/decks/1/today',
+        },
+      ],
+    },
+    {
+      title: 'Grunnleggende Programmering',
+      url: '/decks/3',
+      isActive: false,
+      icon: Boxes,
+      items: [
+        {
+          title: 'Overview',
+          url: '/decks/1/dashboard',
+        },
+        {
+          title: 'Today',
+          url: '/decks/1/today',
         },
       ],
     },
   ],
   footer: [
     {
-      title: "Support",
-      url: "https://github.com/integrasjonsprosjekt/memora/issues",
-      icon: Send,
+      title: 'Help',
+      url: 'https://github.com/integrasjonsprosjekt/memora/issues',
+      icon: CircleQuestionMark,
+    },
+    {
+      title: 'Documentation',
+      url: 'https://github.com/integrasjonsprosjekt/memora/wiki',
+      icon: BookText,
     },
   ],
 };
@@ -74,16 +111,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
                 <OiiaiTrigger targetId="logo">
-                  <div id="logo" className="flex flex-row cursor-pointer">
-                    <div className="bg-sidebar-accent text-xs border-border border-1 wrap-anywhere text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                      <Image
-                        src="/logo.svg"
-                        width={250}
-                        height={250}
-                        alt="Memora"
-                      />
+                  <div id="logo" className="flex cursor-pointer flex-row">
+                    <div className="bg-sidebar-accent border-border text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg border-1 text-xs wrap-anywhere">
+                      <Image src="/logo.svg" width={250} height={250} alt="Memora" />
                     </div>
-                    <div className="grid flex-1 text-left text-sm leading-tight pl-2">
+                    <div className="grid flex-1 pl-2 text-left text-sm leading-tight">
                       <span className="truncate font-bold">Memora</span>
                       <span className="truncate text-xs">Flashcards</span>
                     </div>
