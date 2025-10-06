@@ -75,9 +75,9 @@ func CheckIfDocumentExists(
 	ctx context.Context,
 	collection, id string,
 ) (bool, error) {
-    snap, err := client.Collection(collection).Doc(id).Get(ctx)
-    if err != nil {
-		return false, errors.ErrInvalidId 
-    }
-    return snap.Exists(), nil
+	snap, err := client.Collection(collection).Doc(id).Get(ctx)
+	if err != nil {
+		return false, errors.ErrInvalidId
+	}
+	return snap.Exists(), nil
 }
