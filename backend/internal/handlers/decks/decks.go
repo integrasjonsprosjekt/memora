@@ -9,6 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Create a deck
+// @Description Creates a new deck in Firestore and returns its ID
+// @Tags Decks
+// @Accept json
+// @Produce json
+// @Success 201 {object} models.ReturnID
+// @Router /api/v1/decks [post]
 func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var content models.CreateDeck
@@ -31,6 +38,14 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
+// @Summary Get a deck
+// @Description Retrieves card information from Firestore by its ID
+// @Tags Decks
+// @Accept json
+// @Produce json
+// @Param id path string true "Deck ID"
+// @Success 200 {object} models.Anydeck
+// @Router /api/v1/decks/{id} [get]
 func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -43,6 +58,14 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
+// @Summary Update a deck
+// @Description Updates a decks data in Firestore by ID
+// @Tags Decks
+// @Accept json
+// @Produce json
+// @Param id path string true "Deck ID"
+// @Success 200 {object} models.DeckResponse
+// @Router /api/v1/decks/{id} [patch]
 func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body models.UpdateDeck
