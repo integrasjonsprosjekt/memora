@@ -30,12 +30,6 @@ export function CardRenderer({ card }: { card: Card }): JSX.Element {
 
 export function CardDisplay({ card }: { card: Card }): JSX.Element {
   const cardInstance = createCardFromJson(card);
-  const cardDisplay = cardInstance.display();
 
-  return (
-    <CardWrapper tags={[card.type]}>
-      {cardDisplay.title}
-      {cardDisplay.body}
-    </CardWrapper>
-  );
+  return <CardWrapper tags={[card.type]}>{cardInstance.display()}</CardWrapper>;
 }
