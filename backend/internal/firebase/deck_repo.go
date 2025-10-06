@@ -27,13 +27,16 @@ func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
 }
 
 func (r *FirestoreDeckRepo) AddDeck(ctx context.Context, deck models.CreateDeck) (string, error) {
-	_, err := r.client.Collection(config.UsersCollection).Doc(deck.OwnerID).Get(ctx)
-	if err != nil {
-		return "", errors.ErrNotFound
+	exists, err := utils.CheckIfDocumentExists(r.client, ctx, config.UsersCollection, deck.OwnerID)
+	if !exists {
+		return "", errors.ErrInvalidId
 	}
 
-	returnID, _, err := r.client.Collection(config.DecksCollection).Add(ctx, deck)
-	return returnID.ID, err
+	if err != nil {
+		return "", err
+	}
+
+	return utils.AddToDB(r.client, ctx, config.DecksCollection, deck)
 }
 
 func (r *FirestoreDeckRepo) GetOneDeck(
