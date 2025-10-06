@@ -21,13 +21,15 @@ export default function CardWrapper({
   tags?: string[];
 }): JSX.Element {
   return (
-    <Card className={`${styles.card} rounded-2xl ${className ?? ''}`}>
+    <Card className={`${styles.card} gap-0 rounded-2xl p-2 ${className ?? ''}`}>
       {children}
-      {tags?.map((tag, index) => (
-        <Badge key={index} variant="outline">
-          {tag}
-        </Badge>
-      ))}
+      <div className="pt-2">
+        {tags?.map((tag, index) => (
+          <Badge key={index} variant="outline">
+            {tag}
+          </Badge>
+        ))}
+      </div>
     </Card>
   );
 }
