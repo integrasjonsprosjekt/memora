@@ -5,3 +5,6 @@ const MULTIPLE_CHOICE_CARD = "multiple_choice"
 const FRONT_BACK_CARD = "front_back"
 const ORDERED_CARD = "ordered"
 const BLANKS_CARD = "blanks"
+
+const OPP_ADD = "add"
+const OPP_REMOVE = "remove"
