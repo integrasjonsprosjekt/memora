@@ -131,17 +131,14 @@ func (s *DeckService) updateEmailsInDeck(
 	emails []string,
 ) error {
 	var err error
-	for _, email := range emails {
-		switch opp {
-		case utils.OPP_ADD:
-			err = s.repo.AddEmailToShared(ctx, email, deckID)
-		case utils.OPP_REMOVE:
-			err = s.repo.RemoveEmailFromShared(ctx, email, deckID)
-		}
-
-		if err != nil {
-			return err
-		}
+	switch opp {
+	case utils.OPP_ADD:
+		err = s.repo.AddEmailsToShared(ctx, deckID, emails)
+	case utils.OPP_REMOVE:
+		err = s.repo.RemoveEmailsFromShared(ctx, deckID, emails)
+	}
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -149,22 +146,21 @@ func (s *DeckService) updateEmailsInDeck(
 func (s *DeckService) updateCardsInDeck(
 	ctx context.Context,
 	opp, deckID string,
-	field []string,
+	cardIDs []string,
 ) error {
 	var err error
-	for _, id := range field {
-		switch opp {
-		case utils.OPP_ADD:
-			err = s.repo.AddCardToDeck(ctx, deckID, id)
-		case utils.OPP_REMOVE:
-			err = s.repo.RemoveCardFromDeck(ctx, deckID, id)
-		default:
-			return errors.ErrInvalidDeck
-		}
-		if err != nil {
-			return err
-		}
+	switch opp {
+	case utils.OPP_ADD:
+		err = s.repo.AddCardsToDeck(ctx, deckID, cardIDs)
+	case utils.OPP_REMOVE:
+		err = s.repo.RemoveCardsFromDeck(ctx, deckID, cardIDs)
+	default:
+		return errors.ErrInvalidDeck
 	}
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
