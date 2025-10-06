@@ -24,8 +24,10 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({
+  breadcrumb,
   children,
 }: Readonly<{
+  breadcrumb: React.ReactNode;
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
@@ -50,6 +52,7 @@ export default async function RootLayout({
                     orientation="vertical"
                     className="mr-2 data-[orientation=vertical]:h-4"
                   />
+                  {breadcrumb}
                 </div>
                 <div className="ml-auto px-4">
                   <ModeToggle />
