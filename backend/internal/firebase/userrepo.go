@@ -37,9 +37,9 @@ func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User
 	return user, nil
 }
 
-func (r *FirestoreUserRepo) AddUser(ctx context.Context, u models.CreateUser) (string, error) {
+func (r *FirestoreUserRepo) AddUser(ctx context.Context, user models.CreateUser) (string, error) {
 	iter := r.client.Collection(config.UsersCollection).
-		Where("email", "==", u.Email).
+		Where("email", "==", user.Email).
 		Limit(1).
 		Documents(ctx)
 	doc, err := iter.Next()
@@ -50,7 +50,7 @@ func (r *FirestoreUserRepo) AddUser(ctx context.Context, u models.CreateUser) (s
 		return "", errors.ErrInvalidUser
 	}
 
-	return utils.AddToDB(r.client, ctx, config.UsersCollection, u)
+	return utils.AddToDB(r.client, ctx, config.UsersCollection, user)
 }
 
 func (r *FirestoreUserRepo) UpdateUser(

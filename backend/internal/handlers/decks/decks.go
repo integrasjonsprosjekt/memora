@@ -12,6 +12,7 @@ import (
 func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var content models.CreateDeck
+		content.SharedEmails = []string{}
 
 		if err := c.ShouldBindBodyWithJSON(&content); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
