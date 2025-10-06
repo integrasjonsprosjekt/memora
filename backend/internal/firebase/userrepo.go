@@ -8,7 +8,6 @@ import (
 	"memora/internal/utils"
 
 	"cloud.google.com/go/firestore"
-	"google.golang.org/api/iterator"
 )
 
 type UserRepository interface {
@@ -38,16 +37,12 @@ func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User
 }
 
 func (r *FirestoreUserRepo) AddUser(ctx context.Context, user models.CreateUser) (string, error) {
-	iter := r.client.Collection(config.UsersCollection).
-		Where("email", "==", user.Email).
-		Limit(1).
-		Documents(ctx)
-	doc, err := iter.Next()
-	if err != nil && err != iterator.Done {
+	exists, err := utils.UserExistsByEmail(r.client, ctx, user.Email)
+	if err != nil {
 		return "", err
 	}
-	if doc != nil {
-		return "", errors.ErrInvalidUser
+	if exists {
+		return "", errors.ErrInvalidEmailPresent
 	}
 
 	return utils.AddToDB(r.client, ctx, config.UsersCollection, user)

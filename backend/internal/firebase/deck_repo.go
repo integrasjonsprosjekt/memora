@@ -31,9 +31,18 @@ func (r *FirestoreDeckRepo) AddDeck(ctx context.Context, deck models.CreateDeck)
 	if !exists {
 		return "", errors.ErrInvalidId
 	}
-
 	if err != nil {
 		return "", err
+	}
+
+	for _, email := range deck.SharedEmails {
+		exists, err := utils.UserExistsByEmail(r.client, ctx, email)
+		if err != nil {
+			return "", err
+		}
+		if !exists {
+			return "", errors.ErrInvalidEmailNotPresent
+		}
 	}
 
 	return utils.AddToDB(r.client, ctx, config.DecksCollection, deck)

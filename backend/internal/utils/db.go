@@ -2,9 +2,11 @@ package utils
 
 import (
 	"context"
+	"memora/internal/config"
 	"memora/internal/errors"
 
 	"cloud.google.com/go/firestore"
+	"google.golang.org/api/iterator"
 )
 
 func FetchByID[T any](
@@ -80,4 +82,20 @@ func CheckIfDocumentExists(
 		return false, errors.ErrInvalidId
 	}
 	return snap.Exists(), nil
+}
+
+func UserExistsByEmail(
+	client *firestore.Client,
+	ctx context.Context,
+	email string,
+) (bool, error) {
+	iter := client.Collection(config.UsersCollection).
+		Where("email", "==", email).
+		Limit(1).
+		Documents(ctx)
+	doc, err := iter.Next()
+	if err != nil && err != iterator.Done {
+		return false, err
+	}
+	return doc != nil, nil
 }
