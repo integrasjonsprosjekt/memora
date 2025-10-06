@@ -1,7 +1,6 @@
 package decks
 
 import (
-	"log"
 	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/services"
@@ -19,7 +18,6 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "invalid body",
 			})
-			log.Println(err)
 			return
 		}
 
