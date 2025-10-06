@@ -14,6 +14,8 @@ export default async function DeckPage({ params }: { params: Promise<{ slug: str
       'gSFxN0hqouvSKyz1jOfZ',
       'iHsbWpt6MiH8bmVbSf69',
       'mRamakLsGWKPB8s9jTLX',
+      'U49eHJ0NATRbof7HBOSY',
+      'phpglBNV5BQ4cTGuRjVS',
     ],
     '3': [],
   };
