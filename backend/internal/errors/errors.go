@@ -15,26 +15,21 @@ var (
 	ErrInvalidEmailNotPresent = errors.New("email not registerd")
 	ErrInvalidEmailPresent    = errors.New("email alredy registerd")
 	ErrInvalidId              = errors.New("invalid id")
+	ErrFailedUpdatingEmail    = errors.New("failed to update emails")
+	ErrFailedUpdatingCards    = errors.New("failed to update cards")
 	ErrorMap                  = map[error]struct {
 		Status  int
 		Message string
 	}{
-		ErrNotFound: {
-			Status:  http.StatusBadRequest,
-			Message: "did not find document",
-		},
-		ErrInvalidUser: {Status: http.StatusBadRequest, Message: "invalid user data"},
-		ErrInvalidCard: {Status: http.StatusBadRequest, Message: "invalid card data"},
-		ErrInvalidId:   {Status: http.StatusBadRequest, Message: "invalid id"},
-		ErrInvalidDeck: {
-			Status:  http.StatusBadRequest,
-			Message: "invalid deck, missing fields",
-		},
+		ErrNotFound:               {Status: http.StatusBadRequest, Message: "did not find document"},
+		ErrInvalidUser:            {Status: http.StatusBadRequest, Message: "invalid user data"},
+		ErrInvalidCard:            {Status: http.StatusBadRequest, Message: "invalid card data"},
+		ErrInvalidId:              {Status: http.StatusBadRequest, Message: "invalid id"},
+		ErrInvalidDeck:            {Status: http.StatusBadRequest, Message: "invalid deck, missing fields"},
 		ErrInvalidEmailNotPresent: {Status: http.StatusBadRequest, Message: "email not registerd"},
-		ErrInvalidEmailPresent: {
-			Status:  http.StatusBadRequest,
-			Message: "email alredy registerd",
-		},
+		ErrInvalidEmailPresent:    {Status: http.StatusBadRequest, Message: "email alredy registerd"},
+		ErrFailedUpdatingEmail:    {Status: http.StatusBadRequest, Message: "failed to update emails"},
+		ErrFailedUpdatingCards:    {Status: http.StatusBadRequest, Message: "failed to update cards"},
 	}
 )
 

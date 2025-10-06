@@ -17,11 +17,11 @@ type FirestoreDeckRepo struct {
 type DeckRepository interface {
 	AddDeck(ctx context.Context, deck models.CreateDeck) (string, error)
 	GetOneDeck(ctx context.Context, id string) (models.Deck, error)
-	RemoveCardFromDeck(ctx context.Context, deckID, cardID string) error
-	AddCardToDeck(ctx context.Context, deckID, cardID string) error
+	RemoveCardsFromDeck(ctx context.Context, deckID string, cardIDs []string) error
+	AddCardsToDeck(ctx context.Context, deckID string, cardIDs []string) error
 	UpdateDeck(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
-	RemoveEmailFromShared(ctx context.Context, email, deckID string) error
-	AddEmailToShared(ctx context.Context, email, deckID string) error
+	RemoveEmailsFromShared(ctx context.Context, deckID string, emails []string) error
+	AddEmailsToShared(ctx context.Context, deckID string, emails []string) error
 	DeleteDeck(ctx context.Context, id string) error
 }
 
@@ -55,93 +55,118 @@ func (r *FirestoreDeckRepo) GetOneDeck(
 	return utils.FetchByID[models.Deck](r.client, ctx, config.DecksCollection, id)
 }
 
-func (r *FirestoreDeckRepo) RemoveCardFromDeck(
+func (r *FirestoreDeckRepo) RemoveCardsFromDeck(
 	ctx context.Context,
-	deckID, cardID string,
+	deckID string,
+	cardIDs []string,
 ) error {
 	deckSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.DecksCollection, deckID)
 	if err != nil {
 		return err
 	}
-
-	cardSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.CardsCollection, cardID)
-	if err != nil {
-		return err
-	}
-
 	deckRef := deckSnap.Ref
-	cardRef := cardSnap.Ref
-	_, err = deckRef.Update(ctx, []firestore.Update{
-		{Path: "cards", Value: firestore.ArrayRemove(cardRef)},
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		cardsIface := make([]any, len(cardIDs))
+		for i, id := range cardIDs {
+			cardSnap, err := utils.GetDocumentIfExists(
+				r.client,
+				ctx,
+				config.CardsCollection,
+				id,
+			)
+			if err != nil {
+				return errors.ErrFailedUpdatingCards
+			}
+			cardsIface[i] = cardSnap.Ref
+		}
+		return tx.Update(deckRef, []firestore.Update{
+			{Path: "cards", Value: firestore.ArrayRemove(cardsIface...)},
+		})
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
-func (r *FirestoreDeckRepo) AddCardToDeck(
+func (r *FirestoreDeckRepo) AddCardsToDeck(
 	ctx context.Context,
-	deckID, cardID string,
+	deckID string,
+	cardIDs []string,
 ) error {
 	deckSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.DecksCollection, deckID)
 	if err != nil {
 		return err
 	}
-
-	cardSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.CardsCollection, cardID)
-	if err != nil {
-		return err
-	}
-
 	deckRef := deckSnap.Ref
-	cardRef := cardSnap.Ref
-	_, err = deckRef.Update(ctx, []firestore.Update{
-		{Path: "cards", Value: firestore.ArrayUnion(cardRef)},
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		cardsIface := make([]any, len(cardIDs))
+		for i, id := range cardIDs {
+			cardSnap, err := utils.GetDocumentIfExists(
+				r.client,
+				ctx,
+				config.CardsCollection,
+				id,
+			)
+			if err != nil {
+				return errors.ErrFailedUpdatingCards
+			}
+			cardsIface[i] = cardSnap.Ref
+		}
+		return tx.Update(deckRef, []firestore.Update{
+			{Path: "cards", Value: firestore.ArrayUnion(cardsIface...)},
+		})
 	})
-
-	return err
 }
 
-func (r *FirestoreDeckRepo) AddEmailToShared(
+func (r *FirestoreDeckRepo) AddEmailsToShared(
 	ctx context.Context,
-	email, deckID string,
+	deckID string,
+	emails []string,
 ) error {
-	exists, err := utils.UserExistsByEmail(r.client, ctx, email)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return errors.ErrInvalidEmailNotPresent
-	}
-
 	deckRef := r.client.Collection(config.DecksCollection).Doc(deckID)
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		for _, email := range emails {
+			exists, err := utils.UserExistsByEmail(r.client, ctx, email)
+			if err != nil {
+				return errors.ErrFailedUpdatingEmail
+			}
+			if !exists {
+				return errors.ErrInvalidEmailNotPresent
+			}
+		}
 
-	_, err = deckRef.Update(ctx, []firestore.Update{
-		{Path: "shared_emails", Value: firestore.ArrayUnion(email)},
+		emailsIface := make([]any, len(emails))
+		for i, v := range emails {
+			emailsIface[i] = v
+		}
+		return tx.Update(deckRef, []firestore.Update{
+			{Path: "shared_emails", Value: firestore.ArrayUnion(emailsIface...)},
+		})
 	})
-	return err
 }
 
-func (r *FirestoreDeckRepo) RemoveEmailFromShared(
+func (r *FirestoreDeckRepo) RemoveEmailsFromShared(
 	ctx context.Context,
-	email, deckID string,
+	deckID string,
+	emails []string,
 ) error {
-	exists, err := utils.UserExistsByEmail(r.client, ctx, email)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return errors.ErrInvalidEmailNotPresent
-	}
-
 	deckRef := r.client.Collection(config.DecksCollection).Doc(deckID)
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		for _, email := range emails {
+			exists, err := utils.UserExistsByEmail(r.client, ctx, email)
+			if err != nil {
+				return errors.ErrFailedUpdatingEmail
+			}
+			if !exists {
+				return errors.ErrInvalidEmailNotPresent
+			}
+		}
 
-	_, err = deckRef.Update(ctx, []firestore.Update{
-		{Path: "shared_emails", Value: firestore.ArrayRemove(email)},
+		emailsIface := make([]any, len(emails))
+		for i, v := range emails {
+			emailsIface[i] = v
+		}
+		return tx.Update(deckRef, []firestore.Update{
+			{Path: "shared_emails", Value: firestore.ArrayRemove(emailsIface...)},
+		})
 	})
-	return err
 }
 
 func (r *FirestoreDeckRepo) UpdateDeck(
