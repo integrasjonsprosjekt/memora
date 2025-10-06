@@ -8,20 +8,24 @@ import (
 )
 
 var (
-	ErrNotFound    = errors.New("could not find id")
-	ErrInvalidUser = errors.New("invalid user data")
-	ErrInvalidCard = errors.New("invalid card data")
-	ErrInvalidDeck = errors.New("invalid deck data")
-	ErrInvalidId   = errors.New("invalid id")
-	ErrorMap       = map[error]struct {
+	ErrNotFound               = errors.New("could not find id")
+	ErrInvalidUser            = errors.New("invalid user data")
+	ErrInvalidCard            = errors.New("invalid card data")
+	ErrInvalidDeck            = errors.New("invalid deck data")
+	ErrInvalidEmailNotPresent = errors.New("email not registerd")
+	ErrInvalidEmailPresent    = errors.New("email alredy registerd")
+	ErrInvalidId              = errors.New("invalid id")
+	ErrorMap                  = map[error]struct {
 		Status  int
 		Message string
 	}{
-		ErrNotFound:    {Status: http.StatusBadRequest, Message: "did not find document"},
-		ErrInvalidUser: {Status: http.StatusBadRequest, Message: "invalid user data"},
-		ErrInvalidCard: {Status: http.StatusBadRequest, Message: "invalid card data"},
-		ErrInvalidId:   {Status: http.StatusBadRequest, Message: "invalid id"},
-		ErrInvalidDeck: {Status: http.StatusBadRequest, Message: "invalid deck, missing fields"},
+		ErrNotFound:               {Status: http.StatusBadRequest, Message: "did not find document"},
+		ErrInvalidUser:            {Status: http.StatusBadRequest, Message: "invalid user data"},
+		ErrInvalidCard:            {Status: http.StatusBadRequest, Message: "invalid card data"},
+		ErrInvalidId:              {Status: http.StatusBadRequest, Message: "invalid id"},
+		ErrInvalidDeck:            {Status: http.StatusBadRequest, Message: "invalid deck, missing fields"},
+		ErrInvalidEmailNotPresent: {Status: http.StatusBadRequest, Message: "email not registerd"},
+		ErrInvalidEmailPresent: {Status: http.StatusBadRequest, Message: "email alredy registerd"},
 	}
 )
 

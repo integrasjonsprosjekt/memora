@@ -5,7 +5,7 @@ import "cloud.google.com/go/firestore"
 type CreateDeck struct {
 	Title        string   `json:"title" validate:"required"`
 	OwnerID      string   `json:"owner_id" validate:"required"`
-	SharedEmails []string `json:"shared_email" validate:"omitempty,dive,email"`
+	SharedEmails []string `json:"shared_emails" validate:"omitempty,dive,email"`
 }
 
 type DeckResponse struct {
