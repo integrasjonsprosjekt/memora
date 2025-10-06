@@ -32,10 +32,10 @@ var (
 			Status:  http.StatusBadRequest,
 			Message: "invalid deck, missing fields",
 		},
-		ErrInvalidEmailNotPresent: {Status: http.StatusBadRequest, Message: "email not registerd"},
+		ErrInvalidEmailNotPresent: {Status: http.StatusBadRequest, Message: "email not registered"},
 		ErrInvalidEmailPresent: {
 			Status:  http.StatusBadRequest,
-			Message: "email alredy registerd",
+			Message: "email already registered",
 		},
 		ErrFailedUpdatingEmail: {
 			Status:  http.StatusBadRequest,

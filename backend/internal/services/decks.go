@@ -50,7 +50,7 @@ func (s *DeckService) GetOneDeck(ctx context.Context, id string) (models.DeckRes
 
 		card, err := getCardStructFromData(snap.Data(), errors.ErrInvalidCard)
 		if err != nil {
-			return models.DeckResponse{}, nil
+			return models.DeckResponse{}, err
 		}
 		card.SetID(snap.Ref.ID)
 
@@ -98,10 +98,10 @@ func (s *DeckService) UpdateDeck(
 		return models.DeckResponse{}, err
 	}
 
-	filterd := s.filterOutArray(updates, "opp_cards", "cards", "opp_emails", "emails")
+	filtered := s.filterOutArray(updates, "opp_cards", "cards", "opp_emails", "emails")
 
-	if len(filterd) > 0 {
-		if err := s.repo.UpdateDeck(ctx, filterd, deckID); err != nil {
+	if len(filtered) > 0 {
+		if err := s.repo.UpdateDeck(ctx, filtered, deckID); err != nil {
 			return models.DeckResponse{}, err
 		}
 	}
@@ -168,7 +168,7 @@ func (s *DeckService) filterOutArray(
 	updates []firestore.Update,
 	args ...any,
 ) []firestore.Update {
-	filterd := make([]firestore.Update, 0, len(updates))
+	filtered := make([]firestore.Update, 0, len(updates))
 	skipFields := map[string]struct{}{}
 	for _, arg := range args {
 		if field, ok := arg.(string); ok {
@@ -180,8 +180,8 @@ func (s *DeckService) filterOutArray(
 		if _, skip := skipFields[update.Path]; skip {
 			continue
 		}
-		filterd = append(filterd, update)
+		filtered = append(filtered, update)
 	}
 
-	return filterd
+	return filtered
 }

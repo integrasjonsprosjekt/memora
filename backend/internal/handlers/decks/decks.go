@@ -52,7 +52,7 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		if errors.HandleError(c, err) {
 			return
 		}
-		c.JSON(http.StatusOK, models.ReturnID{
+		c.JSON(http.StatusCreated, models.ReturnID{
 			ID: id,
 		})
 	}
