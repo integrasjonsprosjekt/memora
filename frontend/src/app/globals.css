@@ -1,5 +1,11 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@layer utilities {
+  .tap-highlight-transparent {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -18,7 +24,7 @@
 }
 
 :root {
-  @import "highlight.js/styles/github.css";
+  @import 'highlight.js/styles/github.css';
   --background: oklch(0.9831 0.008 278.6398);
   --foreground: oklch(0.2795 0.0368 260.031);
   --card: oklch(0.9654 0.0164 274.8224);
@@ -57,29 +63,26 @@
   --radius: 0.625rem;
   --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-  --shadow-sm:
-    0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
-  --shadow:
-    0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
-  --shadow-md:
-    0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 2px 4px -2px hsl(0 0% 0% / 0.1);
-  --shadow-lg:
-    0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 4px 6px -2px hsl(0 0% 0% / 0.1);
-  --shadow-xl:
-    0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 8px 10px -2px hsl(0 0% 0% / 0.1);
+  --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
+  --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
+  --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 2px 4px -2px hsl(0 0% 0% / 0.1);
+  --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 4px 6px -2px hsl(0 0% 0% / 0.1);
+  --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 8px 10px -2px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 }
 
 .dark {
-  @import "highlight.js/styles/github-dark.css";
+  @import 'highlight.js/styles/github-dark.css';
   --background: oklch(0.1296 0.0274 261.6924);
   --foreground: oklch(0.8452 0 0);
-  --card: oklch(0.2784 0.0335 257.672);
+  --card: #0b1829;
   --card-foreground: oklch(0.9551 0 0);
   --popover: oklch(0.2784 0.0335 257.672);
   --popover-foreground: oklch(0.9551 0 0);
+  --primary: oklch(0.5047 0.096 246.1854);
+  --primary-foreground: oklch(0.9891 0.0017 325.59);
   --primary: oklch(0.5047 0.096 246.1854);
   --primary-foreground: oklch(0.9891 0.0017 325.59);
   --secondary: oklch(0.5944 0.1156 246.2051);
@@ -92,7 +95,11 @@
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.349 0.0456 257.426);
   --input: oklch(0.4034 0.076 245.8433);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.349 0.0456 257.426);
+  --input: oklch(0.4034 0.076 245.8433);
   --ring: oklch(0.4639 0.0678 258.0206);
+  --chart-1: oklch(0.8345 0.0684 253.338);
   --chart-1: oklch(0.8345 0.0684 253.338);
   --chart-2: oklch(0.7484 0.1099 248.7327);
   --chart-3: oklch(0.6614 0.1248 245.8145);
@@ -103,7 +110,12 @@
   --sidebar-primary: oklch(0.5047 0.096 246.1854);
   --sidebar-primary-foreground: oklch(0.9891 0.0017 325.59);
   --sidebar-accent: oklch(0.349 0.0456 257.426);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.5047 0.096 246.1854);
+  --sidebar-primary-foreground: oklch(0.9891 0.0017 325.59);
+  --sidebar-accent: oklch(0.349 0.0456 257.426);
   --sidebar-accent-foreground: oklch(0.9551 0 0);
+  --sidebar-border: oklch(0.349 0.0456 257.426);
   --sidebar-border: oklch(0.349 0.0456 257.426);
   --sidebar-ring: oklch(0.4639 0.0678 258.0206);
   --font-sans: Merriweather Sans, ui-sans-serif, sans-serif, system-ui;
@@ -112,15 +124,11 @@
   --radius: 0.625rem;
   --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
   --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-  --shadow-md:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
-  --shadow-lg:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
-  --shadow-xl:
-    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 }
 
