@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
@@ -71,25 +72,25 @@ func (s *DeckService) UpdateDeck(
 	deckID string,
 	update models.UpdateDeck,
 ) (models.DeckResponse, error) {
-	var err error
-
 	if err := s.validate.Struct(update); err != nil {
 		return models.DeckResponse{}, errors.ErrInvalidDeck
 	}
-	if len(update.Cards) > 0 && update.Operation != "" {
-		for _, id := range update.Cards {
-			switch update.Operation {
-			case "add":
-				err = s.repo.AddCardToDeck(ctx, deckID, id)
-			case "remove":
-				err = s.repo.RemoveCardFromDeck(ctx, deckID, id)
-			default:
-				return models.DeckResponse{}, errors.ErrInvalidDeck
-			}
 
-			if err != nil {
-				return models.DeckResponse{}, err
-			}
+	if err := s.updateCardsInDeck(
+		ctx,
+		update.OppCards,
+		deckID,
+		update.Cards,
+	); err != nil {
+		return models.DeckResponse{}, err
+	}
+
+	for _, email := range update.Emails {
+		switch update.OppEmails {
+		case "add":
+			s.repo.AddEmailToShared(ctx, email, deckID)
+		case "remove":
+			s.repo.RemoveEmailFromShared(ctx, email, deckID)
 		}
 	}
 
@@ -98,15 +99,7 @@ func (s *DeckService) UpdateDeck(
 		return models.DeckResponse{}, err
 	}
 
-	filterd := make([]firestore.Update, 0, len(updates))
-	for _, u := range updates {
-		switch u.Path {
-		case "cards", "operation":
-			continue
-		default:
-			filterd = append(filterd, u)
-		}
-	}
+	filterd := s.filterOutArray(updates, "opp_cards", "cards", "opp_emails", "emails")
 
 	if len(filterd) > 0 {
 		if err := s.repo.UpdateDeck(ctx, filterd, deckID); err != nil {
@@ -124,4 +117,48 @@ func getCardStructFromData(m map[string]any, errorOnFail error) (models.Card, er
 	}
 
 	return GetCardStruct(data, errorOnFail)
+}
+
+func (s *DeckService) updateCardsInDeck(
+	ctx context.Context,
+	opp, deckID string,
+	field []string,
+) error {
+	var err error
+	for _, id := range field {
+		switch opp {
+		case "add":
+			err = s.repo.AddCardToDeck(ctx, deckID, id)
+		case "remove":
+			err = s.repo.RemoveCardFromDeck(ctx, deckID, id)
+		default:
+			return errors.ErrInvalidDeck
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *DeckService) filterOutArray(
+	updates []firestore.Update,
+	args ...any,
+) []firestore.Update {
+	filterd := make([]firestore.Update, 0, len(updates))
+	skipFields := map[string]struct{}{}
+	for _, arg := range args {
+		if field, ok := arg.(string); ok {
+			skipFields[field] = struct{}{}
+		}
+	}
+
+	for _, update := range updates {
+		if _, skip := skipFields[update.Path]; skip {
+			continue
+		}
+		filterd = append(filterd, update)
+	}
+
+	return filterd
 }
