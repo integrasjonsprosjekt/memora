@@ -1,12 +1,8 @@
-"use client";
+'use client';
 
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronRight, Plus, type LucideIcon } from 'lucide-react';
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,7 +13,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 
 export function NavMain({
   items,
@@ -35,7 +31,12 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Decks</SidebarGroupLabel>
+      <SidebarGroupLabel className="flex items-center justify-between pr-1">
+        <span>Decks</span>
+        <button onClick={() => alert('Adding new deck')} className="hover:bg-accent rounded p-0.5">
+          <Plus className="h-4 w-4" />
+        </button>
+      </SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
