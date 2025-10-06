@@ -72,16 +72,19 @@ func DeleteDocumentInDB(
 	return nil
 }
 
-func CheckIfDocumentExists(
+func GetDocumentIfExists(
 	client *firestore.Client,
 	ctx context.Context,
 	collection, id string,
-) (bool, error) {
+) (*firestore.DocumentSnapshot, error) {
 	snap, err := client.Collection(collection).Doc(id).Get(ctx)
 	if err != nil {
-		return false, errors.ErrInvalidId
+		return nil, errors.ErrInvalidId
 	}
-	return snap.Exists(), nil
+	if !snap.Exists() {
+		return nil, errors.ErrNotFound
+	}
+	return snap, nil
 }
 
 func UserExistsByEmail(
