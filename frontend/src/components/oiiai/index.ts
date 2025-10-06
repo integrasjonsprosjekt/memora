@@ -1,1 +1,1 @@
-export { OiiaiTrigger } from "./OiiaiTrigger";
+export { OiiaiTrigger } from "./oiiai-trigger";
