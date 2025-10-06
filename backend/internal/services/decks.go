@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
@@ -85,13 +84,13 @@ func (s *DeckService) UpdateDeck(
 		return models.DeckResponse{}, err
 	}
 
-	for _, email := range update.Emails {
-		switch update.OppEmails {
-		case "add":
-			s.repo.AddEmailToShared(ctx, email, deckID)
-		case "remove":
-			s.repo.RemoveEmailFromShared(ctx, email, deckID)
-		}
+	if err := s.updateEmailsInDeck(
+		ctx,
+		update.OppEmails,
+		deckID,
+		update.Emails,
+	); err != nil {
+		return models.DeckResponse{}, err
 	}
 
 	updates, err := utils.StructToUpdate(update)
@@ -119,6 +118,27 @@ func getCardStructFromData(m map[string]any, errorOnFail error) (models.Card, er
 	return GetCardStruct(data, errorOnFail)
 }
 
+func (s *DeckService) updateEmailsInDeck(
+	ctx context.Context,
+	opp, deckID string,
+	emails []string,
+) error {
+	var err error
+	for _, email := range emails {
+		switch opp {
+		case utils.OPP_ADD:
+			err = s.repo.AddEmailToShared(ctx, email, deckID)
+		case utils.OPP_REMOVE:
+			err = s.repo.RemoveEmailFromShared(ctx, email, deckID)
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *DeckService) updateCardsInDeck(
 	ctx context.Context,
 	opp, deckID string,
@@ -127,9 +147,9 @@ func (s *DeckService) updateCardsInDeck(
 	var err error
 	for _, id := range field {
 		switch opp {
-		case "add":
+		case utils.OPP_ADD:
 			err = s.repo.AddCardToDeck(ctx, deckID, id)
-		case "remove":
+		case utils.OPP_REMOVE:
 			err = s.repo.RemoveCardFromDeck(ctx, deckID, id)
 		default:
 			return errors.ErrInvalidDeck
