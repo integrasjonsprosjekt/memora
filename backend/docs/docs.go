@@ -138,6 +138,118 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/decks": {
+            "post": {
+                "description": "Creates a new deck in Firestore and returns its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Create a deck",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.ReturnID"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/decks/{id}": {
+            "get": {
+                "description": "Retrieves card information from Firestore by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Get a deck",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeckResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a deck from Firestore by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Delete a deck",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates a decks data in Firestore by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Update a deck",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeckResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/status": {
             "get": {
                 "description": "Returns version and uptime",
@@ -170,7 +282,7 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Create a user and returns their ID",
+                "summary": "Create a user and return their ID",
                 "parameters": [
                     {
                         "description": "User info",
@@ -183,10 +295,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.ReturnID"
+                            "$ref": "#/definitions/models.User"
                         }
                     }
                 }
@@ -194,7 +306,7 @@ const docTemplate = `{
         },
         "/api/v1/users/{id}": {
             "get": {
-                "description": "Returns user information",
+                "description": "Return user information",
                 "produces": [
                     "application/json"
                 ],
@@ -208,6 +320,24 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/models.User"
                         }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Return card information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Deletes a user from firestore by their ID",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             },
@@ -243,6 +373,53 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.AnyCard": {
+            "type": "object",
+            "properties": {
+                "blanksCard": {
+                    "$ref": "#/definitions/models.BlanksCard"
+                },
+                "frontBackCard": {
+                    "description": "@swagger:oneOf",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.FrontBackCard"
+                        }
+                    ]
+                },
+                "multipleChoiceCard": {
+                    "$ref": "#/definitions/models.MultipleChoiceCard"
+                },
+                "orderedCard": {
+                    "$ref": "#/definitions/models.OrderedCard"
+                }
+            }
+        },
+        "models.BlanksCard": {
+            "type": "object",
+            "required": [
+                "answers",
+                "question",
+                "type"
+            ],
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateUser": {
             "type": "object",
             "required": [
@@ -262,6 +439,102 @@ const docTemplate = `{
                 }
             }
         },
+        "models.DeckResponse": {
+            "type": "object",
+            "properties": {
+                "cards": {
+                    "type": "array",
+                    "items": {}
+                },
+                "id": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "shared_emails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.FrontBackCard": {
+            "type": "object",
+            "required": [
+                "back",
+                "front",
+                "type"
+            ],
+            "properties": {
+                "back": {
+                    "type": "string"
+                },
+                "front": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MultipleChoiceCard": {
+            "type": "object",
+            "required": [
+                "options",
+                "question",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "boolean"
+                    }
+                },
+                "question": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.OrderedCard": {
+            "type": "object",
+            "required": [
+                "options",
+                "question",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "question": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "models.PatchUser": {
             "type": "object",
             "properties": {
@@ -274,6 +547,14 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 12
+                }
+            }
+        },
+        "models.ReturnID": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
                 }
             }
         },
@@ -303,14 +584,6 @@ const docTemplate = `{
                 },
                 "version": {
                     "description": "Version of the service",
-                    "type": "string"
-                }
-            }
-        },
-        "users.ReturnID": {
-            "type": "object",
-            "properties": {
-                "id": {
                     "type": "string"
                 }
             }

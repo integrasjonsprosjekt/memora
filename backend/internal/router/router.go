@@ -50,6 +50,7 @@ func Route(c *gin.Engine, services *services.Services) {
 			deckRoute.GET("/:id", decks.GetDeck(services.Decks))
 			deckRoute.POST("/", decks.CreateDeck(services.Decks))
 			deckRoute.PATCH("/:id", decks.PatchDeck(services.Decks))
+			deckRoute.DELETE("/:id", decks.DeleteDeck(services.Decks))
 		}
 	}
 }
