@@ -1,7 +1,6 @@
 package decks
 
 import (
-	"log"
 	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/services"
@@ -46,6 +45,7 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body models.UpdateDeck
+		id := c.Param("id")
 
 		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -54,11 +54,11 @@ func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
-		log.Println(body)
-
-		err := deckRepo.UpdateDeck(c.Request.Context(), c.Param("id"), body)
+		deck, err := deckRepo.UpdateDeck(c.Request.Context(), id, body)
 		if errors.HandleError(c, err) {
 			return
 		}
+
+		c.JSON(http.StatusOK, deck)
 	}
 }

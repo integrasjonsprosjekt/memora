@@ -11,6 +11,7 @@ var (
 	ErrNotFound    = errors.New("could not find id")
 	ErrInvalidUser = errors.New("invalid user data")
 	ErrInvalidCard = errors.New("invalid card data")
+	ErrInvalidDeck = errors.New("invalid deck data")
 	ErrInvalidId   = errors.New("invalid id")
 	ErrorMap       = map[error]struct {
 		Status  int
@@ -20,6 +21,7 @@ var (
 		ErrInvalidUser: {Status: http.StatusBadRequest, Message: "invalid user data"},
 		ErrInvalidCard: {Status: http.StatusBadRequest, Message: "invalid card data"},
 		ErrInvalidId:   {Status: http.StatusBadRequest, Message: "invalid id"},
+		ErrInvalidDeck: {Status: http.StatusBadRequest, Message: "invalid deck, missing fields"},
 	}
 )
 

@@ -19,13 +19,13 @@ type DeckRepository interface {
 	GetOneDeck(ctx context.Context, id string) (models.Deck, error)
 	RemoveCardFromDeck(ctx context.Context, deckID, cardID string) error
 	AddCardToDeck(ctx context.Context, deckID, cardID string) error
+	UpdateDeck(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
 }
 
 func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
 	return &FirestoreDeckRepo{client: client}
 }
 
-// AddDeck implements DeckRepository.
 func (r *FirestoreDeckRepo) AddDeck(ctx context.Context, deck models.CreateDeck) (string, error) {
 	_, err := r.client.Collection(config.UsersCollection).Doc(deck.OwnerID).Get(ctx)
 	if err != nil {
@@ -103,4 +103,18 @@ func (r *FirestoreDeckRepo) AddCardToDeck(
 	}
 
 	return nil
+}
+
+func (r *FirestoreDeckRepo) UpdateDeck(
+	ctx context.Context,
+	firestoreUpdates []firestore.Update,
+	id string,
+) error {
+	return utils.UpdateDocumentInDB(
+		r.client,
+		ctx,
+		config.DecksCollection,
+		id,
+		firestoreUpdates,
+	)
 }
