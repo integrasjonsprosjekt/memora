@@ -30,10 +30,7 @@ func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
 }
 
 func (r *FirestoreDeckRepo) AddDeck(ctx context.Context, deck models.CreateDeck) (string, error) {
-	exists, err := utils.CheckIfDocumentExists(r.client, ctx, config.UsersCollection, deck.OwnerID)
-	if !exists {
-		return "", errors.ErrInvalidId
-	}
+	_, err := utils.GetDocumentIfExists(r.client, ctx, config.UsersCollection, deck.OwnerID)
 	if err != nil {
 		return "", err
 	}
@@ -62,23 +59,18 @@ func (r *FirestoreDeckRepo) RemoveCardFromDeck(
 	ctx context.Context,
 	deckID, cardID string,
 ) error {
-	deckExists, err := utils.CheckIfDocumentExists(r.client, ctx, config.DecksCollection, deckID)
+	deckSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.DecksCollection, deckID)
 	if err != nil {
 		return err
 	}
 
-	cardExists, err := utils.CheckIfDocumentExists(r.client, ctx, config.CardsCollection, cardID)
+	cardSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.CardsCollection, cardID)
 	if err != nil {
 		return err
 	}
 
-	if !deckExists || !cardExists {
-		return errors.ErrInvalidId
-	}
-
-	deckRef := r.client.Collection(config.DecksCollection).Doc(deckID)
-	cardRef := r.client.Collection(config.CardsCollection).Doc(cardID)
-
+	deckRef := deckSnap.Ref
+	cardRef := cardSnap.Ref
 	_, err = deckRef.Update(ctx, []firestore.Update{
 		{Path: "cards", Value: firestore.ArrayRemove(cardRef)},
 	})
@@ -93,23 +85,18 @@ func (r *FirestoreDeckRepo) AddCardToDeck(
 	ctx context.Context,
 	deckID, cardID string,
 ) error {
-	deckExists, err := utils.CheckIfDocumentExists(r.client, ctx, config.DecksCollection, deckID)
+	deckSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.DecksCollection, deckID)
 	if err != nil {
 		return err
 	}
 
-	cardExists, err := utils.CheckIfDocumentExists(r.client, ctx, config.CardsCollection, cardID)
+	cardSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.CardsCollection, cardID)
 	if err != nil {
 		return err
 	}
 
-	if !deckExists || !cardExists {
-		return errors.ErrInvalidId
-	}
-
-	deckRef := r.client.Collection(config.DecksCollection).Doc(deckID)
-	cardRef := r.client.Collection(config.CardsCollection).Doc(cardID)
-
+	deckRef := deckSnap.Ref
+	cardRef := cardSnap.Ref
 	_, err = deckRef.Update(ctx, []firestore.Update{
 		{Path: "cards", Value: firestore.ArrayUnion(cardRef)},
 	})
