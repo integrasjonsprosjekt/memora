@@ -22,6 +22,7 @@ type DeckRepository interface {
 	UpdateDeck(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
 	RemoveEmailFromShared(ctx context.Context, email, deckID string) error
 	AddEmailToShared(ctx context.Context, email, deckID string) error
+	DeleteDeck(ctx context.Context, id string) error
 }
 
 func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
@@ -167,5 +168,17 @@ func (r *FirestoreDeckRepo) UpdateDeck(
 		config.DecksCollection,
 		id,
 		firestoreUpdates,
+	)
+}
+
+func (r *FirestoreDeckRepo) DeleteDeck(
+	ctx context.Context,
+	id string,
+) error {
+	return utils.DeleteDocumentInDB(
+		r.client,
+		ctx,
+		config.DecksCollection,
+		id,
 	)
 }

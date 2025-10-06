@@ -109,6 +109,13 @@ func (s *DeckService) UpdateDeck(
 	return s.GetOneDeck(ctx, deckID)
 }
 
+func (s *DeckService) DeleteDeck(
+	ctx context.Context,
+	id string,
+) error {
+	return s.repo.DeleteDeck(ctx, id)
+}
+
 func getCardStructFromData(m map[string]any, errorOnFail error) (models.Card, error) {
 	data, err := json.Marshal(m)
 	if err != nil {
