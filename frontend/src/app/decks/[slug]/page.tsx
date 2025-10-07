@@ -29,10 +29,11 @@ export default async function DeckPage({ params }: { params: Promise<{ slug: str
   // TODO: Load on scroll
   // TODO: DO NOT HARDCODE URI
   let cards: Card[] = [];
+  // TODO: We don't like try/catch
   try {
     cards = await Promise.all(
       cardIds.map(async (cardId) => {
-        const response = await fetch(`http://localhost:8080/api/v1/cards/${cardId}`);
+        const response = await fetch(`${process.env.API_URI}/v1/cards/${cardId}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch card ${cardId}`);
         }
