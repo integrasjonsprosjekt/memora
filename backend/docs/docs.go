@@ -151,6 +151,17 @@ const docTemplate = `{
                     "Decks"
                 ],
                 "summary": "Create a deck",
+                "parameters": [
+                    {
+                        "description": "Deck info",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateDeck"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -233,11 +244,81 @@ const docTemplate = `{
                 "summary": "Update a deck",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Deck ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "Deck info",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateDeck"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeckResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/decks/{id}/cards": {
+            "patch": {
+                "description": "Updates a decks cards in Firestore by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Update a decks' cards",
+                "parameters": [
+                    {
+                        "description": "Deck info",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateDeckCards"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeckResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/decks/{id}/emails": {
+            "patch": {
+                "description": "Updates a decks shared emails in Firestore by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Update a decks' emails",
+                "parameters": [
+                    {
+                        "description": "Deck info",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateDeckEmails"
+                        }
                     }
                 ],
                 "responses": {
@@ -420,6 +501,27 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CreateDeck": {
+            "type": "object",
+            "required": [
+                "owner_id",
+                "title"
+            ],
+            "properties": {
+                "owner_id": {
+                    "type": "string"
+                },
+                "shared_emails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateUser": {
             "type": "object",
             "required": [
@@ -555,6 +657,58 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UpdateDeck": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateDeckCards": {
+            "type": "object",
+            "required": [
+                "cards",
+                "opp"
+            ],
+            "properties": {
+                "cards": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "opp": {
+                    "type": "string",
+                    "enum": [
+                        "add",
+                        "remove"
+                    ]
+                }
+            }
+        },
+        "models.UpdateDeckEmails": {
+            "type": "object",
+            "required": [
+                "emails",
+                "opp"
+            ],
+            "properties": {
+                "emails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "opp": {
+                    "type": "string",
+                    "enum": [
+                        "add",
+                        "remove"
+                    ]
                 }
             }
         },

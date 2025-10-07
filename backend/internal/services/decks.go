@@ -3,12 +3,12 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
 
-	"cloud.google.com/go/firestore"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -75,35 +75,13 @@ func (s *DeckService) UpdateDeck(
 		return models.DeckResponse{}, errors.ErrInvalidDeck
 	}
 
-	if err := s.updateCardsInDeck(
-		ctx,
-		update.OppCards,
-		deckID,
-		update.Cards,
-	); err != nil {
-		return models.DeckResponse{}, err
-	}
-
-	if err := s.updateEmailsInDeck(
-		ctx,
-		update.OppEmails,
-		deckID,
-		update.Emails,
-	); err != nil {
-		return models.DeckResponse{}, err
-	}
-
-	updates, err := utils.StructToUpdate(update)
+	updateMap, err := utils.StructToUpdate(update)
 	if err != nil {
 		return models.DeckResponse{}, err
 	}
 
-	filtered := s.filterOutArray(updates, "opp_cards", "cards", "opp_emails", "emails")
-
-	if len(filtered) > 0 {
-		if err := s.repo.UpdateDeck(ctx, filtered, deckID); err != nil {
-			return models.DeckResponse{}, err
-		}
+	if err := s.repo.UpdateDeck(ctx, updateMap, deckID); err != nil {
+		return models.DeckResponse{}, err
 	}
 
 	return s.GetOneDeck(ctx, deckID)
@@ -125,63 +103,50 @@ func getCardStructFromData(m map[string]any, errorOnFail error) (models.Card, er
 	return GetCardStruct(data, errorOnFail)
 }
 
-func (s *DeckService) updateEmailsInDeck(
+func (s *DeckService) UpdateEmailsInDeck(
 	ctx context.Context,
-	opp, deckID string,
-	emails []string,
-) error {
+	deckID string,
+	emails models.UpdateDeckEmails,
+) (models.DeckResponse, error) {
 	var err error
-	switch opp {
+
+	if err := s.validate.Struct(emails); err != nil {
+		return models.DeckResponse{}, errors.ErrInvalidDeck
+	}
+
+	switch emails.Opp {
 	case utils.OPP_ADD:
-		err = s.repo.AddEmailsToShared(ctx, deckID, emails)
+		err = s.repo.AddEmailsToShared(ctx, deckID, emails.Emails)
 	case utils.OPP_REMOVE:
-		err = s.repo.RemoveEmailsFromShared(ctx, deckID, emails)
+		err = s.repo.RemoveEmailsFromShared(ctx, deckID, emails.Emails)
 	}
 	if err != nil {
-		return err
+		log.Println(err)
+		return models.DeckResponse{}, err
 	}
-	return nil
+	return s.GetOneDeck(ctx, deckID)
 }
 
-func (s *DeckService) updateCardsInDeck(
+func (s *DeckService) UpdateCardsInDeck(
 	ctx context.Context,
-	opp, deckID string,
-	cardIDs []string,
-) error {
+	deckID string,
+	cards models.UpdateDeckCards,
+) (models.DeckResponse, error) {
 	var err error
-	switch opp {
+
+	if err := s.validate.Struct(cards); err != nil {
+		return models.DeckResponse{}, errors.ErrInvalidDeck
+	}
+
+	switch cards.Opp {
 	case utils.OPP_ADD:
-		err = s.repo.AddCardsToDeck(ctx, deckID, cardIDs)
+		err = s.repo.AddCardsToDeck(ctx, deckID, cards.Cards)
 	case utils.OPP_REMOVE:
-		err = s.repo.RemoveCardsFromDeck(ctx, deckID, cardIDs)
-	default:
-		return errors.ErrInvalidDeck
+		err = s.repo.RemoveCardsFromDeck(ctx, deckID, cards.Cards)
 	}
 	if err != nil {
-		return err
+		return models.DeckResponse{}, err
 	}
 
-	return nil
-}
-
-func (s *DeckService) filterOutArray(
-	updates []firestore.Update,
-	args ...any,
-) []firestore.Update {
-	filtered := make([]firestore.Update, 0, len(updates))
-	skipFields := map[string]struct{}{}
-	for _, arg := range args {
-		if field, ok := arg.(string); ok {
-			skipFields[field] = struct{}{}
-		}
-	}
-
-	for _, update := range updates {
-		if _, skip := skipFields[update.Path]; skip {
-			continue
-		}
-		filtered = append(filtered, update)
-	}
-
-	return filtered
+	return s.GetOneDeck(ctx, deckID)
 }

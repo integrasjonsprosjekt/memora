@@ -29,6 +29,20 @@ definitions:
     - question
     - type
     type: object
+  models.CreateDeck:
+    properties:
+      owner_id:
+        type: string
+      shared_emails:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    required:
+    - owner_id
+    - title
+    type: object
   models.CreateUser:
     properties:
       email:
@@ -121,6 +135,41 @@ definitions:
     properties:
       id:
         type: string
+    type: object
+  models.UpdateDeck:
+    properties:
+      title:
+        type: string
+    type: object
+  models.UpdateDeckCards:
+    properties:
+      cards:
+        items:
+          type: string
+        type: array
+      opp:
+        enum:
+        - add
+        - remove
+        type: string
+    required:
+    - cards
+    - opp
+    type: object
+  models.UpdateDeckEmails:
+    properties:
+      emails:
+        items:
+          type: string
+        type: array
+      opp:
+        enum:
+        - add
+        - remove
+        type: string
+    required:
+    - emails
+    - opp
     type: object
   models.User:
     properties:
@@ -232,6 +281,13 @@ paths:
       consumes:
       - application/json
       description: Creates a new deck in Firestore and returns its ID
+      parameters:
+      - description: Deck info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateDeck'
       produces:
       - application/json
       responses:
@@ -286,11 +342,12 @@ paths:
       - application/json
       description: Updates a decks data in Firestore by ID
       parameters:
-      - description: Deck ID
-        in: path
-        name: id
+      - description: Deck info
+        in: body
+        name: user
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/models.UpdateDeck'
       produces:
       - application/json
       responses:
@@ -299,6 +356,50 @@ paths:
           schema:
             $ref: '#/definitions/models.DeckResponse'
       summary: Update a deck
+      tags:
+      - Decks
+  /api/v1/decks/{id}/cards:
+    patch:
+      consumes:
+      - application/json
+      description: Updates a decks cards in Firestore by ID
+      parameters:
+      - description: Deck info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateDeckCards'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeckResponse'
+      summary: Update a decks' cards
+      tags:
+      - Decks
+  /api/v1/decks/{id}/emails:
+    patch:
+      consumes:
+      - application/json
+      description: Updates a decks shared emails in Firestore by ID
+      parameters:
+      - description: Deck info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateDeckEmails'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeckResponse'
+      summary: Update a decks' emails
       tags:
       - Decks
   /api/v1/status:

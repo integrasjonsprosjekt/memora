@@ -24,9 +24,15 @@ type Deck struct {
 }
 
 type UpdateDeck struct {
-	Title     string   `json:"title,omitempty" firestore:"title"`
-	OppCards  string   `json:"opp_cards,omitempty" validate:"omitempty,oneof=add remove"`
-	Cards     []string `json:"cards,omitempty" firestore:"cards"`
-	OppEmails string   `json:"opp_emails,omitempty" validate:"omitempty,oneof=add remove"`
-	Emails    []string `json:"emails,omitempty" firestore:"shared_emails"`
+	Title string `json:"title,omitempty" firestore:"title"`
+}
+
+type UpdateDeckEmails struct {
+	Opp string   `json:"opp" validate:"required,oneof=add remove"`
+	Emails    []string `json:"emails" firestore:"shared_emails" validate:"required"`
+}
+
+type UpdateDeckCards struct {
+	Opp string   `json:"opp" validate:"required,oneof=add remove"`
+	Cards    []string `json:"cards" firestore:"cards" validate:"required"`
 }
