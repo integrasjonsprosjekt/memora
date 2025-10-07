@@ -44,9 +44,9 @@ export default async function RootLayout({
         >
           <SidebarProvider defaultOpen={defaultOpen}>
             <AppSidebar />
-            <SidebarInset className="border-border border-1">
+            <SidebarInset className="border-border flex flex-col border-1 px-4">
               <header className="flex h-16 shrink-0 items-center gap-2">
-                <div className="flex items-center gap-2 px-4">
+                <div className="flex items-center gap-2">
                   <SidebarTrigger className="-ml-1" />
                   <Separator
                     orientation="vertical"
@@ -54,11 +54,11 @@ export default async function RootLayout({
                   />
                   {breadcrumb}
                 </div>
-                <div className="ml-auto px-4">
+                <div className="ml-auto">
                   <ModeToggle />
                 </div>
               </header>
-              <div className="px-4">{children}</div>
+              {children}
             </SidebarInset>
           </SidebarProvider>
         </ThemeProvider>
