@@ -10,7 +10,7 @@ import React from 'react';
 import type { ReactElement } from 'react';
 
 // List of routes that should not be linked
-const NON_LINKABLE_ROUTES = new Set(['/decks']);
+const NON_LINKABLE_ROUTES = new Set(['/decks', '/cards']);
 
 function isValidRoute(path: string): boolean {
   return !NON_LINKABLE_ROUTES.has(path);
