@@ -1,7 +1,11 @@
+'use client';
+
 import { JSX, ReactNode } from 'react';
 import { Card } from '@/components/ui/card';
 import styles from './card.module.css';
 import { Badge } from '@/components/ui/badge';
+import React from 'react';
+import { useRouter } from 'next/navigation';
 
 /**
  * CardWrapper component - Base wrapper used for all cards in the application.
@@ -13,15 +17,22 @@ import { Badge } from '@/components/ui/badge';
  */
 export default function CardWrapper({
   children,
+  id,
   className,
   tags,
 }: {
   children: ReactNode;
+  id: string;
   className?: string;
   tags?: string[];
 }): JSX.Element {
+  const router = useRouter();
+
   return (
-    <Card className={`${styles.card} gap-0 rounded-2xl p-2 ${className ?? ''}`}>
+    <Card
+      className={`${styles.card} w-full cursor-pointer gap-0 rounded-2xl p-2 ${className ?? ''}`}
+      onClick={() => router.push(`/cards/${id}`)}
+    >
       {children}
       <div className="pt-2">
         {tags?.map((tag, index) => (
