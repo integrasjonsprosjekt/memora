@@ -28,11 +28,11 @@ type UpdateDeck struct {
 }
 
 type UpdateDeckEmails struct {
-	Opp string   `json:"opp" validate:"required,oneof=add remove"`
-	Emails    []string `json:"emails" firestore:"shared_emails" validate:"required"`
+	Opp    string   `json:"opp" validate:"required,oneof=add remove"`
+	Emails []string `json:"emails" firestore:"shared_emails" validate:"required"`
 }
 
 type UpdateDeckCards struct {
-	Opp string   `json:"opp" validate:"required,oneof=add remove"`
-	Cards    []string `json:"cards" firestore:"cards" validate:"required"`
+	Opp   string   `json:"opp" validate:"required,oneof=add remove"`
+	Cards []string `json:"cards" firestore:"cards" validate:"required"`
 }
