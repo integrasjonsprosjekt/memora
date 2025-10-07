@@ -34,6 +34,7 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Tags Decks
 // @Accept json
 // @Produce json
+// @Param user body models.CreateDeck true "Deck info"
 // @Success 201 {object} models.ReturnID
 // @Router /api/v1/decks [post]
 func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
@@ -63,7 +64,7 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Tags Decks
 // @Accept json
 // @Produce json
-// @Param id path string true "Deck ID"
+// @Param user body models.UpdateDeck true "Deck info"
 // @Success 200 {object} models.DeckResponse
 // @Router /api/v1/decks/{id} [patch]
 func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
@@ -79,6 +80,66 @@ func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		}
 
 		deck, err := deckRepo.UpdateDeck(c.Request.Context(), id, body)
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		c.JSON(http.StatusOK, deck)
+	}
+}
+
+// @Summary Update a decks' emails
+// @Description Updates a decks shared emails in Firestore by ID
+// @Tags Decks
+// @Accept json
+// @Produce json
+// @Param user body models.UpdateDeckEmails true "Deck info"
+// @Success 200 {object} models.DeckResponse
+// @Router /api/v1/decks/{id}/emails [patch]
+func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		var body models.UpdateDeckEmails
+
+		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid body",
+			})
+			return
+		}
+
+		deck, err := deckRepo.UpdateEmailsInDeck(c.Request.Context(), id, body)
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		c.JSON(http.StatusOK, deck)
+	}
+}
+
+// @Summary Update a decks' cards
+// @Description Updates a decks cards in Firestore by ID
+// @Tags Decks
+// @Accept json
+// @Produce json
+// @Param user body models.UpdateDeckCards true "Deck info"
+// @Success 200 {object} models.DeckResponse
+// @Router /api/v1/decks/{id}/cards [patch]
+func UpdateCards(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		var body models.UpdateDeckCards
+
+		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid body",
+			})
+			return
+		}
+
+		deck, err := deckRepo.UpdateCardsInDeck(c.Request.Context(), id, body)
 		if errors.HandleError(c, err) {
 			return
 		}
