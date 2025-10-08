@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { UseFormReturn } from "react-hook-form";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -54,16 +54,11 @@ export const MultipleChoiceFields = ({ form }: Props) => {
           <FormItem>
             <FormLabel>Correct answer</FormLabel>
             <FormControl>
-              <Input
-                placeholder="e.g. B"
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-              />
+              <Input placeholder="e.g. B" value={field.value ?? ""} onChange={field.onChange} onBlur={field.onBlur} />
             </FormControl>
           </FormItem>
         )}
       />
     </>
-  )
-}
+  );
+};
