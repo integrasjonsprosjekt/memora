@@ -29,7 +29,7 @@ type UpdateDeck struct {
 
 type UpdateDeckEmails struct {
 	Opp    string   `json:"opp" validate:"required,oneof=add remove"`
-	Emails []string `json:"emails" firestore:"shared_emails" validate:"required"`
+	Emails []string `json:"shared_emails" firestore:"shared_emails" validate:"required"`
 }
 
 type UpdateDeckCards struct {
@@ -38,6 +38,6 @@ type UpdateDeckCards struct {
 }
 
 type DisplayDeck struct {
-	ID string `json:"id" firestore:"-"`
+	ID    string `json:"id" firestore:"-"`
 	Title string `json:"title" firestore:"title"`
 }
