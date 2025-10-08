@@ -38,6 +38,17 @@ func GetDecksOwned(userRepo *services.UserService) gin.HandlerFunc {
 	}
 }
 
+func GetDecksShared(userRepo *services.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		decks, err := userRepo.GetDecksShared(c.Request.Context(), c.Param("id"))
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		c.JSON(http.StatusOK, decks)
+	}
+}
+
 // @Summary Create a user and return their ID
 // @Description Creates a new user
 // @Tags Users

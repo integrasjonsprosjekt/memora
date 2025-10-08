@@ -40,6 +40,7 @@ func Route(c *gin.Engine, services *services.Services) {
 			decksRoute := v1.Group("/:id/decks")
 			{
 				decksRoute.GET("/owned", users.GetDecksOwned(services.Users))
+				decksRoute.GET("/shared", users.GetDecksShared(services.Users))
 			}
 		}
 		cardRoute := v1.Group("/cards")

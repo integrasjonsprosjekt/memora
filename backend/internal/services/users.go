@@ -37,6 +37,16 @@ func (s *UserService) GetDecksOwned(ctx context.Context, id string) ([]models.Di
 	return decks, err
 }
 
+func (s *UserService) GetDecksShared(ctx context.Context, id string) ([]models.DisplayDeck, error) {
+	decks, err := s.repo.GetDecksShared(ctx, id)
+
+	if decks == nil {
+		return []models.DisplayDeck{}, err
+	}
+
+	return decks, err
+}
+
 func (s *UserService) RegisterNewUser(ctx context.Context, user models.CreateUser) (string, error) {
 	id, err := s.repo.AddUser(ctx, user)
 	if err != nil {
