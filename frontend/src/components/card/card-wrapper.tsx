@@ -30,11 +30,11 @@ export default function CardWrapper({
 
   return (
     <Card
-      className={`${styles.card} w-full cursor-pointer gap-0 rounded-2xl p-2 ${className ?? ''}`}
+      className={`${styles.card} flex h-fit max-h-[250px] min-h-[125px] w-full cursor-pointer flex-col gap-0 rounded-2xl p-2 ${className ?? ''}`}
       onClick={() => router.push(`/cards/${id}`)}
     >
-      {children}
-      <div className="pt-2">
+      <div className="flex-1 overflow-y-auto">{children}</div>
+      <div className="mt-auto pt-2">
         {tags?.map((tag, index) => (
           <Badge key={index} variant="outline">
             {tag}
