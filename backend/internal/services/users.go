@@ -27,12 +27,14 @@ func (s *UserService) GetUser(ctx context.Context, id string) (models.User, erro
 	return user, nil
 }
 
-func (s *UserService) GetDecksForUser(ctx context.Context, id string) ([]models.DisplayDeck, error) {
-	user, err := s.repo.GetDecksForUser(ctx, id)
-	if err != nil {
-		return nil, err
+func (s *UserService) GetDecksOwned(ctx context.Context, id string) ([]models.DisplayDeck, error) {
+	decks, err := s.repo.GetDecksOwned(ctx, id)
+
+	if decks == nil {
+		return []models.DisplayDeck{}, err
 	}
-	return user, nil
+
+	return decks, err
 }
 
 func (s *UserService) RegisterNewUser(ctx context.Context, user models.CreateUser) (string, error) {
