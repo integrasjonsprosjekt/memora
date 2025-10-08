@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { UseFormReturn } from "react-hook-form";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -20,12 +20,7 @@ export const OrderedFields = ({ form }: Props) => {
           <FormItem>
             <FormLabel>Question</FormLabel>
             <FormControl>
-              <Input
-                placeholder="Question"
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-              />
+              <Input placeholder="Question" value={field.value ?? ""} onChange={field.onChange} onBlur={field.onBlur} />
             </FormControl>
           </FormItem>
         )}
@@ -48,5 +43,5 @@ export const OrderedFields = ({ form }: Props) => {
         )}
       />
     </>
-  )
-}
+  );
+};
