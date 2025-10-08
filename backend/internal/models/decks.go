@@ -36,3 +36,8 @@ type UpdateDeckCards struct {
 	Opp   string   `json:"opp" validate:"required,oneof=add remove"`
 	Cards []string `json:"cards" firestore:"cards" validate:"required"`
 }
+
+type DisplayDeck struct {
+	ID string `json:"id" firestore:"-"`
+	Title string `json:"title" firestore:"title"`
+}

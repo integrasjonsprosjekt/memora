@@ -34,6 +34,7 @@ func Route(c *gin.Engine, services *services.Services) {
 		userRoute := v1.Group("/users")
 		{
 			userRoute.GET("/:id", users.GetUser(services.Users))
+			userRoute.GET("/:id/decks", users.GetDecksForUser(services.Users))
 			userRoute.POST("/", users.CreateUser(services.Users))
 			userRoute.PATCH("/:id", users.PatchUser(services.Users))
 			userRoute.DELETE("/:id", users.DeleteUser(services.Users))

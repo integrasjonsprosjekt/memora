@@ -8,11 +8,13 @@ import (
 	"memora/internal/utils"
 
 	"cloud.google.com/go/firestore"
+	"google.golang.org/api/iterator"
 )
 
 type UserRepository interface {
 	AddUser(ctx context.Context, u models.CreateUser) (string, error)
 	GetUser(ctx context.Context, id string) (models.User, error)
+	GetDecksForUser(ctx context.Context, id string) ([]models.DisplayDeck, error)
 	UpdateUser(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
 	DeleteUser(ctx context.Context, id string) error
 }
@@ -34,6 +36,35 @@ func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User
 	user.ID = id
 
 	return user, nil
+}
+
+func (r *FirestoreUserRepo) GetDecksForUser(ctx context.Context, id string) ([]models.DisplayDeck, error) {
+	var decks []models.DisplayDeck
+
+	iter := r.client.Collection(config.DecksCollection).
+		Where("owner_id", "==", id).
+		Documents(ctx)
+
+	for {
+		doc, err := iter.Next()
+
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		var deck models.DisplayDeck
+		if err := doc.DataTo(&deck); err != nil {
+			return nil, err
+		}
+
+		deck.ID = doc.Ref.ID
+		decks = append(decks, deck)
+	}
+
+	return decks, nil
 }
 
 func (r *FirestoreUserRepo) AddUser(ctx context.Context, user models.CreateUser) (string, error) {
