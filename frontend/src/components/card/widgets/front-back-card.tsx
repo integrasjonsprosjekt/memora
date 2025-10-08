@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
+import { JSX, useState } from 'react';
 import styles from '../card.module.css';
+import { CardComponentProps, FrontBackCard as FrontBackCardType } from '../types';
+import { MarkdownRenderer } from '@/components/markdown';
 
-interface FlipWrapperProps {
-  children: ReactNode;
-  className?: string;
-}
-
-export default function FrontBackCard({ children, className }: FlipWrapperProps) {
+export function FrontBackCard({
+  card,
+  className,
+}: CardComponentProps<FrontBackCardType>): JSX.Element {
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
@@ -16,7 +16,30 @@ export default function FrontBackCard({ children, className }: FlipWrapperProps)
       className={`${styles.front_back} ${isFlipped ? styles.front_back_flipped : ''} ${className}`}
       onClick={() => setIsFlipped(!isFlipped)}
     >
-      {children}
+      <div className={styles.front}>
+        <MarkdownRenderer>{card.front}</MarkdownRenderer>
+      </div>
+
+      <hr className="border-border tap-highlight-transparent my-5 w-full border-t border-dashed" />
+
+      <div className={styles.back}>
+        <MarkdownRenderer>{card.back}</MarkdownRenderer>
+      </div>
+    </div>
+  );
+}
+
+export function FrontBackCardThumbnail({
+  card,
+  className,
+}: CardComponentProps<FrontBackCardType>): JSX.Element {
+  return (
+    <div className={className}>
+      <p>{card.front}</p>
+
+      <hr className="border-border tap-highlight-transparent my-2 w-full border-t border-dashed" />
+
+      <p>{card.back.length > 100 ? card.back.substring(0, 100) + '...' : card.back}</p>
     </div>
   );
 }
