@@ -1,11 +1,22 @@
-import { OrderedCardType } from '../types';
+import { JSX } from 'react';
+import { CardComponentProps, OrderedCard as OrderedCardType } from '../types';
 
-export default function OrderedCard({
+export function OrderedCard({ card, className }: CardComponentProps<OrderedCardType>): JSX.Element {
+  return <div className={className}>{card.question}</div>;
+}
+
+export function OrderedCardThumbnail({
   card,
   className,
-}: {
-  card: OrderedCardType;
-  className?: string;
-}) {
-  return <div className={className}>{card.question}</div>;
+}: CardComponentProps<OrderedCardType>): JSX.Element {
+  return (
+    <div className={className}>
+      {card.question && <p className="pb-2 font-bold">{card.question}</p>}
+      <ol className="marker:text-muted-foreground/50 list-decimal pl-5 marker:text-xs">
+        {card.options.map((key) => (
+          <li key={key}>{key}</li>
+        ))}
+      </ol>
+    </div>
+  );
 }
