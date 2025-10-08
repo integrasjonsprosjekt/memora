@@ -29,7 +29,7 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 
 // @Summary GET a users' owned decks from firestore by their ID
 // @Description Return the user's owned decks
-// // @Tags Users
+// @Tags Users
 // @Produce json
 // @Success 200 {object} []models.DisplayDeck
 // @Router /api/v1/users/{id}/decks/owned [get]
@@ -47,7 +47,7 @@ func GetDecksOwned(userRepo *services.UserService) gin.HandlerFunc {
 
 // @Summary GET a users' shared decks from firestore by their ID
 // @Description Return the user's shared decks
-// // @Tags Users
+// @Tags Users
 // @Produce json
 // @Success 200 {object} []models.DisplayDeck
 // @Router /api/v1/users/{id}/decks/shared [get]
