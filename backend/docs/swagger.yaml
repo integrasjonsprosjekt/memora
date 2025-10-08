@@ -72,6 +72,13 @@ definitions:
       title:
         type: string
     type: object
+  models.DisplayDeck:
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+    type: object
   models.FrontBackCard:
     properties:
       back:
@@ -158,18 +165,18 @@ definitions:
     type: object
   models.UpdateDeckEmails:
     properties:
-      emails:
-        items:
-          type: string
-        type: array
       opp:
         enum:
         - add
         - remove
         type: string
+      shared_emails:
+        items:
+          type: string
+        type: array
     required:
-    - emails
     - opp
+    - shared_emails
     type: object
   models.User:
     properties:
@@ -479,6 +486,36 @@ paths:
         "204":
           description: No Content
       summary: Patch the users' data by ID
+      tags:
+      - Users
+  /api/v1/users/{id}/decks/owned:
+    get:
+      description: Return user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DisplayDeck'
+            type: array
+      summary: GET a users' owned decks from firestore by their ID
+      tags:
+      - Users
+  /api/v1/users/{id}/decks/shared:
+    get:
+      description: Return user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DisplayDeck'
+            type: array
+      summary: GET a users' shared decks from firestore by their ID
       tags:
       - Users
 swagger: "2.0"

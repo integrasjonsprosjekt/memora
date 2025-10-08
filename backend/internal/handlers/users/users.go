@@ -27,6 +27,13 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 	}
 }
 
+// @Summary GET a users' owned decks from firestore by their ID
+// @Description Return user information
+// @Tags Users
+// @Produce json
+// @Success 200 {object} []models.DisplayDeck
+// @Router /api/v1/users/{id}/decks/owned [get]
+// Return the users' owned decks based on an id
 func GetDecksOwned(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		decks, err := userRepo.GetDecksOwned(c.Request.Context(), c.Param("id"))
@@ -38,6 +45,13 @@ func GetDecksOwned(userRepo *services.UserService) gin.HandlerFunc {
 	}
 }
 
+// @Summary GET a users' shared decks from firestore by their ID
+// @Description Return user information
+// @Tags Users
+// @Produce json
+// @Success 200 {object} []models.DisplayDeck
+// @Router /api/v1/users/{id}/decks/shared [get]
+// Return the users' shared decks based on an id
 func GetDecksShared(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		decks, err := userRepo.GetDecksShared(c.Request.Context(), c.Param("id"))

@@ -451,6 +451,52 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/users/{id}/decks/owned": {
+            "get": {
+                "description": "Return user information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "GET a users' owned decks from firestore by their ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.DisplayDeck"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{id}/decks/shared": {
+            "get": {
+                "description": "Return user information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "GET a users' shared decks from firestore by their ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.DisplayDeck"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -559,6 +605,17 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DisplayDeck": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"
@@ -693,22 +750,22 @@ const docTemplate = `{
         "models.UpdateDeckEmails": {
             "type": "object",
             "required": [
-                "emails",
-                "opp"
+                "opp",
+                "shared_emails"
             ],
             "properties": {
-                "emails": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "opp": {
                     "type": "string",
                     "enum": [
                         "add",
                         "remove"
                     ]
+                },
+                "shared_emails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
