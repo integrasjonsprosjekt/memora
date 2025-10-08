@@ -1,5 +1,13 @@
 // Components
-export { CardRenderer, CardDisplay } from './card-renderer';
+export { RenderCard, RenderCardThumbnail } from './card-renderer';
 
 // Types
-export type { Card, CardType, FrontBackCardType, FillBlanksCardType } from './types';
+export type {
+  Card,
+  CardComponentProps,
+  CardType,
+  FillBlanksCard,
+  FrontBackCard,
+  MultipleChoiceCard,
+  OrderedCard,
+} from './types';
