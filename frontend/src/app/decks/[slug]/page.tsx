@@ -60,7 +60,7 @@ export default async function DeckPage({ params }: { params: Promise<{ slug: str
         </p>
       </header>
 
-      <div className="grid auto-rows-auto grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
         <AddCardButton />
         {cards.map((card) => (
           <RenderCardThumbnail key={card.id} card={card} />
