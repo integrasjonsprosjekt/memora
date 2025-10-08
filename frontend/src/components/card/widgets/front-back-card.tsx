@@ -3,7 +3,7 @@
 import { JSX, useState } from 'react';
 import styles from '../card.module.css';
 import { CardComponentProps, FrontBackCard as FrontBackCardType } from '../types';
-import { MarkdownRenderer } from '@/components/markdown';
+import { ClientMarkdownRenderer } from '@/components/markdown/client-markdown-renderer';
 
 export function FrontBackCard({
   card,
@@ -17,13 +17,13 @@ export function FrontBackCard({
       onClick={() => setIsFlipped(!isFlipped)}
     >
       <div className={styles.front}>
-        <MarkdownRenderer>{card.front}</MarkdownRenderer>
+        <ClientMarkdownRenderer>{card.front}</ClientMarkdownRenderer>
       </div>
 
       <hr className="border-border tap-highlight-transparent my-5 w-full border-t border-dashed" />
 
       <div className={styles.back}>
-        <MarkdownRenderer>{card.back}</MarkdownRenderer>
+        <ClientMarkdownRenderer>{card.back}</ClientMarkdownRenderer>
       </div>
     </div>
   );

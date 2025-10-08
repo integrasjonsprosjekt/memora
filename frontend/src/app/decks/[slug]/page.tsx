@@ -1,4 +1,4 @@
-import { CardDisplay } from '@/components/card';
+import { RenderCardThumbnail } from '@/components/card';
 import { Card } from '@/components/card';
 import { notFound } from 'next/navigation';
 import { AddCardButton } from '@/components/add-card-button';
@@ -27,7 +27,6 @@ export default async function DeckPage({ params }: { params: Promise<{ slug: str
   const cardIds = decks_cards[slug];
 
   // TODO: Load on scroll
-  // TODO: DO NOT HARDCODE URI
   let cards: Card[] = [];
   // TODO: We don't like try/catch
   try {
@@ -64,9 +63,7 @@ export default async function DeckPage({ params }: { params: Promise<{ slug: str
       <div className="grid auto-rows-auto grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
         <AddCardButton />
         {cards.map((card) => (
-          <div key={card.id}>
-            <CardDisplay card={card} />
-          </div>
+          <RenderCardThumbnail key={card.id} card={card} />
         ))}
       </div>
     </div>
