@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { UserCog, Settings2, ChevronsUpDown, LogOut } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { SettingsDialog } from '@/components/settings';
 
 export function NavUser({
   user,
@@ -29,6 +31,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <SidebarMenu>
@@ -74,7 +77,7 @@ export function NavUser({
                 <UserCog />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
                 <Settings2 />
                 Settings
               </DropdownMenuItem>
@@ -87,6 +90,7 @@ export function NavUser({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </SidebarMenu>
   );
 }
