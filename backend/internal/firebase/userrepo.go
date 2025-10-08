@@ -14,7 +14,7 @@ import (
 type UserRepository interface {
 	AddUser(ctx context.Context, u models.CreateUser) (string, error)
 	GetUser(ctx context.Context, id string) (models.User, error)
-	GetDecksForUser(ctx context.Context, id string) ([]models.DisplayDeck, error)
+	GetDecksOwned(ctx context.Context, id string) ([]models.DisplayDeck, error)
 	UpdateUser(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
 	DeleteUser(ctx context.Context, id string) error
 }
@@ -38,8 +38,13 @@ func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User
 	return user, nil
 }
 
-func (r *FirestoreUserRepo) GetDecksForUser(ctx context.Context, id string) ([]models.DisplayDeck, error) {
+func (r *FirestoreUserRepo) GetDecksOwned(ctx context.Context, id string) ([]models.DisplayDeck, error) {
 	var decks []models.DisplayDeck
+
+	_, err := utils.GetDocumentIfExists(r.client, ctx, config.UsersCollection, id)
+	if err != nil {
+		return nil, err
+	}
 
 	iter := r.client.Collection(config.DecksCollection).
 		Where("owner_id", "==", id).
