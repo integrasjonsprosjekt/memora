@@ -37,7 +37,7 @@ func Route(c *gin.Engine, services *services.Services) {
 			userRoute.POST("/", users.CreateUser(services.Users))
 			userRoute.PATCH("/:id", users.PatchUser(services.Users))
 			userRoute.DELETE("/:id", users.DeleteUser(services.Users))
-			decksRoute := v1.Group("/:id/decks")
+			decksRoute := userRoute.Group("/:id/decks")
 			{
 				decksRoute.GET("/owned", users.GetDecksOwned(services.Users))
 				decksRoute.GET("/shared", users.GetDecksShared(services.Users))
