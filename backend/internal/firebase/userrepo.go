@@ -39,7 +39,10 @@ func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User
 	return user, nil
 }
 
-func (r *FirestoreUserRepo) GetDecksOwned(ctx context.Context, id string) ([]models.DisplayDeck, error) {
+func (r *FirestoreUserRepo) GetDecksOwned(
+	ctx context.Context,
+	id string,
+) ([]models.DisplayDeck, error) {
 	var decks []models.DisplayDeck
 
 	_, err := utils.GetDocumentIfExists(r.client, ctx, config.UsersCollection, id)
@@ -73,7 +76,10 @@ func (r *FirestoreUserRepo) GetDecksOwned(ctx context.Context, id string) ([]mod
 	return decks, nil
 }
 
-func (r *FirestoreUserRepo) GetDecksShared(ctx context.Context, id string) ([]models.DisplayDeck, error) {
+func (r *FirestoreUserRepo) GetDecksShared(
+	ctx context.Context,
+	id string,
+) ([]models.DisplayDeck, error) {
 	var decks []models.DisplayDeck
 
 	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id)
