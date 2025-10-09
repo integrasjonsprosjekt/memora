@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// New initializes a new Gin router with middleware.
 func New() *gin.Engine {
 	router := gin.New()
 
@@ -26,23 +27,32 @@ func New() *gin.Engine {
 	return router
 }
 
+// Route sets up all the routes for the application.
 func Route(c *gin.Engine, services *services.Services) {
+	// API v1 routes
 	v1 := c.Group(config.BasePath)
 	{
+		// Health and status endpoints
 		v1.GET("/status", status.GetStatus)
 		v1.GET("/docs", docs.GetDocs)
+
+		// User-related endpoints
 		userRoute := v1.Group("/users")
 		{
 			userRoute.GET("/:id", users.GetUser(services.Users))
 			userRoute.POST("/", users.CreateUser(services.Users))
 			userRoute.PATCH("/:id", users.PatchUser(services.Users))
 			userRoute.DELETE("/:id", users.DeleteUser(services.Users))
+
+			// Deck-related endpoints in the context of a user
 			decksRoute := userRoute.Group("/:id/decks")
 			{
 				decksRoute.GET("/owned", users.GetDecksOwned(services.Users))
 				decksRoute.GET("/shared", users.GetDecksShared(services.Users))
 			}
 		}
+
+		// Card-related endpoints
 		cardRoute := v1.Group("/cards")
 		{
 			cardRoute.GET("/:id", cards.GetCard(services.Cards))
@@ -50,11 +60,15 @@ func Route(c *gin.Engine, services *services.Services) {
 			cardRoute.PUT("/:id", cards.PutCard(services.Cards))
 			cardRoute.DELETE("/:id", cards.DeleteCard(services.Cards))
 		}
+
+		// Deck-related endpoints
 		deckRoute := v1.Group("/decks")
 		{
 			deckRoute.GET("/:id", decks.GetDeck(services.Decks))
 			deckRoute.POST("/", decks.CreateDeck(services.Decks))
 			deckRoute.DELETE("/:id", decks.DeleteDeck(services.Decks))
+
+			// PATCH routes for updating specific fields of a deck
 			patchRoute := deckRoute.Group("/:id")
 			{
 				patchRoute.PATCH("/emails", decks.UpdateEmails(services.Decks))

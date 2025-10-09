@@ -9,6 +9,9 @@ import (
 	firebase "firebase.google.com/go"
 )
 
+// Init initializes and returns a Firestore client.
+// It requires the GOOGLE_APPLICATION_CREDENTIALS environment variable to be set.
+// Error if initialization fails.
 func Init() (*firestore.Client, error) {
 	if _, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS"); !ok {
 		return nil, fmt.Errorf("GOOGLE_APPLICATION_CREDENTIALS not set")
