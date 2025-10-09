@@ -24,7 +24,11 @@ type CardRepository interface {
 
 	// UpdateCard updates an existing card in firestore.
 	// Error on fail or if the ID is not valid, nil on success
-	UpdateCard(ctx context.Context, firestoreUpdates []firestore.Update, deckID, cardID string) error
+	UpdateCard(
+		ctx context.Context,
+		firestoreUpdates []firestore.Update,
+		deckID, cardID string,
+	) error
 
 	// DeleteCard deletes an existing card in firestore.
 	// Error on fail or if the ID is not valid, nil on success
@@ -41,7 +45,10 @@ func NewFirestoreCardRepo(client *firestore.Client) *FirestoreCardRepo {
 	return &FirestoreCardRepo{client: client}
 }
 
-func (r *FirestoreCardRepo) GetCardsInDeck(ctx context.Context, deckID string) ([]map[string]any, error) {
+func (r *FirestoreCardRepo) GetCardsInDeck(
+	ctx context.Context,
+	deckID string,
+) ([]map[string]any, error) {
 	cardsColl := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
 		Collection(config.CardsCollection)
@@ -70,7 +77,10 @@ func (r *FirestoreCardRepo) GetCardsInDeck(ctx context.Context, deckID string) (
 
 // GetCard takes a context and id, and returns the raw data for a card
 // error if the card can not be fetched
-func (r *FirestoreCardRepo) GetCardInDeck(ctx context.Context, deckID, cardID string) (map[string]any, error) {
+func (r *FirestoreCardRepo) GetCardInDeck(
+	ctx context.Context,
+	deckID, cardID string,
+) (map[string]any, error) {
 	doc, err := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
 		Collection(config.CardsCollection).
@@ -85,7 +95,10 @@ func (r *FirestoreCardRepo) GetCardInDeck(ctx context.Context, deckID, cardID st
 
 // CreateCard takes a context and a card, adds it to the database, and
 // returns the created card or an error if the operation fails.
-func (r *FirestoreCardRepo) CreateCard(ctx context.Context, card any, deckID string) error {
+func (r *FirestoreCardRepo) CreateCard(
+	ctx context.Context, 
+	card any, deckID string,
+) error {
 	log.Printf("Repo: adding card to deck %s: %+v", deckID, card)
 	_, _, err := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
@@ -121,7 +134,10 @@ func (r *FirestoreCardRepo) UpdateCard(
 // DeleteCard takes a context and ID, and deletes teh corresponding
 // card in teh database. It returns an error if the delete fails,
 // or if it cannot be found
-func (r *FirestoreCardRepo) DeleteCard(ctx context.Context, deckID, cardID string) error {
+func (r *FirestoreCardRepo) DeleteCard(
+	ctx context.Context, 
+	deckID, cardID string,
+) error {
 	docRef := r.client.
 		Collection(config.DecksCollection).
 		Doc(deckID).

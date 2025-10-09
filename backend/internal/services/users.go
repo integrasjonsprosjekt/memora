@@ -17,13 +17,22 @@ type UserService struct {
 }
 
 // NewUserService creates a new instance of UserService.
-func NewUserService(repo firebase.UserRepository, validate *validator.Validate) *UserService {
-	return &UserService{repo: repo, validate: validate}
+func NewUserService(
+	repo firebase.UserRepository,
+	validate *validator.Validate,
+) *UserService {
+	return &UserService{
+		repo: repo, 
+		validate: validate,
+	}
 }
 
 // GetUser retrieves a user by their ID.
 // Returns the user or an error if the operation fails.
-func (s *UserService) GetUser(ctx context.Context, id string) (models.User, error) {
+func (s *UserService) GetUser(
+	ctx context.Context, 
+	id string,
+) (models.User, error) {
 	user, err := s.repo.GetUser(ctx, id)
 	if err != nil {
 		return models.User{}, err
@@ -33,7 +42,10 @@ func (s *UserService) GetUser(ctx context.Context, id string) (models.User, erro
 
 // GetDecksOwned retrieves all decks owned by a user.
 // Returns a list of decks or an error if the operation fails.
-func (s *UserService) GetDecksOwned(ctx context.Context, id string) ([]models.DisplayDeck, error) {
+func (s *UserService) GetDecksOwned(
+	ctx context.Context, 
+	id string,
+) ([]models.DisplayDeck, error) {
 	decks, err := s.repo.GetDecksOwned(ctx, id)
 
 	if decks == nil {
@@ -46,7 +58,10 @@ func (s *UserService) GetDecksOwned(ctx context.Context, id string) ([]models.Di
 
 // GetDecksShared retrieves all decks shared with a user.
 // Returns a list of decks or an error if the operation fails.
-func (s *UserService) GetDecksShared(ctx context.Context, id string) ([]models.DisplayDeck, error) {
+func (s *UserService) GetDecksShared(
+	ctx context.Context, 
+	id string,
+) ([]models.DisplayDeck, error) {
 	decks, err := s.repo.GetDecksShared(ctx, id)
 
 	if decks == nil {
@@ -58,7 +73,10 @@ func (s *UserService) GetDecksShared(ctx context.Context, id string) ([]models.D
 
 // RegisterNewUser creates a new user from the provided data.
 // Returns the new user's ID or an error if the operation fails.
-func (s *UserService) RegisterNewUser(ctx context.Context, user models.CreateUser) (string, error) {
+func (s *UserService) RegisterNewUser(
+	ctx context.Context, 
+	user models.CreateUser,
+) (string, error) {
 	id, err := s.repo.AddUser(ctx, user)
 	if err != nil {
 		return "", err
@@ -95,6 +113,9 @@ func (s *UserService) UpdateUser(
 
 // DeleteUser removes a user by their ID.
 // Returns an error if the operation fails.
-func (s *UserService) DeleteUser(ctx context.Context, id string) error {
+func (s *UserService) DeleteUser(
+	ctx context.Context, 
+	id string,
+) error {
 	return s.repo.DeleteUser(ctx, id)
 }
