@@ -176,6 +176,8 @@ func (s *DeckService) DeleteDeck(
 	return s.repo.DeleteDeck(ctx, id)
 }
 
+// DeleteCardInDeck deletes a card from a deck by their IDs.
+// Returns an error if the operation fails or the card is not found.
 func (s *DeckService) DeleteCardInDeck(
 	ctx context.Context,
 	deckID, cardID string,

@@ -14,14 +14,14 @@ import (
 // @Tags Decks
 // @Accept json
 // @Produce json
-// @Param id path string true "Deck ID"
+// @Param deckID path string true "Deck ID"
 // @Success 200 {object} models.DeckResponse
-// @Router /api/v1/decks/{id} [get]
+// @Router /api/v1/decks/{deckID} [get]
 func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.Param("id")
+		deckID := c.Param("deckID")
 
-		deck, err := deckRepo.GetOneDeck(c.Request.Context(), id)
+		deck, err := deckRepo.GetOneDeck(c.Request.Context(), deckID)
 		if errors.HandleError(c, err) {
 			return
 		}
@@ -29,6 +29,14 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
+// @Summary Get a card
+// @Description Retrieves card information from Firestore by its ID
+// @Tags Decks
+// @Accept json
+// @Produce json
+// @Param id path string true "Card ID"
+// @Success 200 {object} models.AnyCard
+// @Router /api/v1/decks/{deckID}/cards/{cardID} [get]
 func GetCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
@@ -72,6 +80,15 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
+// @Summary Create a card in a deck
+// @Description Creates a new card in a specified deck and returns the updated deck
+// @Tags Decks
+// @Accept json
+// @Produce json
+// @Param deckID path string true "Deck ID"
+// @Param card body object true "Card info (can be MultipleChoiceCard, FrontBackCard, OrderedCard, or BlanksCard)"
+// @Success 201 {object} models.DeckResponse
+// @Router /api/v1/decks/{deckID}/cards [post]
 func CreateCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
@@ -97,7 +114,7 @@ func CreateCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Produce json
 // @Param user body models.UpdateDeck true "Deck info"
 // @Success 200 {object} models.DeckResponse
-// @Router /api/v1/decks/{id} [patch]
+// @Router /api/v1/decks/{deckID} [patch]
 func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body models.UpdateDeck
@@ -126,10 +143,10 @@ func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Produce json
 // @Param user body models.UpdateDeckEmails true "Deck info"
 // @Success 200 {object} models.DeckResponse
-// @Router /api/v1/decks/{id}/emails [patch]
+// @Router /api/v1/decks/{deckID}/emails [patch]
 func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.Param("id")
+		deckID := c.Param("deckID")
 
 		var body models.UpdateDeckEmails
 
@@ -140,7 +157,7 @@ func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
-		deck, err := deckRepo.UpdateEmailsInDeck(c.Request.Context(), id, body)
+		deck, err := deckRepo.UpdateEmailsInDeck(c.Request.Context(), deckID, body)
 		if errors.HandleError(c, err) {
 			return
 		}
@@ -156,7 +173,7 @@ func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Produce json
 // @Param user body models.UpdateDeckCards true "Deck info"
 // @Success 200 {object} models.DeckResponse
-// @Router /api/v1/decks/{id}/cards [patch]
+// @Router /api/v1/decks/{deckID}/cards [patch]
 func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
@@ -181,14 +198,14 @@ func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
-// @Summary Delete a deck
+// @Summary Delete a deck along with its cards
 // @Description Deletes a deck from Firestore by its ID
 // @Tags Decks
 // @Accept json
 // @Produce json
-// @Param id path string true "Deck ID"
+// @Param deckID path string true "Deck ID"
 // @Success 204
-// @Router /api/v1/decks/{id} [delete]
+// @Router /api/v1/decks/{deckID} [delete]
 func DeleteDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
@@ -202,6 +219,15 @@ func DeleteDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
+// @Summary Delete a card in a deck
+// @Description Deletes a card from a specified deck by its ID
+// @Tags Decks
+// @Accept json
+// @Produce json
+// @Param deckID path string true "Deck ID"
+// @Param cardID path string true "Card ID"
+// @Success 204
+// @Router /api/v1/decks/{deckID}/cards/{cardID} [delete]
 func DeleteCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")

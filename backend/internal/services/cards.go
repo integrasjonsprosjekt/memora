@@ -65,15 +65,21 @@ func (s *CardService) GetCardInDeck(
 	return card, nil
 }
 
+// GetCardsInDeck retrieves all cards in a specified deck.
+// Returns a list of cards or an error if the operation fails.
 func (s *CardService) GetCardsInDeck(
 	ctx context.Context, 
 	deckID string,
 ) ([]models.Card, error) {
+
+	// Fetch raw card documents from the repository
 	docs, err := s.repo.GetCardsInDeck(ctx, deckID)
 	if err != nil {
 		return nil, err
 	}
 
+	// Convert each document to the appropriate card struct
+	// based on its type
 	var cards []models.Card
 	for _, doc := range docs {
 		raw, err := json.Marshal(doc)
@@ -87,7 +93,6 @@ func (s *CardService) GetCardsInDeck(
 		}
 
 		card.SetID(doc["id"].(string))
-
 		cards = append(cards, card)
 	}
 

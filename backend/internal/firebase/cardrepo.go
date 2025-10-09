@@ -16,6 +16,8 @@ type CardRepository interface {
 	// Error on fail, returns the ID if succesfull
 	CreateCard(ctx context.Context, card any, deckID string) error
 
+	// GetCardsInDeck fetches all cards in a given deck.
+	// Error on fail, returns a list of cards on success
 	GetCardsInDeck(ctx context.Context, deckID string) ([]map[string]any, error)
 
 	// GetCard returns the raw data for a card for a given ID.
@@ -45,10 +47,13 @@ func NewFirestoreCardRepo(client *firestore.Client) *FirestoreCardRepo {
 	return &FirestoreCardRepo{client: client}
 }
 
+// GetCardsInDeck fetches all cards in a given deck.
+// Error on fail, returns a list of cards on success to be parsed
 func (r *FirestoreCardRepo) GetCardsInDeck(
 	ctx context.Context,
 	deckID string,
 ) ([]map[string]any, error) {
+	// Reference to the cards subcollection
 	cardsColl := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
 		Collection(config.CardsCollection)
@@ -57,6 +62,7 @@ func (r *FirestoreCardRepo) GetCardsInDeck(
 
 	var result []map[string]any
 
+	// Iterate through the documents in the collection
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -66,6 +72,7 @@ func (r *FirestoreCardRepo) GetCardsInDeck(
 			return nil, err
 		}
 
+		// Append the document data along with its ID
 		data := doc.Data()
 		data["id"] = doc.Ref.ID
 
@@ -148,6 +155,7 @@ func (r *FirestoreCardRepo) DeleteCard(
 		return errors.ErrInvalidId
 	}
 
+	// Delete the document
 	_, err = docRef.Delete(ctx)
 	return err
 }
