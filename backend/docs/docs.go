@@ -15,129 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/cards": {
-            "post": {
-                "description": "Creates a new card in Firestore and returns its ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Cards"
-                ],
-                "summary": "Create a card",
-                "parameters": [
-                    {
-                        "description": "Card info (can be MultipleChoiceCard, FrontBackCard, OrderedCard, or BlanksCard)",
-                        "name": "card",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.ReturnID"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/cards/{id}": {
-            "get": {
-                "description": "Retrieves card information from Firestore by its ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Cards"
-                ],
-                "summary": "Get a card",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Card ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.AnyCard"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Deletes a card from Firestore by its ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Cards"
-                ],
-                "summary": "Delete a card",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Card ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            },
-            "patch": {
-                "description": "Updates card data in Firestore by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Cards"
-                ],
-                "summary": "Update a card",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Card ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.AnyCard"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/decks": {
             "post": {
                 "description": "Creates a new deck in Firestore and returns its ID",
@@ -172,7 +49,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/decks/{id}": {
+        "/api/v1/decks/{deckID}": {
             "get": {
                 "description": "Retrieves card information from Firestore by its ID",
                 "consumes": [
@@ -189,7 +66,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Deck ID",
-                        "name": "id",
+                        "name": "deckID",
                         "in": "path",
                         "required": true
                     }
@@ -214,12 +91,12 @@ const docTemplate = `{
                 "tags": [
                     "Decks"
                 ],
-                "summary": "Delete a deck",
+                "summary": "Delete a deck along with its cards",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Deck ID",
-                        "name": "id",
+                        "name": "deckID",
                         "in": "path",
                         "required": true
                     }
@@ -263,7 +140,46 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/decks/{id}/cards": {
+        "/api/v1/decks/{deckID}/cards": {
+            "post": {
+                "description": "Creates a new card in a specified deck and returns the updated deck",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Create a card in a deck",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "deckID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Card info (can be MultipleChoiceCard, FrontBackCard, OrderedCard, or BlanksCard)",
+                        "name": "card",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeckResponse"
+                        }
+                    }
+                }
+            },
             "patch": {
                 "description": "Updates a decks cards in Firestore by ID",
                 "consumes": [
@@ -297,7 +213,73 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/decks/{id}/emails": {
+        "/api/v1/decks/{deckID}/cards/{cardID}": {
+            "get": {
+                "description": "Retrieves card information from Firestore by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Get a card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AnyCard"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a card from a specified deck by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Delete a card in a deck",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "deckID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/decks/{deckID}/emails": {
             "patch": {
                 "description": "Updates a decks shared emails in Firestore by ID",
                 "consumes": [
@@ -454,7 +436,7 @@ const docTemplate = `{
         },
         "/api/v1/users/{id}/decks/owned": {
             "get": {
-                "description": "Return user information",
+                "description": "Return the user's owned decks",
                 "produces": [
                     "application/json"
                 ],
@@ -477,7 +459,7 @@ const docTemplate = `{
         },
         "/api/v1/users/{id}/decks/shared": {
             "get": {
-                "description": "Return user information",
+                "description": "Return the user's shared decks",
                 "produces": [
                     "application/json"
                 ],

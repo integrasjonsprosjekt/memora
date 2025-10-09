@@ -201,88 +201,6 @@ definitions:
 info:
   contact: {}
 paths:
-  /api/v1/cards:
-    post:
-      consumes:
-      - application/json
-      description: Creates a new card in Firestore and returns its ID
-      parameters:
-      - description: Card info (can be MultipleChoiceCard, FrontBackCard, OrderedCard,
-          or BlanksCard)
-        in: body
-        name: card
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.ReturnID'
-      summary: Create a card
-      tags:
-      - Cards
-  /api/v1/cards/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes a card from Firestore by its ID
-      parameters:
-      - description: Card ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-      summary: Delete a card
-      tags:
-      - Cards
-    get:
-      consumes:
-      - application/json
-      description: Retrieves card information from Firestore by its ID
-      parameters:
-      - description: Card ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.AnyCard'
-      summary: Get a card
-      tags:
-      - Cards
-    patch:
-      consumes:
-      - application/json
-      description: Updates card data in Firestore by ID
-      parameters:
-      - description: Card ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.AnyCard'
-      summary: Update a card
-      tags:
-      - Cards
   /api/v1/decks:
     post:
       consumes:
@@ -305,7 +223,7 @@ paths:
       summary: Create a deck
       tags:
       - Decks
-  /api/v1/decks/{id}:
+  /api/v1/decks/{deckID}:
     delete:
       consumes:
       - application/json
@@ -313,7 +231,7 @@ paths:
       parameters:
       - description: Deck ID
         in: path
-        name: id
+        name: deckID
         required: true
         type: string
       produces:
@@ -321,7 +239,7 @@ paths:
       responses:
         "204":
           description: No Content
-      summary: Delete a deck
+      summary: Delete a deck along with its cards
       tags:
       - Decks
     get:
@@ -331,7 +249,7 @@ paths:
       parameters:
       - description: Deck ID
         in: path
-        name: id
+        name: deckID
         required: true
         type: string
       produces:
@@ -365,7 +283,7 @@ paths:
       summary: Update a deck
       tags:
       - Decks
-  /api/v1/decks/{id}/cards:
+  /api/v1/decks/{deckID}/cards:
     patch:
       consumes:
       - application/json
@@ -387,7 +305,79 @@ paths:
       summary: Update a decks' cards
       tags:
       - Decks
-  /api/v1/decks/{id}/emails:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new card in a specified deck and returns the updated
+        deck
+      parameters:
+      - description: Deck ID
+        in: path
+        name: deckID
+        required: true
+        type: string
+      - description: Card info (can be MultipleChoiceCard, FrontBackCard, OrderedCard,
+          or BlanksCard)
+        in: body
+        name: card
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.DeckResponse'
+      summary: Create a card in a deck
+      tags:
+      - Decks
+  /api/v1/decks/{deckID}/cards/{cardID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a card from a specified deck by its ID
+      parameters:
+      - description: Deck ID
+        in: path
+        name: deckID
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a card in a deck
+      tags:
+      - Decks
+    get:
+      consumes:
+      - application/json
+      description: Retrieves card information from Firestore by its ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AnyCard'
+      summary: Get a card
+      tags:
+      - Decks
+  /api/v1/decks/{deckID}/emails:
     patch:
       consumes:
       - application/json
@@ -490,7 +480,7 @@ paths:
       - Users
   /api/v1/users/{id}/decks/owned:
     get:
-      description: Return user information
+      description: Return the user's owned decks
       produces:
       - application/json
       responses:
@@ -505,7 +495,7 @@ paths:
       - Users
   /api/v1/users/{id}/decks/shared:
     get:
-      description: Return user information
+      description: Return the user's shared decks
       produces:
       - application/json
       responses:
