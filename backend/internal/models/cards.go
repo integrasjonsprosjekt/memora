@@ -21,7 +21,7 @@ type AnyCard struct {
 }
 
 type MultipleChoiceCard struct {
-	ID       string          `json:"id,omitempty" firestore:"-"`
+	ID       string          `json:"id,omitempty" validate:"omitempty" firestore:"-"`
 	Type     string          `json:"type" validate:"required" firestore:"type"`
 	Question string          `json:"question" validate:"required" firestore:"question"`
 	Options  map[string]bool `json:"options" validate:"required" firestore:"options"`

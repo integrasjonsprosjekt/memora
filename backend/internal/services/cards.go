@@ -56,20 +56,46 @@ func (s *CardService) GetCard(ctx context.Context, id string) (any, error) {
 	return card, nil
 }
 
+func (s *CardService) GetCardsInDeck(ctx context.Context, deckID string) ([]models.Card, error) {
+	docs, err := s.repo.GetCardsInDeck(ctx, deckID)
+	if err != nil {
+		return nil, err
+	}
+
+	var cards []models.Card
+	for _, doc := range docs {
+		raw, err := json.Marshal(doc)
+		if err != nil {
+			return nil, err
+		}
+
+		card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
+		if err != nil {
+			return nil, err
+		}
+
+		card.SetID(doc["id"].(string))
+
+		cards = append(cards, card)
+	}
+
+	return cards, nil
+}
+
 // CreateCard creates a new card from the provided raw JSON data.
 // Validates the card and returns its ID or an error if the operation fails.
-func (s *CardService) CreateCard(ctx context.Context, rawData []byte) (string, error) {
+func (s *CardService) CreateCard(ctx context.Context, rawData []byte, deckID string) error {
 	// Parse the raw data to determine the card type and unmarshal into the correct struct
 	card, err := GetCardStruct(rawData, errors.ErrInvalidCard)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	if err := s.validate.Struct(card); err != nil {
-		return "", errors.ErrInvalidCard
+		return errors.ErrInvalidCard
 	}
 
-	return s.repo.CreateCard(ctx, card)
+	return s.repo.CreateCard(ctx, card, deckID)
 }
 
 // UpdateCard updates an existing card identified by its ID with the provided raw JSON data.

@@ -3,7 +3,6 @@ package router
 import (
 	"log/slog"
 	"memora/internal/config"
-	"memora/internal/handlers/cards"
 	"memora/internal/handlers/decks"
 	"memora/internal/handlers/docs"
 	"memora/internal/handlers/status"
@@ -52,15 +51,6 @@ func Route(c *gin.Engine, services *services.Services) {
 			}
 		}
 
-		// Card-related endpoints
-		cardRoute := v1.Group("/cards")
-		{
-			cardRoute.GET("/:id", cards.GetCard(services.Cards))
-			cardRoute.POST("/", cards.CreateCard(services.Cards))
-			cardRoute.PUT("/:id", cards.PutCard(services.Cards))
-			cardRoute.DELETE("/:id", cards.DeleteCard(services.Cards))
-		}
-
 		// Deck-related endpoints
 		deckRoute := v1.Group("/decks")
 		{
@@ -69,10 +59,12 @@ func Route(c *gin.Engine, services *services.Services) {
 			deckRoute.DELETE("/:id", decks.DeleteDeck(services.Decks))
 
 			// PATCH routes for updating specific fields of a deck
-			patchRoute := deckRoute.Group("/:id")
+			deckRoute.PATCH("/:id/emails", decks.UpdateEmails(services.Decks))
+			deckRoute.PATCH("/:id/cards", decks.UpdateCards(services.Decks))
+
+			cardRoute := deckRoute.Group("/:deckID/cards")
 			{
-				patchRoute.PATCH("/emails", decks.UpdateEmails(services.Decks))
-				patchRoute.PATCH("/cards", decks.UpdateCards(services.Decks))
+				cardRoute.POST("/", decks.CreateCardInDeck(services.Decks))
 			}
 		}
 	}
