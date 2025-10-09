@@ -265,16 +265,40 @@ func (r *FirestoreDeckRepo) UpdateDeck(
 }
 
 // DeleteDeck deletes a deck from firestore based on its ID.
+// Deletes all cards that were registerd in the deck
 // Error on failure, or if ID is invalid.
 // Returns nil on success
 func (r *FirestoreDeckRepo) DeleteDeck(
 	ctx context.Context,
 	id string,
 ) error {
-	return utils.DeleteDocumentInDB(
-		r.client,
-		ctx,
-		config.DecksCollection,
-		id,
-	)
+	// Fetch the snap for the document
+	deckSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.DecksCollection, id)
+	if err != nil {
+		return err
+	}
+
+	// Run transactions for deleting
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		var deck models.Deck
+
+		// Safely format the data
+		if err := deckSnap.DataTo(&deck); err != nil {
+			return err
+		}
+
+		// Loop over cards and delete the refrence if it exists
+		for _, ref := range deck.Cards {
+			if ref == nil {
+				continue
+			}
+			if err := tx.Delete(ref); err != nil {
+				return err
+			}
+		}
+
+		// Delete the deck
+		deckRef := r.client.Collection(config.DecksCollection).Doc(id)
+		return tx.Delete(deckRef)
+	})
 }
