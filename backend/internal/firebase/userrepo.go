@@ -192,14 +192,39 @@ func (r *FirestoreUserRepo) UpdateUser(
 	)
 }
 
-// DeleteUser deletes a user from Firestore by ID.
+// DeleteUser deletes a user from Firestore by ID along with all decks.
 // Error on failure or if the ID is invalid.
 // Returns nil on success
 func (r *FirestoreUserRepo) DeleteUser(ctx context.Context, id string) error {
-	return utils.DeleteDocumentInDB(
+	userSnap, err := utils.GetDocumentIfExists(
 		r.client,
 		ctx,
 		config.UsersCollection,
 		id,
 	)
+	if err != nil {
+		return err
+	}
+
+	// Run transaction to delete user and all their decks
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		// Get query to delete the decks
+		query := r.client.Collection(config.DecksCollection).
+			Where("owner_id", "==", id)
+			
+		docs, err := tx.Documents(query).GetAll()
+		if err != nil {
+			return err
+		}
+
+
+		for _, doc := range docs {
+			if err := tx.Delete(doc.Ref); err != nil {
+				return err
+			}
+		}
+
+		// If it was able to delete all decks, delete the user
+		return tx.Delete(userSnap.Ref)
+	})
 }
