@@ -5,7 +5,6 @@ import (
 	"log"
 	"memora/internal/config"
 	"memora/internal/errors"
-	"memora/internal/utils"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -25,7 +24,7 @@ type CardRepository interface {
 
 	// UpdateCard updates an existing card in firestore.
 	// Error on fail or if the ID is not valid, nil on success
-	UpdateCard(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
+	UpdateCard(ctx context.Context, firestoreUpdates []firestore.Update, deckID, cardID string) error
 
 	// DeleteCard deletes an existing card in firestore.
 	// Error on fail or if the ID is not valid, nil on success
@@ -103,15 +102,20 @@ func (r *FirestoreCardRepo) CreateCard(ctx context.Context, card any, deckID str
 func (r *FirestoreCardRepo) UpdateCard(
 	ctx context.Context,
 	firestoreUpdates []firestore.Update,
-	id string,
+	deckID, cardID string,
 ) error {
-	return utils.UpdateDocumentInDB(
-		r.client,
-		ctx,
-		config.CardsCollection,
-		id,
-		firestoreUpdates,
-	)
+	docRef := r.client.
+		Collection(config.DecksCollection).
+		Doc(deckID).
+		Collection(config.CardsCollection).
+		Doc(cardID)
+
+	// Perform the update
+	_, err := docRef.Update(ctx, firestoreUpdates)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // DeleteCard takes a context and ID, and deletes teh corresponding

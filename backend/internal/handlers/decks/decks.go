@@ -157,25 +157,27 @@ func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Param user body models.UpdateDeckCards true "Deck info"
 // @Success 200 {object} models.DeckResponse
 // @Router /api/v1/decks/{id}/cards [patch]
-func UpdateCards(deckRepo *services.DeckService) gin.HandlerFunc {
+func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.Param("id")
+		deckID := c.Param("deckID")
+		cardID := c.Param("cardID")
 
-		var body models.UpdateDeckCards
-
-		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "invalid body",
-			})
-			return
-		}
-
-		deck, err := deckRepo.UpdateCardsInDeck(c.Request.Context(), id, body)
+		rawData, err := c.GetRawData()
 		if errors.HandleError(c, err) {
 			return
 		}
 
-		c.JSON(http.StatusOK, deck)
+		card, err := deckRepo.UpdateCardInDeck(
+			c.Request.Context(), 
+			deckID, cardID, 
+			rawData,
+		)
+
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		c.JSON(http.StatusOK, card)
 	}
 }
 
@@ -189,9 +191,9 @@ func UpdateCards(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Router /api/v1/decks/{id} [delete]
 func DeleteDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.Param("id")
+		deckID := c.Param("deckID")
 
-		err := deckRepo.DeleteDeck(c.Request.Context(), id)
+		err := deckRepo.DeleteDeck(c.Request.Context(), deckID)
 		if errors.HandleError(c, err) {
 			return
 		}

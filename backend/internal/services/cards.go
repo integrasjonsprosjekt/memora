@@ -98,54 +98,46 @@ func (s *CardService) CreateCard(ctx context.Context, rawData []byte, deckID str
 	return s.repo.CreateCard(ctx, card, deckID)
 }
 
-/*
 // UpdateCard updates an existing card identified by its ID with the provided raw JSON data.
 // Validates the updated card and returns the updated card or an error if the operation fails.
-func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) (any, error) {
+func (s CardService) UpdateCard(
+	ctx context.Context,
+	rawData []byte,
+	deckID, cardID string,
+) error {
 	card, err := GetCardStruct(rawData, errors.ErrInvalidCard)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	originalCard, err := s.repo.GetCard(ctx, id)
+	originalCard, err := s.repo.GetCardInDeck(ctx, deckID, cardID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Ensure the card type is not being changed
 	t, ok := originalCard["type"].(string)
 	if !ok {
-		return nil, fmt.Errorf("internal server error")
+		return fmt.Errorf("internal server error")
 	}
 
 	if t != card.GetType() {
-		return nil, errors.ErrInvalidCard
+		return errors.ErrInvalidCard
 	}
 
 	if err := s.validate.Struct(card); err != nil {
-		return nil, errors.ErrInvalidCard
+		return errors.ErrInvalidCard
 	}
 
 	// Convert the updated card struct to firestore updates
 	update, err := utils.StructToUpdate(card)
 	if err != nil {
-		return nil, errors.ErrInvalidCard
+		return errors.ErrInvalidCard
 	}
 
 	// Perform the update in the repository
-	err = s.repo.UpdateCard(ctx, update, id)
-	if err != nil {
-		return nil, err
-	}
-
-	// Fetch and return the updated card
-	returnCard, err := s.GetCard(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return returnCard, nil
-}*/
+	return s.repo.UpdateCard(ctx, update, deckID, cardID)
+}
 
 // DeleteCard deletes a card by its ID.
 // Returns an error if the operation fails or the card is not found.

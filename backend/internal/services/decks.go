@@ -109,20 +109,17 @@ func (s *DeckService) UpdateDeck(
 	return s.GetOneDeck(ctx, deckID)
 }
 
-// DeleteDeck deletes a deck by its ID.
-// Returns an error if the operation fails or the deck is not found.
-func (s *DeckService) DeleteDeck(
-	ctx context.Context,
-	id string,
-) error {
-	return s.repo.DeleteDeck(ctx, id)
-}
-
-func (s *DeckService) DeleteCardInDeck(
+func (s *DeckService) UpdateCardInDeck(
 	ctx context.Context,
 	deckID, cardID string,
-) error {
-	return s.Cards.DeleteCard(ctx, deckID, cardID)
+	rawData []byte,
+) (models.DeckResponse, error) {
+	err := s.Cards.UpdateCard(ctx, rawData, deckID, cardID)
+	if err != nil {
+		return models.DeckResponse{}, err
+	}
+
+	return s.GetOneDeck(ctx, deckID)
 }
 
 // UpdateEmailsInDeck updates the shared emails of a deck based on the provided operation (add or remove).
@@ -157,33 +154,18 @@ func (s *DeckService) UpdateEmailsInDeck(
 	return s.GetOneDeck(ctx, deckID)
 }
 
-// UpdateCardsInDeck updates the cards of a deck based on the provided operation (add or remove).
-// Validates the input and returns the updated deck or an error if the operation fails.
-func (s *DeckService) UpdateCardsInDeck(
+// DeleteDeck deletes a deck by its ID.
+// Returns an error if the operation fails or the deck is not found.
+func (s *DeckService) DeleteDeck(
 	ctx context.Context,
-	deckID string,
-	cards models.UpdateDeckCards,
-) (models.DeckResponse, error) {
-	var err error
+	id string,
+) error {
+	return s.repo.DeleteDeck(ctx, id)
+}
 
-	// Validate the input struct
-	if err := s.validate.Struct(cards); err != nil {
-		return models.DeckResponse{}, errors.ErrInvalidDeck
-	}
-
-	// Perform the appropriate operation based on the Opp field
-	switch cards.Opp {
-	case utils.OPP_ADD:
-		// Add cards to the deck
-		err = s.repo.AddCardsToDeck(ctx, deckID, cards.Cards)
-	case utils.OPP_REMOVE:
-		// Remove cards from the deck
-		err = s.repo.RemoveCardsFromDeck(ctx, deckID, cards.Cards)
-	}
-	if err != nil {
-		return models.DeckResponse{}, err
-	}
-
-	// Fetch and return the updated deck
-	return s.GetOneDeck(ctx, deckID)
+func (s *DeckService) DeleteCardInDeck(
+	ctx context.Context,
+	deckID, cardID string,
+) error {
+	return s.Cards.DeleteCard(ctx, deckID, cardID)
 }

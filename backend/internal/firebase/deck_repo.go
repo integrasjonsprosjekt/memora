@@ -20,15 +20,7 @@ type DeckRepository interface {
 	// GetOneDeck fetches an existing deck from firestore.
 	// Error on fail or if the ID is invalid, returns deck on success
 	GetOneDeck(ctx context.Context, id string) (models.Deck, error)
-
-	// RemoveCardsFromDeck removes given cards from a deck based on their respected IDs.
-	// Error on failure in transaction, nil on success
-	RemoveCardsFromDeck(ctx context.Context, deckID string, cardIDs []string) error
-
-	// AddCardsToDeck adds given cards into a deck based on their respected IDs.
-	// Error on failure in transaction, nil on success
-	AddCardsToDeck(ctx context.Context, deckID string, cardIDs []string) error
-
+	
 	// UpdateDeck updates everything except emails and cards in a given deck.
 	// Error on failure, or if ID is invalid, nil on success
 	UpdateDeck(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
@@ -91,87 +83,6 @@ func (r *FirestoreDeckRepo) GetOneDeck(
 	id string,
 ) (models.Deck, error) {
 	return utils.FetchByID[models.Deck](r.client, ctx, config.DecksCollection, id)
-}
-
-// RemoveCardsFromDeck removes any given cards from a deck by IDs
-// Error on any failure in transaction
-// Returns nil on success
-func (r *FirestoreDeckRepo) RemoveCardsFromDeck(
-	ctx context.Context,
-	deckID string,
-	cardIDs []string,
-) error {
-	// Make sure the deck exists
-	deckSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.DecksCollection, deckID)
-	if err != nil {
-		return err
-	}
-	deckRef := deckSnap.Ref
-
-	// Define transaction when updating the cards
-	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		// Interface to hold the cards refrence to be removed
-		cardsIface := make([]any, len(cardIDs))
-
-		for i, id := range cardIDs {
-			// Check if the card actually exists
-			cardSnap, err := utils.GetDocumentIfExists(
-				r.client,
-				ctx,
-				config.CardsCollection,
-				id,
-			)
-			if err != nil {
-				return errors.ErrFailedUpdatingCards
-			}
-			cardsIface[i] = cardSnap.Ref
-		}
-		// Remove it from the array
-		return tx.Update(deckRef, []firestore.Update{
-			{Path: "cards", Value: firestore.ArrayRemove(cardsIface...)},
-		})
-	})
-}
-
-// AddCardsToDeck adds existing cards to a deck by their IDs.
-// Error on failure at any point when its processing the cards IDs.
-// Returns nil on success.
-func (r *FirestoreDeckRepo) AddCardsToDeck(
-	ctx context.Context,
-	deckID string,
-	cardIDs []string,
-) error {
-	// Make sure the deck exists
-	deckSnap, err := utils.GetDocumentIfExists(r.client, ctx, config.DecksCollection, deckID)
-	if err != nil {
-		return err
-	}
-	deckRef := deckSnap.Ref
-
-	// Define transaction to add cards to the collection
-	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-
-		// Interface used to update
-		cardsIface := make([]any, len(cardIDs))
-		for i, id := range cardIDs {
-			// Make sure the card exists
-			cardSnap, err := utils.GetDocumentIfExists(
-				r.client,
-				ctx,
-				config.CardsCollection,
-				id,
-			)
-			if err != nil {
-				return errors.ErrFailedUpdatingCards
-			}
-			cardsIface[i] = cardSnap.Ref
-		}
-
-		// Update the cards in the deck
-		return tx.Update(deckRef, []firestore.Update{
-			{Path: "cards", Value: firestore.ArrayUnion(cardsIface...)},
-		})
-	})
 }
 
 // AddEmailsToShared adds emails to a deck to gain permissions on the deck.
