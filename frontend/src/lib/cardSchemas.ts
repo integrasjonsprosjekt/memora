@@ -1,5 +1,4 @@
 import { z } from "zod";
-//import { CardType } from '@/types/cards';
 
 export const cardSchemas = {
   front_back: z.object({
@@ -20,4 +19,4 @@ export const cardSchemas = {
     options: z.string().min(1, "Choice required"),
   }),
 };
-export type CardSchema = typeof cardSchemas; //<T extends CardType> = z.infer<(typeof cardSchemas)[T]>;
+export type CardSchema = typeof cardSchemas;
