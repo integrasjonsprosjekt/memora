@@ -149,8 +149,8 @@ func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) 
 
 // DeleteCard deletes a card by its ID.
 // Returns an error if the operation fails or the card is not found.
-func (s *CardService) DeleteCard(ctx context.Context, id string) error {
-	return s.repo.DeleteCard(ctx, id)
+func (s *CardService) DeleteCard(ctx context.Context, deckID, cardID string) error {
+	return s.repo.DeleteCard(ctx, deckID, cardID)
 }
 
 // GetCardStruct takes a byte array and an error to return if the type is not found.

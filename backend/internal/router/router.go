@@ -59,12 +59,14 @@ func Route(c *gin.Engine, services *services.Services) {
 			deckRoute.DELETE("/:deckID", decks.DeleteDeck(services.Decks))
 
 			// PATCH routes for updating specific fields of a deck
+			deckRoute.PATCH("/:deckID", decks.PatchDeck(services.Decks))
 			deckRoute.PATCH("/:deckID/emails", decks.UpdateEmails(services.Decks))
 
 			cardRoute := deckRoute.Group("/:deckID/cards")
 			{
 				cardRoute.POST("/", decks.CreateCardInDeck(services.Decks))
 				cardRoute.GET("/:cardID", decks.GetCardInDeck(services.Decks))
+				cardRoute.DELETE("/:cardID", decks.DeleteCardInDeck(services.Decks))
 			}
 		}
 	}

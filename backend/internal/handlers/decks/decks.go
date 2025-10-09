@@ -42,7 +42,6 @@ func GetCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
-
 // @Summary Create a deck
 // @Description Creates a new deck in Firestore and returns its ID
 // @Tags Decks
@@ -197,6 +196,19 @@ func DeleteDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
+		c.Status(http.StatusNoContent)
+	}
+}
+
+func DeleteCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		deckID := c.Param("deckID")
+		cardID := c.Param("cardID")
+
+		err := deckRepo.DeleteCardInDeck(c.Request.Context(), deckID, cardID)
+		if errors.HandleError(c, err) {
+			return
+		}
 		c.Status(http.StatusNoContent)
 	}
 }

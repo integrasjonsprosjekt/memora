@@ -20,14 +20,14 @@ type DeckService struct {
 
 // NewDeckService creates a new instance of DeckService.
 func NewDeckService(
-	repo firebase.DeckRepository, 
+	repo firebase.DeckRepository,
 	validate *validator.Validate,
 	cards *CardService,
 ) *DeckService {
 	return &DeckService{
-		repo: repo, 
+		repo:     repo,
 		validate: validate,
-		Cards: cards,
+		Cards:    cards,
 	}
 }
 
@@ -116,6 +116,13 @@ func (s *DeckService) DeleteDeck(
 	id string,
 ) error {
 	return s.repo.DeleteDeck(ctx, id)
+}
+
+func (s *DeckService) DeleteCardInDeck(
+	ctx context.Context,
+	deckID, cardID string,
+) error {
+	return s.Cards.DeleteCard(ctx, deckID, cardID)
 }
 
 // UpdateEmailsInDeck updates the shared emails of a deck based on the provided operation (add or remove).

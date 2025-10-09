@@ -29,7 +29,7 @@ type CardRepository interface {
 
 	// DeleteCard deletes an existing card in firestore.
 	// Error on fail or if the ID is not valid, nil on success
-	DeleteCard(ctx context.Context, id string) error
+	DeleteCard(ctx context.Context, deckID, cardID string) error
 }
 
 // FirestoreCardRepo holds the connection to the database
@@ -117,11 +117,17 @@ func (r *FirestoreCardRepo) UpdateCard(
 // DeleteCard takes a context and ID, and deletes teh corresponding
 // card in teh database. It returns an error if the delete fails,
 // or if it cannot be found
-func (r *FirestoreCardRepo) DeleteCard(ctx context.Context, id string) error {
-	return utils.DeleteDocumentInDB(
-		r.client,
-		ctx,
-		config.CardsCollection,
-		id,
-	)
+func (r *FirestoreCardRepo) DeleteCard(ctx context.Context, deckID, cardID string) error {
+	docRef := r.client.
+		Collection(config.DecksCollection).
+		Doc(deckID).
+		Collection(config.CardsCollection).
+		Doc(cardID)
+	_, err := docRef.Get(ctx)
+	if err != nil {
+		return errors.ErrInvalidId
+	}
+
+	_, err = docRef.Delete(ctx)
+	return err
 }
