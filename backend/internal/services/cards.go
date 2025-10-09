@@ -33,8 +33,8 @@ func NewCardService(repo firebase.CardRepository, validate *validator.Validate) 
 
 // GetCard retrieves a card by its ID.
 // Returns the card or an error if the operation fails.
-func (s *CardService) GetCard(ctx context.Context, id string) (any, error) {
-	doc, err := s.repo.GetCard(ctx, id)
+func (s *CardService) GetCardInDeck(ctx context.Context, deckID, cardID string) (models.Card, error) {
+	doc, err := s.repo.GetCardInDeck(ctx, deckID, cardID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (s *CardService) GetCard(ctx context.Context, id string) (any, error) {
 		return nil, err
 	}
 
-	card.SetID(id)
+	card.SetID(cardID)
 
 	return card, nil
 }
@@ -98,6 +98,7 @@ func (s *CardService) CreateCard(ctx context.Context, rawData []byte, deckID str
 	return s.repo.CreateCard(ctx, card, deckID)
 }
 
+/*
 // UpdateCard updates an existing card identified by its ID with the provided raw JSON data.
 // Validates the updated card and returns the updated card or an error if the operation fails.
 func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) (any, error) {
@@ -144,7 +145,7 @@ func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) 
 	}
 
 	return returnCard, nil
-}
+}*/
 
 // DeleteCard deletes a card by its ID.
 // Returns an error if the operation fails or the card is not found.

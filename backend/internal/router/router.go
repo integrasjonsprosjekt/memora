@@ -54,16 +54,17 @@ func Route(c *gin.Engine, services *services.Services) {
 		// Deck-related endpoints
 		deckRoute := v1.Group("/decks")
 		{
-			deckRoute.GET("/:id", decks.GetDeck(services.Decks))
+			deckRoute.GET("/:deckID", decks.GetDeck(services.Decks))
 			deckRoute.POST("/", decks.CreateDeck(services.Decks))
-			deckRoute.DELETE("/:id", decks.DeleteDeck(services.Decks))
+			deckRoute.DELETE("/:deckID", decks.DeleteDeck(services.Decks))
 
 			// PATCH routes for updating specific fields of a deck
-			deckRoute.PATCH("/:id/emails", decks.UpdateEmails(services.Decks))
+			deckRoute.PATCH("/:deckID/emails", decks.UpdateEmails(services.Decks))
 
 			cardRoute := deckRoute.Group("/:deckID/cards")
 			{
 				cardRoute.POST("/", decks.CreateCardInDeck(services.Decks))
+				cardRoute.GET("/:cardID", decks.GetCardInDeck(services.Decks))
 			}
 		}
 	}

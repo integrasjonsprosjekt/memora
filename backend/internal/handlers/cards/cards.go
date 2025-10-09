@@ -1,5 +1,6 @@
 package cards
 
+/*
 import (
 	"memora/internal/errors"
 	"memora/internal/services"
@@ -8,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/*
+
 // @Summary Create a card
 // @Description Creates a new card in Firestore and returns its ID
 // @Tags Cards
@@ -34,7 +35,7 @@ func CreateCard(cardRepo *services.CardService) gin.HandlerFunc {
 		})
 	}
 }
-*/
+
 // @Summary Get a card
 // @Description Retrieves card information from Firestore by its ID
 // @Tags Cards
@@ -102,3 +103,4 @@ func DeleteCard(cardRepo *services.CardService) gin.HandlerFunc {
 		c.Status(http.StatusNoContent)
 	}
 }
+*/

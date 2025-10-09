@@ -21,7 +21,7 @@ type CardRepository interface {
 
 	// GetCard returns the raw data for a card for a given ID.
 	// Error on fail, or if ID is not valid
-	GetCard(ctx context.Context, id string) (map[string]any, error)
+	GetCardInDeck(ctx context.Context, deckID, cardID string) (map[string]any, error)
 
 	// UpdateCard updates an existing card in firestore.
 	// Error on fail or if the ID is not valid, nil on success
@@ -71,8 +71,12 @@ func (r *FirestoreCardRepo) GetCardsInDeck(ctx context.Context, deckID string) (
 
 // GetCard takes a context and id, and returns the raw data for a card
 // error if the card can not be fetched
-func (r *FirestoreCardRepo) GetCard(ctx context.Context, id string) (map[string]any, error) {
-	doc, err := r.client.Collection(config.CardsCollection).Doc(id).Get(ctx)
+func (r *FirestoreCardRepo) GetCardInDeck(ctx context.Context, deckID, cardID string) (map[string]any, error) {
+	doc, err := r.client.Collection(config.DecksCollection).
+		Doc(deckID).
+		Collection(config.CardsCollection).
+		Doc(cardID).
+		Get(ctx)
 	if err != nil {
 		return nil, errors.ErrInvalidId
 	}
