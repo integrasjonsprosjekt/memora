@@ -20,26 +20,32 @@ var cardRegistry = map[string]func() models.Card{
 	utils.ORDERED_CARD:         func() models.Card { return &models.OrderedCard{} },
 }
 
+// CardService provides methods for managing cards.
 type CardService struct {
 	repo     firebase.CardRepository
 	validate *validator.Validate
 }
 
+// NewCardService creates a new instance of CardService.
 func NewCardService(repo firebase.CardRepository, validate *validator.Validate) *CardService {
 	return &CardService{repo: repo, validate: validate}
 }
 
+// GetCard retrieves a card by its ID.
+// Returns the card or an error if the operation fails.
 func (s *CardService) GetCard(ctx context.Context, id string) (any, error) {
 	doc, err := s.repo.GetCard(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
+	// Convert the document to JSON
 	raw, err := json.Marshal(doc)
 	if err != nil {
 		return nil, err
 	}
 
+	// Convert the JSON to the appropriate card struct based on its type
 	card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
 	if err != nil {
 		return nil, err
@@ -50,7 +56,10 @@ func (s *CardService) GetCard(ctx context.Context, id string) (any, error) {
 	return card, nil
 }
 
+// CreateCard creates a new card from the provided raw JSON data.
+// Validates the card and returns its ID or an error if the operation fails.
 func (s *CardService) CreateCard(ctx context.Context, rawData []byte) (string, error) {
+	// Parse the raw data to determine the card type and unmarshal into the correct struct
 	card, err := GetCardStruct(rawData, errors.ErrInvalidCard)
 	if err != nil {
 		return "", err
@@ -63,6 +72,8 @@ func (s *CardService) CreateCard(ctx context.Context, rawData []byte) (string, e
 	return s.repo.CreateCard(ctx, card)
 }
 
+// UpdateCard updates an existing card identified by its ID with the provided raw JSON data.
+// Validates the updated card and returns the updated card or an error if the operation fails.
 func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) (any, error) {
 	card, err := GetCardStruct(rawData, errors.ErrInvalidCard)
 	if err != nil {
@@ -74,6 +85,7 @@ func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) 
 		return nil, err
 	}
 
+	// Ensure the card type is not being changed
 	t, ok := originalCard["type"].(string)
 	if !ok {
 		return nil, fmt.Errorf("internal server error")
@@ -87,16 +99,19 @@ func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) 
 		return nil, errors.ErrInvalidCard
 	}
 
+	// Convert the updated card struct to firestore updates
 	update, err := utils.StructToUpdate(card)
 	if err != nil {
 		return nil, errors.ErrInvalidCard
 	}
 
+	// Perform the update in the repository
 	err = s.repo.UpdateCard(ctx, update, id)
 	if err != nil {
 		return nil, err
 	}
 
+	// Fetch and return the updated card
 	returnCard, err := s.GetCard(ctx, id)
 	if err != nil {
 		return nil, err
@@ -105,17 +120,23 @@ func (s CardService) UpdateCard(ctx context.Context, rawData []byte, id string) 
 	return returnCard, nil
 }
 
+// DeleteCard deletes a card by its ID.
+// Returns an error if the operation fails or the card is not found.
 func (s *CardService) DeleteCard(ctx context.Context, id string) error {
 	return s.repo.DeleteCard(ctx, id)
 }
 
+// GetCardStruct takes a byte array and an error to return if the type is not found.
+// It returns a card struct of the appropriate type based on the "type" field in the JSON data.
 func GetCardStruct(data []byte, errorOnFail error) (models.Card, error) {
 	var cardType models.CardType
 
+	// First, unmarshal to get the card type
 	if err := json.Unmarshal(data, &cardType); err != nil {
 		return nil, errors.ErrInvalidUser
 	}
 
+	// Secondly, lookup the card type in the registry and create a new instance
 	factory, ok := cardRegistry[cardType.Type]
 	if !ok {
 		return nil, errorOnFail
@@ -123,6 +144,7 @@ func GetCardStruct(data []byte, errorOnFail error) (models.Card, error) {
 
 	card := factory()
 
+	// Thirdly, unmarshal the JSON data into the specific card struct
 	if err := json.Unmarshal(data, card); err != nil {
 		return nil, err
 	}

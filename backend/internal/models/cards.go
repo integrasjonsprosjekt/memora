@@ -2,8 +2,12 @@ package models
 
 import "memora/internal/utils"
 
+// Card is an interface that all card types implement.
 type Card interface {
+	// GetType returns the type of the card as a string.
 	GetType() string
+
+	// SetID sets the ID of the card.
 	SetID(id string)
 }
 

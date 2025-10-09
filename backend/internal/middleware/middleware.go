@@ -25,10 +25,13 @@ func CORS() gin.HandlerFunc {
 	}
 }
 
+// Logging logs details about each request and its outcome
+// using the provided slog.Logger instance.
 func Logging(logger *slog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
+		// Generate a unique request ID and set it in the context.
 		reqID := uuid.New().String()
 		c.Set("reqID", reqID)
 
@@ -36,6 +39,7 @@ func Logging(logger *slog.Logger) gin.HandlerFunc {
 
 		duration := time.Since(start)
 
+		// Log based on the configured log level.
 		switch config.CurrentLevel {
 		case config.LogLevelDebug:
 			logger.Debug("Request completed",
