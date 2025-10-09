@@ -69,6 +69,10 @@ func (s *DeckService) GetOneDeck(ctx context.Context, id string) (models.DeckRes
 	}, nil
 }
 
+func (s *DeckService) GetCardInDeck(ctx context.Context, deckID, cardID string) (models.Card, error) {
+	return s.Cards.GetCardInDeck(ctx, deckID, cardID)
+}
+
 func (s *DeckService) AddCardToDeck(ctx context.Context, deckID string, rawData []byte) (models.DeckResponse, error) {
 	if err := s.Cards.CreateCard(
 		ctx,

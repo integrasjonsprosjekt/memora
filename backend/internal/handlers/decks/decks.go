@@ -29,6 +29,20 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
+func GetCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		deckID := c.Param("deckID")
+		cardID := c.Param("cardID")
+
+		card, err := deckRepo.GetCardInDeck(c.Request.Context(), deckID, cardID)
+		if errors.HandleError(c, err) {
+			return
+		}
+		c.JSON(http.StatusOK, card)
+	}
+}
+
+
 // @Summary Create a deck
 // @Description Creates a new deck in Firestore and returns its ID
 // @Tags Decks
