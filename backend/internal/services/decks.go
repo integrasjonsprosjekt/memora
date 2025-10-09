@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"memora/internal/errors"
 	"memora/internal/firebase"
@@ -16,11 +15,20 @@ import (
 type DeckService struct {
 	repo     firebase.DeckRepository
 	validate *validator.Validate
+	Cards    *CardService
 }
 
 // NewDeckService creates a new instance of DeckService.
-func NewDeckService(repo firebase.DeckRepository, validate *validator.Validate) *DeckService {
-	return &DeckService{repo: repo, validate: validate}
+func NewDeckService(
+	repo firebase.DeckRepository, 
+	validate *validator.Validate,
+	cards *CardService,
+) *DeckService {
+	return &DeckService{
+		repo: repo, 
+		validate: validate,
+		Cards: cards,
+	}
 }
 
 // RegisterNewDeck creates a new deck from the provided data.
@@ -41,31 +49,15 @@ func (s *DeckService) RegisterNewDeck(ctx context.Context, deck models.CreateDec
 // GetOneDeck retrieves a deck by its ID, including its cards.
 // Returns the deck or an error if the operation fails.
 func (s *DeckService) GetOneDeck(ctx context.Context, id string) (models.DeckResponse, error) {
-	var response models.DeckResponse
-
 	// Fetch the deck data from the repository
 	deck, err := s.repo.GetOneDeck(ctx, id)
 	if err != nil {
-		return response, err
+		return models.DeckResponse{}, err
 	}
 
-	// Fetch all cards associated with the deck
-	var cards []models.Card
-	for _, ref := range deck.Cards {
-		snap, err := ref.Get(ctx)
-		if err != nil {
-			return models.DeckResponse{}, err
-		}
-
-		// Convert the snapshot data to a card struct
-		card, err := getCardStructFromData(snap.Data(), errors.ErrInvalidCard)
-		if err != nil {
-			return models.DeckResponse{}, err
-		}
-
-		// Set the card ID from the document reference
-		card.SetID(snap.Ref.ID)
-		cards = append(cards, card)
+	cards, err := s.Cards.GetCardsInDeck(ctx, id)
+	if err != nil {
+		return models.DeckResponse{}, err
 	}
 
 	return models.DeckResponse{
@@ -75,6 +67,18 @@ func (s *DeckService) GetOneDeck(ctx context.Context, id string) (models.DeckRes
 		SharedEmails: deck.SharedEmails,
 		Cards:        cards,
 	}, nil
+}
+
+func (s *DeckService) AddCardToDeck(ctx context.Context, deckID string, rawData []byte) (models.DeckResponse, error) {
+	if err := s.Cards.CreateCard(
+		ctx,
+		rawData,
+		deckID,
+	); err != nil {
+		return models.DeckResponse{}, err
+	}
+
+	return s.GetOneDeck(ctx, deckID)
 }
 
 // UpdateDeck updates an existing deck identified by its ID with the provided data.
@@ -171,14 +175,4 @@ func (s *DeckService) UpdateCardsInDeck(
 
 	// Fetch and return the updated deck
 	return s.GetOneDeck(ctx, deckID)
-}
-
-// getCardStructFromData converts a map of raw data to a Card struct based on its type.
-func getCardStructFromData(m map[string]any, errorOnFail error) (models.Card, error) {
-	data, err := json.Marshal(m)
-	if err != nil {
-		return nil, err
-	}
-
-	return GetCardStruct(data, errorOnFail)
 }

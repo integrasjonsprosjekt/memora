@@ -1,7 +1,5 @@
 package models
 
-import "cloud.google.com/go/firestore"
-
 type CreateDeck struct {
 	Title        string   `json:"title" validate:"required" firestore:"title"`
 	OwnerID      string   `json:"owner_id" validate:"required" firestore:"owner_id"`
@@ -17,10 +15,9 @@ type DeckResponse struct {
 }
 
 type Deck struct {
-	OwnerID      string                   `firestore:"owner_id"`
-	Title        string                   `firestore:"title"`
-	SharedEmails []string                 `firestore:"shared_emails"`
-	Cards        []*firestore.DocumentRef `firestore:"cards"`
+	OwnerID      string   `firestore:"owner_id"`
+	Title        string   `firestore:"title"`
+	SharedEmails []string `firestore:"shared_emails"`
 }
 
 type UpdateDeck struct {

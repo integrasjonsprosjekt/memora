@@ -9,15 +9,15 @@ import (
 // Services groups all service instances.
 type Services struct {
 	Users *UserService
-	Cards *CardService
 	Decks *DeckService
 }
 
 // NewServices creates a new Services struct with the provided repositories and validator.
 func NewServices(repos *firebase.Repositories, validate *validator.Validate) *Services {
+	cards := NewCardService(repos.Card, validate)
+	
 	return &Services{
 		Users: NewUserService(repos.User, validate),
-		Cards: NewCardService(repos.Card, validate),
-		Decks: NewDeckService(repos.Deck, validate),
+		Decks: NewDeckService(repos.Deck, validate, cards),
 	}
 }
