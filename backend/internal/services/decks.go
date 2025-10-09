@@ -110,8 +110,6 @@ func (s *DeckService) DeleteDeck(
 	return s.repo.DeleteDeck(ctx, id)
 }
 
-
-
 // UpdateEmailsInDeck updates the shared emails of a deck based on the provided operation (add or remove).
 // Validates the input and returns the updated deck or an error if the operation fails.
 func (s *DeckService) UpdateEmailsInDeck(

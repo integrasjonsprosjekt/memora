@@ -128,7 +128,7 @@ func UserExistsByEmail(
 		Where("email", "==", email).
 		Limit(1).
 		Documents(ctx)
-	
+
 	// Check if any document was returned
 	doc, err := iter.Next()
 	if err != nil && err != iterator.Done {
