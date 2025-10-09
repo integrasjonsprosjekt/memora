@@ -8,6 +8,7 @@ import (
 	"memora/internal/utils"
 
 	"cloud.google.com/go/firestore"
+	"google.golang.org/api/iterator"
 )
 
 // DeckRepository methods used for storing, updating and deleting data
@@ -271,10 +272,26 @@ func (r *FirestoreDeckRepo) DeleteDeck(
 	ctx context.Context,
 	id string,
 ) error {
-	return utils.DeleteDocumentInDB(
-		r.client,
-		ctx,
-		config.DecksCollection,
-		id,
-	)
+	docRef := r.client.Collection(config.DecksCollection).Doc(id)
+	cardRef := docRef.Collection(config.CardsCollection)
+
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		// Delete all documents in the subcollection
+		iter := cardRef.Documents(ctx)
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return err
+			}
+			if err := tx.Delete(doc.Ref); err != nil {
+				return err
+			}
+		}
+
+		// Delete the deck document itself
+		return tx.Delete(docRef)
+	})
 }

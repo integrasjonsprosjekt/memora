@@ -17,7 +17,7 @@ type CardRepository interface {
 	// Error on fail, returns the ID if succesfull
 	CreateCard(ctx context.Context, card any, deckID string) error
 
-	GetCardsInDeck(ctx context.Context, deckID string) ([]map[string]interface{}, error)
+	GetCardsInDeck(ctx context.Context, deckID string) ([]map[string]any, error)
 
 	// GetCard returns the raw data for a card for a given ID.
 	// Error on fail, or if ID is not valid
@@ -42,14 +42,14 @@ func NewFirestoreCardRepo(client *firestore.Client) *FirestoreCardRepo {
 	return &FirestoreCardRepo{client: client}
 }
 
-func (r *FirestoreCardRepo) GetCardsInDeck(ctx context.Context, deckID string) ([]map[string]interface{}, error) {
+func (r *FirestoreCardRepo) GetCardsInDeck(ctx context.Context, deckID string) ([]map[string]any, error) {
 	cardsColl := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
 		Collection(config.CardsCollection)
 	iter := cardsColl.Documents(ctx)
 	defer iter.Stop()
 
-	var result []map[string]interface{}
+	var result []map[string]any
 
 	for {
 		doc, err := iter.Next()
