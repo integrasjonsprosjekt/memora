@@ -60,7 +60,6 @@ func Route(c *gin.Engine, services *services.Services) {
 
 			// PATCH routes for updating specific fields of a deck
 			deckRoute.PATCH("/:id/emails", decks.UpdateEmails(services.Decks))
-			deckRoute.PATCH("/:id/cards", decks.UpdateCards(services.Decks))
 
 			cardRoute := deckRoute.Group("/:deckID/cards")
 			{
