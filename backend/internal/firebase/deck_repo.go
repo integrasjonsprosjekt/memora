@@ -20,7 +20,7 @@ type DeckRepository interface {
 	// GetOneDeck fetches an existing deck from firestore.
 	// Error on fail or if the ID is invalid, returns deck on success
 	GetOneDeck(ctx context.Context, id string) (models.Deck, error)
-	
+
 	// UpdateDeck updates everything except emails and cards in a given deck.
 	// Error on failure, or if ID is invalid, nil on success
 	UpdateDeck(ctx context.Context, firestoreUpdates []firestore.Update, id string) error
@@ -51,8 +51,10 @@ func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
 // AddDeck checks if the owned ID is valid, and then adds the decks data into firestore.
 // Error on failure, or if parameters SharedEmails and OwnerID is invalid.
 // Returns decks ID on success
-func (r *FirestoreDeckRepo) AddDeck(ctx context.Context, deck models.CreateDeck) (string, error) {
-
+func (r *FirestoreDeckRepo) AddDeck(
+	ctx context.Context, 
+	deck models.CreateDeck,
+) (string, error) {
 	// Check if the user exists
 	_, err := utils.GetDocumentIfExists(r.client, ctx, config.UsersCollection, deck.OwnerID)
 	if err != nil {

@@ -57,7 +57,10 @@ func NewFirestoreUserRepo(client *firestore.Client) *FirestoreUserRepo {
 // AddUser adds a new user to Firestore.
 // Error on failure or if the email is already present.
 // Returns the new user's ID on success.
-func (r *FirestoreUserRepo) GetUser(ctx context.Context, id string) (models.User, error) {
+func (r *FirestoreUserRepo) GetUser(
+	ctx context.Context, 
+	id string,
+) (models.User, error) {
 	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id)
 	if err != nil {
 		return user, err
@@ -160,8 +163,10 @@ func (r *FirestoreUserRepo) GetDecksShared(
 // AddUser adds a new user to Firestore.
 // Error on failure or if the email is already present.
 // Returns the new user's ID on success.
-func (r *FirestoreUserRepo) AddUser(ctx context.Context, user models.CreateUser) (string, error) {
-
+func (r *FirestoreUserRepo) AddUser(
+	ctx context.Context, 
+	user models.CreateUser,
+) (string, error) {
 	// Check if the email is already present.
 	exists, err := utils.UserExistsByEmail(r.client, ctx, user.Email)
 	if err != nil {
@@ -195,7 +200,10 @@ func (r *FirestoreUserRepo) UpdateUser(
 // DeleteUser deletes a user from Firestore by ID.
 // Error on failure or if the ID is invalid.
 // Returns nil on success
-func (r *FirestoreUserRepo) DeleteUser(ctx context.Context, id string) error {
+func (r *FirestoreUserRepo) DeleteUser(
+	ctx context.Context, 
+	id string,
+) error {
 	return utils.DeleteDocumentInDB(
 		r.client,
 		ctx,

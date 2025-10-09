@@ -168,8 +168,8 @@ func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 		}
 
 		card, err := deckRepo.UpdateCardInDeck(
-			c.Request.Context(), 
-			deckID, cardID, 
+			c.Request.Context(),
+			deckID, cardID,
 			rawData,
 		)
 

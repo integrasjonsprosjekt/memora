@@ -33,7 +33,10 @@ func NewDeckService(
 
 // RegisterNewDeck creates a new deck from the provided data.
 // Validates the deck and returns its ID or an error if the operation fails.
-func (s *DeckService) RegisterNewDeck(ctx context.Context, deck models.CreateDeck) (string, error) {
+func (s *DeckService) RegisterNewDeck(
+	ctx context.Context, 
+	deck models.CreateDeck,
+) (string, error) {
 	if err := s.validate.Struct(deck); err != nil {
 		return "", errors.ErrInvalidDeck
 	}
@@ -48,7 +51,10 @@ func (s *DeckService) RegisterNewDeck(ctx context.Context, deck models.CreateDec
 
 // GetOneDeck retrieves a deck by its ID, including its cards.
 // Returns the deck or an error if the operation fails.
-func (s *DeckService) GetOneDeck(ctx context.Context, id string) (models.DeckResponse, error) {
+func (s *DeckService) GetOneDeck(
+	ctx context.Context, 
+	id string,
+) (models.DeckResponse, error) {
 	// Fetch the deck data from the repository
 	deck, err := s.repo.GetOneDeck(ctx, id)
 	if err != nil {
@@ -69,11 +75,18 @@ func (s *DeckService) GetOneDeck(ctx context.Context, id string) (models.DeckRes
 	}, nil
 }
 
-func (s *DeckService) GetCardInDeck(ctx context.Context, deckID, cardID string) (models.Card, error) {
+func (s *DeckService) GetCardInDeck(
+	ctx context.Context,
+	deckID, cardID string,
+) (models.Card, error) {
 	return s.Cards.GetCardInDeck(ctx, deckID, cardID)
 }
 
-func (s *DeckService) AddCardToDeck(ctx context.Context, deckID string, rawData []byte) (models.DeckResponse, error) {
+func (s *DeckService) AddCardToDeck(
+	ctx context.Context,
+	deckID string,
+	rawData []byte,
+) (models.DeckResponse, error) {
 	if err := s.Cards.CreateCard(
 		ctx,
 		rawData,

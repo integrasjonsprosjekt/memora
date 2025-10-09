@@ -27,13 +27,22 @@ type CardService struct {
 }
 
 // NewCardService creates a new instance of CardService.
-func NewCardService(repo firebase.CardRepository, validate *validator.Validate) *CardService {
-	return &CardService{repo: repo, validate: validate}
+func NewCardService(
+	repo firebase.CardRepository, 
+	validate *validator.Validate,
+) *CardService {
+	return &CardService{
+		repo: repo, 
+		validate: validate,
+	}
 }
 
 // GetCard retrieves a card by its ID.
 // Returns the card or an error if the operation fails.
-func (s *CardService) GetCardInDeck(ctx context.Context, deckID, cardID string) (models.Card, error) {
+func (s *CardService) GetCardInDeck(
+	ctx context.Context,
+	deckID, cardID string,
+) (models.Card, error) {
 	doc, err := s.repo.GetCardInDeck(ctx, deckID, cardID)
 	if err != nil {
 		return nil, err
@@ -56,7 +65,10 @@ func (s *CardService) GetCardInDeck(ctx context.Context, deckID, cardID string) 
 	return card, nil
 }
 
-func (s *CardService) GetCardsInDeck(ctx context.Context, deckID string) ([]models.Card, error) {
+func (s *CardService) GetCardsInDeck(
+	ctx context.Context, 
+	deckID string,
+) ([]models.Card, error) {
 	docs, err := s.repo.GetCardsInDeck(ctx, deckID)
 	if err != nil {
 		return nil, err
@@ -84,7 +96,11 @@ func (s *CardService) GetCardsInDeck(ctx context.Context, deckID string) ([]mode
 
 // CreateCard creates a new card from the provided raw JSON data.
 // Validates the card and returns its ID or an error if the operation fails.
-func (s *CardService) CreateCard(ctx context.Context, rawData []byte, deckID string) error {
+func (s *CardService) CreateCard(
+	ctx context.Context, 
+	rawData []byte, 
+	deckID string,
+) error {
 	// Parse the raw data to determine the card type and unmarshal into the correct struct
 	card, err := GetCardStruct(rawData, errors.ErrInvalidCard)
 	if err != nil {
@@ -141,13 +157,19 @@ func (s CardService) UpdateCard(
 
 // DeleteCard deletes a card by its ID.
 // Returns an error if the operation fails or the card is not found.
-func (s *CardService) DeleteCard(ctx context.Context, deckID, cardID string) error {
+func (s *CardService) DeleteCard(
+	ctx context.Context, 
+	deckID, cardID string,
+) error {
 	return s.repo.DeleteCard(ctx, deckID, cardID)
 }
 
 // GetCardStruct takes a byte array and an error to return if the type is not found.
 // It returns a card struct of the appropriate type based on the "type" field in the JSON data.
-func GetCardStruct(data []byte, errorOnFail error) (models.Card, error) {
+func GetCardStruct(
+	data []byte, 
+	errorOnFail error,
+) (models.Card, error) {
 	var cardType models.CardType
 
 	// First, unmarshal to get the card type
