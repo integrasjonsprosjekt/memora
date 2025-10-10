@@ -34,7 +34,8 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Tags Decks
 // @Accept json
 // @Produce json
-// @Param id path string true "Card ID"
+// @Param deckID path string true "Deck ID"
+// @Param cardID path string true "Card ID"
 // @Success 200 {object} models.AnyCard
 // @Router /api/v1/decks/{deckID}/cards/{cardID} [get]
 func GetCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
@@ -172,8 +173,10 @@ func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param user body models.UpdateDeckCards true "Deck info"
+// @Param deckID path string true "Deck ID"
+// @Param cardID path string true "Card ID"
 // @Success 200 {object} models.DeckResponse
-// @Router /api/v1/decks/{deckID}/cards [patch]
+// @Router /api/v1/decks/{deckID}/cards/{cardID} [patch]
 func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")

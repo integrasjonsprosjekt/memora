@@ -284,27 +284,6 @@ paths:
       tags:
       - Decks
   /api/v1/decks/{deckID}/cards:
-    patch:
-      consumes:
-      - application/json
-      description: Updates a decks cards in Firestore by ID
-      parameters:
-      - description: Deck info
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/models.UpdateDeckCards'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.DeckResponse'
-      summary: Update a decks' cards
-      tags:
-      - Decks
     post:
       consumes:
       - application/json
@@ -362,9 +341,14 @@ paths:
       - application/json
       description: Retrieves card information from Firestore by its ID
       parameters:
+      - description: Deck ID
+        in: path
+        name: deckID
+        required: true
+        type: string
       - description: Card ID
         in: path
-        name: id
+        name: cardID
         required: true
         type: string
       produces:
@@ -375,6 +359,37 @@ paths:
           schema:
             $ref: '#/definitions/models.AnyCard'
       summary: Get a card
+      tags:
+      - Decks
+    patch:
+      consumes:
+      - application/json
+      description: Updates a decks cards in Firestore by ID
+      parameters:
+      - description: Deck info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateDeckCards'
+      - description: Deck ID
+        in: path
+        name: deckID
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeckResponse'
+      summary: Update a decks' cards
       tags:
       - Decks
   /api/v1/decks/{deckID}/emails:

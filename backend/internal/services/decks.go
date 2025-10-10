@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"log"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
@@ -159,7 +158,6 @@ func (s *DeckService) UpdateEmailsInDeck(
 		err = s.repo.RemoveEmailsFromShared(ctx, deckID, emails.Emails)
 	}
 	if err != nil {
-		log.Println(err)
 		return models.DeckResponse{}, err
 	}
 

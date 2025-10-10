@@ -179,38 +179,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "patch": {
-                "description": "Updates a decks cards in Firestore by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Decks"
-                ],
-                "summary": "Update a decks' cards",
-                "parameters": [
-                    {
-                        "description": "Deck info",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UpdateDeckCards"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.DeckResponse"
-                        }
-                    }
-                }
             }
         },
         "/api/v1/decks/{deckID}/cards/{cardID}": {
@@ -229,8 +197,15 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Deck ID",
+                        "name": "deckID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Card ID",
-                        "name": "id",
+                        "name": "cardID",
                         "in": "path",
                         "required": true
                     }
@@ -275,6 +250,52 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates a decks cards in Firestore by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Update a decks' cards",
+                "parameters": [
+                    {
+                        "description": "Deck info",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateDeckCards"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "deckID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeckResponse"
+                        }
                     }
                 }
             }
