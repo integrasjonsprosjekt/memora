@@ -364,4 +364,15 @@ func TestHandlers(t *testing.T) {
 			t.Errorf("Expected status code 204, got %d", w.Code)
 		}
 	})
+
+	t.Run("Delete the created user with the deck and cards", func(t *testing.T) {
+		if userID == "" {
+			t.Fatal("userID is empty, cannot perform user deletion test")
+		}
+		path := "/api/v1/users/" + userID
+		w := PerformRequest(r, "DELETE", path, nil)
+		if w.Code != 204 {
+			t.Errorf("Expected status code 204, got %d", w.Code)
+		}
+	})
 }
