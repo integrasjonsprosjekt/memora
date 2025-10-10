@@ -3,27 +3,27 @@ package firebase
 
 import (
 	"context"
-	"fmt"
+	"os"
 
 	"memora/internal/config"
 
 	"cloud.google.com/go/firestore"
-	firebase "firebase.google.com/go"
+	"google.golang.org/api/option"
 )
 
 func InitEmulator() (*firestore.Client, error) {
-	config.GetEnv("FIRESTORE_EMULATOR_HOST", config.GetEnv("FIRESTORE_EMULATOR_HOST", "localhost:8081"))
+	config.Init() // Ensure config is initialized
+
+	host := config.GetEnv("FIRESTORE_EMULATOR_HOST", "localhost:8081")
+
+	os.Setenv("FIRESTORE_EMULATOR_HOST", host)
 
 	ctx := context.Background()
 
-	app, err := firebase.NewApp(ctx, nil)
+	// Project ID is required but can be any string
+	client, err := firestore.NewClient(ctx, "demo-project", option.WithoutAuthentication())
 	if err != nil {
-		return nil, fmt.Errorf("error initializing app: %v", err)
-	}
-
-	client, err := app.Firestore(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing firestore client: %v", err)
+		return nil, err
 	}
 
 	return client, nil
