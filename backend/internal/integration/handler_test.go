@@ -9,7 +9,7 @@ import (
 func TestUser(t *testing.T) {
 
 	// Store created user ID for further tests
-	var userID string
+	var userID, email string
 
 	// Setup router
 	r := SetupRouter(t)
@@ -81,6 +81,32 @@ func TestUser(t *testing.T) {
 		if len(generic) != 1 {
 			t.Errorf("Expected only 1 field in response, got %d", len(generic))
 		}
+	})
+
+	// POST /api/v1/users/ - Create another user
+	t.Run("Create another user", func(t *testing.T) {
+		body := `{
+			"email": "herman2@example.com",
+			"password": "validpassword",
+			"name": "Herman2"
+		}`
+		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body))
+		if w.Code != 201 {
+			t.Errorf("Expected status code 201, got %d", w.Code)
+		}
+
+		var respData struct {
+			ID string `json:"id"`
+		}
+
+		if err := json.Unmarshal(w.Body.Bytes(), &respData); err != nil {
+			t.Fatalf("Failed to unmarshal response: %v", err)
+		}
+
+		if respData.ID == "" {
+			t.Errorf("Expected a non-empty user ID, got empty string")
+		}
+		email = "herman2@example.com"
 	})
 
 	t.Run("Duplicate email", func(t *testing.T) {
@@ -182,6 +208,61 @@ func TestUser(t *testing.T) {
 		}
 		resp := w.Body.String()
 		expectedSubstring := `"name":"Herman Updated"`
+		if !strings.Contains(resp, expectedSubstring) {
+			t.Errorf("Expected response body to contain %q, got %q", expectedSubstring, resp)
+		}
+	})
+
+	// Decks and Shared tests can be added similarly once user tests are stable
+	t.Run("Create one deck for user", func(t *testing.T) {
+		if userID == "" {
+			t.Fatal("userID is empty, cannot perform deck creation test")
+		}
+		body := `{
+			"title": "Test Deck",
+			"owner_id": "` + userID + `"
+		}`
+		w := PerformRequest(r, "POST", "/api/v1/decks/", strings.NewReader(body))
+		if w.Code != 201 {
+			t.Errorf("Expected status code 201, got %d", w.Code)
+		}
+	})
+
+	t.Run("Update the created deck to share with another user", func(t *testing.T) {
+		if userID == "" {
+			t.Fatal("userID is empty, cannot perform deck update test")
+		}
+		body := `{
+			"opp": "add",
+			"shared_emails": ["` + email + `"]
+		}`
+		// First, we need to get the deck ID of the created deck
+		w := PerformRequest(r, "GET", "/api/v1/users/"+userID+"/decks/owned", nil)
+		if w.Code != 200 {
+			t.Errorf("Expected status code 200 when fetching owned decks, got %d", w.Code)
+			return
+		}
+
+		var decksResp []struct {
+			ID string `json:"id"`
+		}
+
+		if err := json.Unmarshal(w.Body.Bytes(), &decksResp); err != nil {
+			t.Fatalf("Failed to unmarshal owned decks response: %v", err)
+			return
+		}
+		if len(decksResp) == 0 {
+			t.Fatal("No owned decks found")
+		}
+		deckID := decksResp[0].ID
+
+		// Now we can update the deck
+		w = PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body))
+		if w.Code != 200 {
+			t.Errorf("Expected status code 200, got %d", w.Code)
+		}
+		resp := w.Body.String()
+		expectedSubstring := `"shared_emails":["` + email + `"]`
 		if !strings.Contains(resp, expectedSubstring) {
 			t.Errorf("Expected response body to contain %q, got %q", expectedSubstring, resp)
 		}
