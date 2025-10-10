@@ -200,6 +200,7 @@ func (r *FirestoreUserRepo) UpdateUser(
 // DeleteUser deletes a user from Firestore by ID.
 // Error on failure or if the ID is invalid.
 // Returns nil on success
+// TODO refactor this to support batching
 func (r *FirestoreUserRepo) DeleteUser(
 	ctx context.Context,
 	id string,
