@@ -119,7 +119,7 @@ func CreateCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body models.UpdateDeck
-		id := c.Param("id")
+		id := c.Param("deckID")
 
 		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
