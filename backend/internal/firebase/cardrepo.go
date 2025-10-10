@@ -2,7 +2,6 @@ package firebase
 
 import (
 	"context"
-	"log"
 	"memora/internal/config"
 	"memora/internal/errors"
 
@@ -106,13 +105,10 @@ func (r *FirestoreCardRepo) CreateCard(
 	ctx context.Context,
 	card any, deckID string,
 ) error {
-	log.Printf("Repo: adding card to deck %s: %+v", deckID, card)
 	_, _, err := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
 		Collection(config.CardsCollection).
 		Add(ctx, card)
-
-	log.Println(err)
 	return err
 }
 
