@@ -6,10 +6,10 @@ import (
 	"testing"
 )
 
-func TestUser(t *testing.T) {
+func TestHandlers(t *testing.T) {
 
 	// Store created user ID for further tests
-	var userID, email string
+	var userID, email, deckID string
 
 	// Setup router
 	r := SetupRouter(t)
@@ -226,6 +226,18 @@ func TestUser(t *testing.T) {
 		if w.Code != 201 {
 			t.Errorf("Expected status code 201, got %d", w.Code)
 		}
+		var respData struct {
+			ID string `json:"id"`
+		}
+
+		if err := json.Unmarshal(w.Body.Bytes(), &respData); err != nil {
+			t.Fatalf("Failed to unmarshal response: %v", err)
+		}
+
+		if respData.ID == "" {
+			t.Errorf("Expected a non-empty deck ID, got empty string")
+		}
+		deckID = respData.ID
 	})
 
 	t.Run("Update the created deck to share with another user", func(t *testing.T) {
@@ -236,28 +248,8 @@ func TestUser(t *testing.T) {
 			"opp": "add",
 			"shared_emails": ["` + email + `"]
 		}`
-		// First, we need to get the deck ID of the created deck
-		w := PerformRequest(r, "GET", "/api/v1/users/"+userID+"/decks/owned", nil)
-		if w.Code != 200 {
-			t.Errorf("Expected status code 200 when fetching owned decks, got %d", w.Code)
-			return
-		}
-
-		var decksResp []struct {
-			ID string `json:"id"`
-		}
-
-		if err := json.Unmarshal(w.Body.Bytes(), &decksResp); err != nil {
-			t.Fatalf("Failed to unmarshal owned decks response: %v", err)
-			return
-		}
-		if len(decksResp) == 0 {
-			t.Fatal("No owned decks found")
-		}
-		deckID := decksResp[0].ID
-
 		// Now we can update the deck
-		w = PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body))
+		w := PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body))
 		if w.Code != 200 {
 			t.Errorf("Expected status code 200, got %d", w.Code)
 		}
@@ -265,6 +257,111 @@ func TestUser(t *testing.T) {
 		expectedSubstring := `"shared_emails":["` + email + `"]`
 		if !strings.Contains(resp, expectedSubstring) {
 			t.Errorf("Expected response body to contain %q, got %q", expectedSubstring, resp)
+		}
+	})
+
+	t.Run("Add invalid email to deck", func(t *testing.T) {
+		if userID == "" {
+			t.Fatal("userID is empty, cannot perform invalid email test")
+		}
+		body := `{
+			"opp": "add",
+			"shared_emails": ["invalid-email"]
+		}`
+		// Now we can update the deck
+		w := PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body))
+		if w.Code != 400 {
+			t.Errorf("Expected status code 400, got %d", w.Code)
+		}
+		resp := w.Body.String()
+		expected := `{"error":"email not registered"}`
+		if resp != expected {
+			t.Errorf("Expected response body %q, got %q", expected, resp)
+		}
+	})
+
+	t.Run("Add cards to the created deck", func(t *testing.T) {
+		if userID == "" {
+			t.Fatal("userID is empty, cannot perform deck update test")
+		}
+		body := `{
+			"type": "front_back",
+			"front": "What is the capital of France?",
+			"back": "Paris"
+		}`
+
+		w := PerformRequest(r, "POST", "/api/v1/decks/"+deckID+"/cards/", strings.NewReader(body))
+		if w.Code != 201 {
+			t.Errorf("Expected status code 201, got %d", w.Code)
+		}
+
+		resp := w.Body.String()
+		expectedSubstring := `"front":"What is the capital of France?"`
+		if !strings.Contains(resp, expectedSubstring) {
+			t.Errorf("Expected response body to contain %q, got %q", expectedSubstring, resp)
+		}
+	})
+
+	t.Run("Add multiple choice card to the created deck", func(t *testing.T) {
+		if userID == "" {
+			t.Fatal("userID is empty, cannot perform deck update test")
+		}
+		body := `{
+			"type": "multiple_choice",
+			"question": "What is 2 + 2?",
+			"options": {
+				"0": false,
+				"1": false,
+				"2": true,
+				"3": false,
+				"4": false
+			},
+			"answer_index": 1
+		}`
+
+		w := PerformRequest(r, "POST", "/api/v1/decks/"+deckID+"/cards/", strings.NewReader(body))
+		if w.Code != 201 {
+			t.Errorf("Expected status code 201, got %d", w.Code)
+		}
+
+		resp := w.Body.String()
+		expectedSubstring := `"question":"What is 2 + 2?"`
+		if !strings.Contains(resp, expectedSubstring) {
+			t.Errorf("Expected response body to contain %q, got %q", expectedSubstring, resp)
+		}
+	})
+
+	// Delete one card from the deck
+	t.Run("Delete one card from the deck", func(t *testing.T) {
+		if userID == "" {
+			t.Fatal("userID is empty, cannot perform deck update test")
+		}
+		// First, get the list of cards to find a card ID to delete
+		w := PerformRequest(r, "GET", "/api/v1/decks/"+deckID, nil)
+		if w.Code != 200 {
+			t.Errorf("Expected status code 200, got %d", w.Code)
+		}
+
+		var respData struct {
+			Cards []struct {
+				ID string `json:"id"`
+			} `json:"cards"`
+		}
+
+		if err := json.Unmarshal(w.Body.Bytes(), &respData); err != nil {
+			t.Fatalf("Failed to unmarshal response: %v", err)
+		}
+
+		if len(respData.Cards) == 0 {
+			t.Fatal("No cards found in deck, cannot perform delete test")
+		}
+
+		cardID := respData.Cards[0].ID
+
+		// Now we can delete the card
+		w = PerformRequest(r, "DELETE", "/api/v1/decks/"+deckID+"/cards/"+cardID, nil)
+		if w.Code != 204 {
+			t.Errorf("Expected status code 204, got %d", w.Code)
 		}
 	})
 }
