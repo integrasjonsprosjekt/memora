@@ -134,8 +134,8 @@ func (r *FirestoreCardRepo) UpdateCard(
 	return nil
 }
 
-// DeleteCard takes a context and ID, and deletes teh corresponding
-// card in teh database. It returns an error if the delete fails,
+// DeleteCard takes a context and ID, and deletes the corresponding
+// card in the database. It returns an error if the delete fails,
 // or if it cannot be found
 func (r *FirestoreCardRepo) DeleteCard(
 	ctx context.Context,
