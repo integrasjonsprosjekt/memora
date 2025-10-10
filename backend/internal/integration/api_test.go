@@ -1,12 +1,12 @@
 package integration_test
 
 import (
+	"io"
 	"log"
 	"memora/internal/firebase"
 	"memora/internal/router"
 	"memora/internal/services"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +29,7 @@ func SetupRouter(t *testing.T) *gin.Engine {
 	return r
 }
 
-func PerformRequest(r *gin.Engine, method, path string, body *strings.Reader) *httptest.ResponseRecorder {
+func PerformRequest(r *gin.Engine, method, path string, body io.Reader) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(method, path, body)
 	req.Header.Set("content-type", "application/json")
 	w := httptest.NewRecorder()
