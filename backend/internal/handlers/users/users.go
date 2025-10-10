@@ -100,15 +100,16 @@ func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 	}
 }
 
-// @Summary Patch the users' data by ID
-// @Description Updates/replaces data
+// @Summary Update a user in firestore by their ID
+// @Description Return updated user information
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param user body models.PatchUser true "User info"
-// @Success 204
+// @Param id path string true "User ID"
+// @Param user body models.PatchUser true "User info to update"
+// @Success 200 {object} models.User
 // @Router /api/v1/users/{id} [patch]
-// Updates a user in firestore
+// Updates a user based on an id and returns the updated user
 func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -122,14 +123,12 @@ func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 			return
 		}
 
-		err := userRepo.UpdateUser(c.Request.Context(), updates, id)
+		user, err := userRepo.UpdateUser(c.Request.Context(), updates, id)
 		if errors.HandleError(c, err) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"message": "User updated succesfully",
-		})
+		c.JSON(http.StatusOK, user)
 	}
 }
 

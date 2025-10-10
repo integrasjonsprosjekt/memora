@@ -151,4 +151,39 @@ func TestUser(t *testing.T) {
 			t.Errorf("Expected response body to contain %q, got %q", expectedSubstring, resp)
 		}
 	})
+
+	// PATCH /api/v1/users/{invalidID} - Attempt to update a non-existent user
+	t.Run("Update non-existent user", func(t *testing.T) {
+		invalidID := "nonexistentid"
+		body := `{
+			"name": "Should Not Work"
+		}`
+		path := "/api/v1/users/" + invalidID
+		w := PerformRequest(r, "PATCH", path, strings.NewReader(body))
+		if w.Code != 400 {
+			t.Errorf("Expected status code 400, got %d", w.Code)
+		}
+		resp := w.Body.String()
+		expected := `{"error":"invalid id"}`
+		if resp != expected {
+			t.Errorf("Expected response body %q, got %q", expected, resp)
+		}
+	})
+
+	// GET /api/v1/users/{userID} - Verify the update
+	t.Run("Verify user update", func(t *testing.T) {
+		if userID == "" {
+			t.Fatal("userID is empty, cannot perform verification GET test")
+		}
+		path := "/api/v1/users/" + userID
+		w := PerformRequest(r, "GET", path, nil)
+		if w.Code != 200 {
+			t.Errorf("Expected status code 200, got %d", w.Code)
+		}
+		resp := w.Body.String()
+		expectedSubstring := `"name":"Herman Updated"`
+		if !strings.Contains(resp, expectedSubstring) {
+			t.Errorf("Expected response body to contain %q, got %q", expectedSubstring, resp)
+		}
+	})
 }

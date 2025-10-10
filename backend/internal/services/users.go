@@ -96,24 +96,24 @@ func (s *UserService) UpdateUser(
 	ctx context.Context,
 	updateStruct models.PatchUser,
 	id string,
-) error {
+) (models.User, error) {
 	// Validate the input struct
 	if err := s.validate.Struct(updateStruct); err != nil {
-		return errors.ErrInvalidUser
+		return models.User{}, errors.ErrInvalidUser
 	}
 
 	// Convert the struct to Firestore update format
 	update, err := utils.StructToUpdate(updateStruct)
 	if err != nil {
-		return errors.ErrInvalidUser
+		return models.User{}, errors.ErrInvalidUser
 	}
 
 	// Perform the update in the repository
 	err = s.repo.UpdateUser(ctx, update, id)
 	if err != nil {
-		return err
+		return models.User{}, err
 	}
-	return nil
+	return s.GetUser(ctx, id)
 }
 
 // DeleteUser removes a user by their ID.
