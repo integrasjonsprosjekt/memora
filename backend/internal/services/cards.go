@@ -28,11 +28,11 @@ type CardService struct {
 
 // NewCardService creates a new instance of CardService.
 func NewCardService(
-	repo firebase.CardRepository, 
+	repo firebase.CardRepository,
 	validate *validator.Validate,
 ) *CardService {
 	return &CardService{
-		repo: repo, 
+		repo:     repo,
 		validate: validate,
 	}
 }
@@ -68,7 +68,7 @@ func (s *CardService) GetCardInDeck(
 // GetCardsInDeck retrieves all cards in a specified deck.
 // Returns a list of cards or an error if the operation fails.
 func (s *CardService) GetCardsInDeck(
-	ctx context.Context, 
+	ctx context.Context,
 	deckID string,
 ) ([]models.Card, error) {
 
@@ -102,8 +102,8 @@ func (s *CardService) GetCardsInDeck(
 // CreateCard creates a new card from the provided raw JSON data.
 // Validates the card and returns its ID or an error if the operation fails.
 func (s *CardService) CreateCard(
-	ctx context.Context, 
-	rawData []byte, 
+	ctx context.Context,
+	rawData []byte,
 	deckID string,
 ) error {
 	// Parse the raw data to determine the card type and unmarshal into the correct struct
@@ -163,7 +163,7 @@ func (s CardService) UpdateCard(
 // DeleteCard deletes a card by its ID.
 // Returns an error if the operation fails or the card is not found.
 func (s *CardService) DeleteCard(
-	ctx context.Context, 
+	ctx context.Context,
 	deckID, cardID string,
 ) error {
 	return s.repo.DeleteCard(ctx, deckID, cardID)
@@ -172,7 +172,7 @@ func (s *CardService) DeleteCard(
 // GetCardStruct takes a byte array and an error to return if the type is not found.
 // It returns a card struct of the appropriate type based on the "type" field in the JSON data.
 func GetCardStruct(
-	data []byte, 
+	data []byte,
 	errorOnFail error,
 ) (models.Card, error) {
 	var cardType models.CardType

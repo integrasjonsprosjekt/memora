@@ -103,7 +103,7 @@ func (r *FirestoreCardRepo) GetCardInDeck(
 // CreateCard takes a context and a card, adds it to the database, and
 // returns the created card or an error if the operation fails.
 func (r *FirestoreCardRepo) CreateCard(
-	ctx context.Context, 
+	ctx context.Context,
 	card any, deckID string,
 ) error {
 	log.Printf("Repo: adding card to deck %s: %+v", deckID, card)
@@ -142,7 +142,7 @@ func (r *FirestoreCardRepo) UpdateCard(
 // card in teh database. It returns an error if the delete fails,
 // or if it cannot be found
 func (r *FirestoreCardRepo) DeleteCard(
-	ctx context.Context, 
+	ctx context.Context,
 	deckID, cardID string,
 ) error {
 	docRef := r.client.

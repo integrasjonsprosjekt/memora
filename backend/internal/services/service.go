@@ -14,18 +14,18 @@ type Services struct {
 
 // NewServices creates a new Services struct with the provided repositories and validator.
 func NewServices(
-	repos *firebase.Repositories, 
+	repos *firebase.Repositories,
 	validate *validator.Validate,
 ) *Services {
 
 	return &Services{
 		Users: NewUserService(
-			repos.User, 
+			repos.User,
 			validate,
 		),
 		Decks: NewDeckService(
-			repos.Deck, 
-			validate, 
+			repos.Deck,
+			validate,
 			NewCardService(repos.Card, validate),
 		),
 	}

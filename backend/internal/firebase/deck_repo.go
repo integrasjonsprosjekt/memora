@@ -52,7 +52,7 @@ func NewFirestoreDeckRepo(client *firestore.Client) *FirestoreDeckRepo {
 // Error on failure, or if parameters SharedEmails and OwnerID is invalid.
 // Returns decks ID on success
 func (r *FirestoreDeckRepo) AddDeck(
-	ctx context.Context, 
+	ctx context.Context,
 	deck models.CreateDeck,
 ) (string, error) {
 	// Check if the user exists
