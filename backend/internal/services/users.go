@@ -77,6 +77,11 @@ func (s *UserService) RegisterNewUser(
 	ctx context.Context,
 	user models.CreateUser,
 ) (string, error) {
+	// Validate the input struct
+	if err := s.validate.Struct(user); err != nil {
+		return "", errors.ErrInvalidUser
+	}
+
 	id, err := s.repo.AddUser(ctx, user)
 	if err != nil {
 		return "", err
