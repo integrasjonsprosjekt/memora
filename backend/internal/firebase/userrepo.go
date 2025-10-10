@@ -58,7 +58,7 @@ func NewFirestoreUserRepo(client *firestore.Client) *FirestoreUserRepo {
 // Error on failure or if the email is already present.
 // Returns the new user's ID on success.
 func (r *FirestoreUserRepo) GetUser(
-	ctx context.Context, 
+	ctx context.Context,
 	id string,
 ) (models.User, error) {
 	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id)
@@ -164,7 +164,7 @@ func (r *FirestoreUserRepo) GetDecksShared(
 // Error on failure or if the email is already present.
 // Returns the new user's ID on success.
 func (r *FirestoreUserRepo) AddUser(
-	ctx context.Context, 
+	ctx context.Context,
 	user models.CreateUser,
 ) (string, error) {
 	// Check if the email is already present.
@@ -201,13 +201,51 @@ func (r *FirestoreUserRepo) UpdateUser(
 // Error on failure or if the ID is invalid.
 // Returns nil on success
 func (r *FirestoreUserRepo) DeleteUser(
-	ctx context.Context, 
+	ctx context.Context,
 	id string,
 ) error {
-	return utils.DeleteDocumentInDB(
-		r.client,
-		ctx,
-		config.UsersCollection,
-		id,
-	)
+	decksIter := r.client.Collection(config.DecksCollection).
+		Where("owner_id", "==", id).
+		Documents(ctx)
+	defer decksIter.Stop()
+
+	bulkWriter := r.client.BulkWriter(ctx)
+
+	for {
+		deckDoc, err := decksIter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		// Delete all cards in this deck
+		cardsIter := deckDoc.Ref.Collection("cards").Documents(ctx)
+
+		for {
+			cardDoc, err := cardsIter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return err
+			}
+
+			// Schedule delete using BulkWriter
+			bulkWriter.Delete(cardDoc.Ref)
+		}
+
+		// Delete the deck itself
+		bulkWriter.Delete(deckDoc.Ref)
+	}
+
+	userRef := r.client.Collection(config.UsersCollection).Doc(id)
+
+	bulkWriter.Delete(userRef)
+
+	// Wait for all operations to complete
+	bulkWriter.Flush()
+	bulkWriter.End()
+
+	return nil
 }
