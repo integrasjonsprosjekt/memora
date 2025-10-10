@@ -34,7 +34,7 @@ func NewDeckService(
 // RegisterNewDeck creates a new deck from the provided data.
 // Validates the deck and returns its ID or an error if the operation fails.
 func (s *DeckService) RegisterNewDeck(
-	ctx context.Context, 
+	ctx context.Context,
 	deck models.CreateDeck,
 ) (string, error) {
 	if err := s.validate.Struct(deck); err != nil {
@@ -52,7 +52,7 @@ func (s *DeckService) RegisterNewDeck(
 // GetOneDeck retrieves a deck by its ID, including its cards.
 // Returns the deck or an error if the operation fails.
 func (s *DeckService) GetOneDeck(
-	ctx context.Context, 
+	ctx context.Context,
 	id string,
 ) (models.DeckResponse, error) {
 	// Fetch the deck data from the repository

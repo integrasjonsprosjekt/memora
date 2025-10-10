@@ -22,7 +22,7 @@ func NewUserService(
 	validate *validator.Validate,
 ) *UserService {
 	return &UserService{
-		repo: repo, 
+		repo:     repo,
 		validate: validate,
 	}
 }
@@ -30,7 +30,7 @@ func NewUserService(
 // GetUser retrieves a user by their ID.
 // Returns the user or an error if the operation fails.
 func (s *UserService) GetUser(
-	ctx context.Context, 
+	ctx context.Context,
 	id string,
 ) (models.User, error) {
 	user, err := s.repo.GetUser(ctx, id)
@@ -43,7 +43,7 @@ func (s *UserService) GetUser(
 // GetDecksOwned retrieves all decks owned by a user.
 // Returns a list of decks or an error if the operation fails.
 func (s *UserService) GetDecksOwned(
-	ctx context.Context, 
+	ctx context.Context,
 	id string,
 ) ([]models.DisplayDeck, error) {
 	decks, err := s.repo.GetDecksOwned(ctx, id)
@@ -59,7 +59,7 @@ func (s *UserService) GetDecksOwned(
 // GetDecksShared retrieves all decks shared with a user.
 // Returns a list of decks or an error if the operation fails.
 func (s *UserService) GetDecksShared(
-	ctx context.Context, 
+	ctx context.Context,
 	id string,
 ) ([]models.DisplayDeck, error) {
 	decks, err := s.repo.GetDecksShared(ctx, id)
@@ -74,7 +74,7 @@ func (s *UserService) GetDecksShared(
 // RegisterNewUser creates a new user from the provided data.
 // Returns the new user's ID or an error if the operation fails.
 func (s *UserService) RegisterNewUser(
-	ctx context.Context, 
+	ctx context.Context,
 	user models.CreateUser,
 ) (string, error) {
 	id, err := s.repo.AddUser(ctx, user)
@@ -114,7 +114,7 @@ func (s *UserService) UpdateUser(
 // DeleteUser removes a user by their ID.
 // Returns an error if the operation fails.
 func (s *UserService) DeleteUser(
-	ctx context.Context, 
+	ctx context.Context,
 	id string,
 ) error {
 	return s.repo.DeleteUser(ctx, id)
