@@ -233,16 +233,22 @@ func (r *FirestoreUserRepo) DeleteUser(
 			}
 
 			// Schedule delete using BulkWriter
-			bulkWriter.Delete(cardDoc.Ref)
+			if _, err := bulkWriter.Delete(cardDoc.Ref); err != nil {
+				return err
+			}
 		}
 
 		// Delete the deck itself
-		bulkWriter.Delete(deckDoc.Ref)
+		if _, err := bulkWriter.Delete(deckDoc.Ref); err != nil {
+			return err
+		}
 	}
 
 	userRef := r.client.Collection(config.UsersCollection).Doc(id)
 
-	bulkWriter.Delete(userRef)
+	if _, err := bulkWriter.Delete(userRef); err != nil {
+		return err
+	}
 
 	// Wait for all operations to complete
 	bulkWriter.Flush()
