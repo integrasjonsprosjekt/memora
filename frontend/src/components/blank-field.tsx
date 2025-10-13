@@ -32,7 +32,7 @@ export const BlankFields = ({ form }: Props) => {
       />
       <FormField
         control={form.control}
-        name="answer"
+        name="answers"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Answer (comma separated)</FormLabel>
