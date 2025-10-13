@@ -2,10 +2,10 @@
 
 import { CardType } from "@/types/cards";
 
-export async function createCard(type: CardType, data: Record<string, unknown>) {
+export async function createCard(id: string, type: CardType, data: Record<string, unknown>) {
   const body = { type, ...data };
 
-  const response = await fetch(`${process.env.API_URI}/v1/cards`, {
+  const response = await fetch(`${process.env.API_URI}/v1/decks/${id}/cards`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
