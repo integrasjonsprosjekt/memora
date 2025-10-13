@@ -10,7 +10,7 @@ export default function buildCardPayload(cardType: CardType, formData: Record<st
     case "blanks":
       return {
         question: formData.question,
-        answer: formData.answer
+        answers: formData.answer
           .split(",")
           .map((s: string) => s.trim())
           .filter(Boolean),
