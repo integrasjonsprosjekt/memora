@@ -148,21 +148,6 @@ definitions:
       title:
         type: string
     type: object
-  models.UpdateDeckCards:
-    properties:
-      cards:
-        items:
-          type: string
-        type: array
-      opp:
-        enum:
-        - add
-        - remove
-        type: string
-    required:
-    - cards
-    - opp
-    type: object
   models.UpdateDeckEmails:
     properties:
       opp:
@@ -361,17 +346,17 @@ paths:
       summary: Get a card
       tags:
       - Decks
-    patch:
+    put:
       consumes:
       - application/json
-      description: Updates a decks cards in Firestore by ID
+      description: Updates a card in a deck in Firestore by ID
       parameters:
       - description: Deck info
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateDeckCards'
+          $ref: '#/definitions/models.AnyCard'
       - description: Deck ID
         in: path
         name: deckID
@@ -389,7 +374,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.DeckResponse'
-      summary: Update a decks' cards
+      summary: Update a card in a deck
       tags:
       - Decks
   /api/v1/decks/{deckID}/emails:
@@ -477,9 +462,14 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Updates/replaces data
+      description: Return updated user information
       parameters:
-      - description: User info
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User info to update
         in: body
         name: user
         required: true
@@ -488,9 +478,11 @@ paths:
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
-      summary: Patch the users' data by ID
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Update a user in firestore by their ID
       tags:
       - Users
   /api/v1/users/{id}/decks/owned:
