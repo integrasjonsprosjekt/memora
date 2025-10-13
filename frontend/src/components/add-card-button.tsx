@@ -4,7 +4,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AddCardMenu } from "@/components/add-card-menu";
 
-export function AddCardButton() {
+interface AddCardButtonProps {
+  deckId: string;
+}
+
+export function AddCardButton({ deckId }: AddCardButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -15,7 +19,7 @@ export function AddCardButton() {
       >
         Add card
       </Button>
-      <AddCardMenu open={open} onOpenChange={setOpen} />
+      <AddCardMenu open={open} onOpenChange={setOpen} deckId={deckId} />
     </>
   );
 }

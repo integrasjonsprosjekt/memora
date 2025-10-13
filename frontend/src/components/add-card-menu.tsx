@@ -19,10 +19,12 @@ import { CardType } from "@/types/cards";
 import { createCard } from "@/app/api";
 import { Button } from "./ui/button";
 import { OrderedFields } from "./ordered-field";
+import { useRouter } from "next/navigation";
 
 interface AddCardMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  deckId: string;
 }
 
 type CardForms = {
@@ -32,7 +34,7 @@ type CardForms = {
   ordered: z.infer<typeof cardSchemas.ordered>;
 };
 
-export function AddCardMenu({ open, onOpenChange }: AddCardMenuProps) {
+export function AddCardMenu({ open, onOpenChange, deckId }: AddCardMenuProps) {
   const [cardType, setCardType] = useState<CardType>("front_back");
   const [loading, setLoading] = useState(false);
 
@@ -48,15 +50,18 @@ export function AddCardMenu({ open, onOpenChange }: AddCardMenuProps) {
     form.reset({});
   }, [cardType, form]);
 
+  const router = useRouter();
+
   const onSubmit = form.handleSubmit(async (values) => {
     setLoading(true);
     try {
       const payload = buildCardPayload(cardType, values);
-      const res = await createCard(cardType, payload);
+      const res = await createCard(deckId, cardType, payload);
 
       if (res.success) {
         form.reset({});
         onOpenChange(false);
+        router.refresh();
         alert("Card created successfully!");
       } else {
         alert(`Failed to create card: ${res.message}`);
