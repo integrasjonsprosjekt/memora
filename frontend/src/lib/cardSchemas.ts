@@ -7,7 +7,7 @@ export const cardSchemas = {
   }),
   blanks: z.object({
     question: z.string().min(1, "Question required"),
-    answer: z.string().min(1, "Answer required"),
+    answers: z.string().min(1, "Answer required"),
   }),
   multiple_choice: z.object({
     question: z.string().min(1, "Question required"),
