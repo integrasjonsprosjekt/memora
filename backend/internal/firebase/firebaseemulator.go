@@ -16,7 +16,10 @@ func InitEmulator() (*firestore.Client, error) {
 
 	host := config.GetEnv("FIRESTORE_EMULATOR_HOST", "localhost:8081")
 
-	os.Setenv("FIRESTORE_EMULATOR_HOST", host)
+	err := os.Setenv("FIRESTORE_EMULATOR_HOST", host)
+	if err != nil {
+		return nil, err
+	}
 
 	ctx := context.Background()
 
