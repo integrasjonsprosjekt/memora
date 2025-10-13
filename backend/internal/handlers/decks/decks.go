@@ -167,16 +167,16 @@ func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
-// @Summary Update a decks' cards
-// @Description Updates a decks cards in Firestore by ID
+// @Summary Update a card in a deck
+// @Description Updates a card in a deck in Firestore by ID
 // @Tags Decks
 // @Accept json
 // @Produce json
-// @Param user body models.UpdateDeckCards true "Deck info"
+// @Param user body models.AnyCard true "Deck info"
 // @Param deckID path string true "Deck ID"
 // @Param cardID path string true "Card ID"
 // @Success 200 {object} models.DeckResponse
-// @Router /api/v1/decks/{deckID}/cards/{cardID} [patch]
+// @Router /api/v1/decks/{deckID}/cards/{cardID} [put]
 func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")

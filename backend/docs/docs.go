@@ -219,6 +219,52 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "description": "Updates a card in a deck in Firestore by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Update a card in a deck",
+                "parameters": [
+                    {
+                        "description": "Deck info",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AnyCard"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "deckID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeckResponse"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "Deletes a card from a specified deck by its ID",
                 "consumes": [
@@ -250,52 +296,6 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    }
-                }
-            },
-            "patch": {
-                "description": "Updates a decks cards in Firestore by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Decks"
-                ],
-                "summary": "Update a decks' cards",
-                "parameters": [
-                    {
-                        "description": "Deck info",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UpdateDeckCards"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Deck ID",
-                        "name": "deckID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Card ID",
-                        "name": "cardID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.DeckResponse"
-                        }
                     }
                 }
             }
@@ -426,7 +426,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Updates/replaces data",
+                "description": "Return updated user information",
                 "consumes": [
                     "application/json"
                 ],
@@ -436,10 +436,17 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Patch the users' data by ID",
+                "summary": "Update a user in firestore by their ID",
                 "parameters": [
                     {
-                        "description": "User info",
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User info to update",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -449,8 +456,11 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
                     }
                 }
             }
@@ -725,28 +735,6 @@ const docTemplate = `{
             "properties": {
                 "title": {
                     "type": "string"
-                }
-            }
-        },
-        "models.UpdateDeckCards": {
-            "type": "object",
-            "required": [
-                "cards",
-                "opp"
-            ],
-            "properties": {
-                "cards": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "opp": {
-                    "type": "string",
-                    "enum": [
-                        "add",
-                        "remove"
-                    ]
                 }
             }
         },
