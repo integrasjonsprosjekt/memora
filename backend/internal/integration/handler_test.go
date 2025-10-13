@@ -316,7 +316,7 @@ func TestHandlers(t *testing.T) {
 				"3": false,
 				"4": false
 			},
-			"answer_index": 1
+			"answer_index": 2
 		}`
 
 		w := PerformRequest(r, "POST", "/api/v1/decks/"+deckID+"/cards/", strings.NewReader(body))
