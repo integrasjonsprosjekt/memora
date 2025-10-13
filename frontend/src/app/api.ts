@@ -20,10 +20,10 @@ export async function createCard(id: string, type: CardType, data: Record<string
   return { success: true, data: result };
 }
 
-export async function updateCard(id: string, data: Record<string, unknown>) {
+export async function updateCard(deck_id: string, card_id: string, data: Record<string, unknown>) {
   const body = { ...data };
 
-  const response = await fetch(`${process.env.API_URI}/v1/cards/${id}`, {
+  const response = await fetch(`${process.env.API_URI}/v1/decks/${deck_id}/cards/${card_id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -38,8 +38,8 @@ export async function updateCard(id: string, data: Record<string, unknown>) {
   return { success: true, data: result };
 }
 
-export async function deleteCard(id: string) {
-  const response = await fetch(`${process.env.API_URI}/v1/cards/${id}`, {
+export async function deleteCard(deck_id: string, card_id: string) {
+  const response = await fetch(`${process.env.API_URI}/v1/decks/${deck_id}/cards/${card_id}`, {
     method: "DELETE",
   });
 
