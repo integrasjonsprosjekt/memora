@@ -12,7 +12,6 @@ import (
 
 func FirebaseAuthMiddleware(auth *services.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Println("FIREBASE_AUTH_EMULATOR_HOST: ", os.Getenv("FIREBASE_AUTH_EMULATOR_HOST"))
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
 			errors.HandleError(c, errors.ErrUnauthorized)
@@ -23,7 +22,7 @@ func FirebaseAuthMiddleware(auth *services.AuthService) gin.HandlerFunc {
 		idToken := strings.TrimPrefix(authHeader, "Bearer ")
 		token, err := auth.VerifyIDToken(c.Request.Context(), idToken)
 		if err != nil {
-			errors.HandleError(c, errors.ErrUnauthorized)
+			errors.HandleError(c, err)
 			c.Abort()
 			return
 		}
