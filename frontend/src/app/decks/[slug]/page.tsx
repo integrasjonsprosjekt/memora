@@ -2,6 +2,7 @@ import { RenderCardThumbnail } from '@/components/card';
 import { Card } from '@/components/card';
 import { notFound } from 'next/navigation';
 import { AddCardButton } from '@/components/add-card-button';
+import { DeckLayout } from '@/components/deck-layout';
 
 export default async function DeckPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -9,11 +10,11 @@ export default async function DeckPage({ params }: { params: Promise<{ slug: str
   const decks_cards: Record<string, string[]> = {
     '1': ['gSFxN0hqouvSKyz1jOfZ'],
     '2': [
-      '9ybE9uAbhBfoiPa3dblp',
       'YzAn6ycO5vrucqOZVzkR',
       'gSFxN0hqouvSKyz1jOfZ',
       'iHsbWpt6MiH8bmVbSf69',
-      'mRamakLsGWKPB8s9jTLX',
+      'Ph7ZWX6IDvKHNtAxAM5i',
+      'JUG5jssDQefjRqFAX0lv',
       'U49eHJ0NATRbof7HBOSY',
       'phpglBNV5BQ4cTGuRjVS',
     ],
@@ -60,12 +61,12 @@ export default async function DeckPage({ params }: { params: Promise<{ slug: str
         </p>
       </header>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+      <DeckLayout>
         <AddCardButton />
         {cards.map((card) => (
           <RenderCardThumbnail key={card.id} card={card} />
         ))}
-      </div>
+      </DeckLayout>
     </div>
   );
 }

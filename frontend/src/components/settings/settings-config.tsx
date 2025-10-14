@@ -5,7 +5,7 @@ export const DEFAULT_SETTINGS: Setting[] = [
     id: 'use-masonry-layout',
     type: 'boolean',
     label: 'Use masonry layout',
-    description: 'When enabled, uses the masonry layout for grids.',
+    description: 'Display cards in a masonry layout (reload required)',
     value: true,
   },
 ];
