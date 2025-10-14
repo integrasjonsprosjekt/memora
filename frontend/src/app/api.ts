@@ -51,3 +51,27 @@ export async function deleteCard(deck_id: string, card_id: string) {
 
   return { success: true, data: result };
 }
+
+// ---------- Decks ----------
+
+export async function createDeck(title: string, shared_emails?: string[]) {
+  const body = {
+    owner_id: "xHoY659nXFVpWBdc93NH", // TODO: Remove hardcoded user ID
+    title,
+    shared_emails
+  };
+
+  const response = await fetch(`${process.env.API_URI}/v1/decks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    return { success: false, message: result.error || "Failed to create deck" };
+  }
+
+  return { success: true, data: result };
+}
