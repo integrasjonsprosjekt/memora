@@ -56,7 +56,7 @@ const data = {
       ],
     },
     {
-      title: 'Avansert Programmering',
+      title: 'Trivia',
       url: '/decks/2',
       isActive: false,
       icon: Boxes,

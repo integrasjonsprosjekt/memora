@@ -21,7 +21,7 @@ export function BooleanSettingWidget({
       />
       <div className="space-y-1 leading-none">
         <Label htmlFor={setting.id} className="cursor-pointer">
-          {setting.label}
+          <strong>{setting.label}</strong>
         </Label>
         {setting.description && (
           <p className="text-muted-foreground text-sm">{setting.description}</p>

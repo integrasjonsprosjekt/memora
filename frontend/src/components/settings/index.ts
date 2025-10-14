@@ -1,6 +1,7 @@
 export { SettingsDialog } from './settings-dialog';
 export { RenderSetting } from './settings-renderer';
 export { useSettings } from './use-settings';
+export { useSettingValue, useBooleanSetting, useSettingValues } from './use-setting-value';
 export {
   DEFAULT_SETTINGS,
   getSettingConfig,
