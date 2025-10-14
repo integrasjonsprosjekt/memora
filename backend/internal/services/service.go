@@ -10,6 +10,7 @@ import (
 type Services struct {
 	Users *UserService
 	Decks *DeckService
+	Auth  *AuthService
 }
 
 // NewServices creates a new Services struct with the provided repositories and validator.
@@ -27,6 +28,9 @@ func NewServices(
 			repos.Deck,
 			validate,
 			NewCardService(repos.Card, validate),
+		),
+		Auth: NewAuthService(
+			repos.Auth,
 		),
 	}
 }
