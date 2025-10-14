@@ -17,6 +17,7 @@ var (
 	ErrInvalidId              = errors.New("invalid id")
 	ErrFailedUpdatingEmail    = errors.New("failed to update emails")
 	ErrFailedUpdatingCards    = errors.New("failed to update cards")
+	ErrUnauthorized = errors.New("unauthorized")
 	ErrorMap                  = map[error]struct {
 		Status  int
 		Message string
@@ -45,6 +46,7 @@ var (
 			Status:  http.StatusBadRequest,
 			Message: "failed to update cards",
 		},
+		ErrUnauthorized: {Status: http.StatusUnauthorized, Message: "unauthorized operation"},
 	}
 )
 
