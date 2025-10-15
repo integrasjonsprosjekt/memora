@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +18,7 @@ var (
 	ErrInvalidId              = errors.New("invalid id")
 	ErrFailedUpdatingEmail    = errors.New("failed to update emails")
 	ErrFailedUpdatingCards    = errors.New("failed to update cards")
-	ErrUnauthorized = errors.New("unauthorized")
+	ErrUnauthorized           = errors.New("unauthorized")
 	ErrorMap                  = map[error]struct {
 		Status  int
 		Message string
@@ -64,5 +65,6 @@ func HandleError(c *gin.Context, err error) bool {
 
 	// fallback for unexpected errors
 	c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+	log.Println("Unhandled error:", err)
 	return true
 }

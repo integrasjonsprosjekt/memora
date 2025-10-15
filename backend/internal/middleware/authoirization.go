@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"memora/internal/errors"
 	"memora/internal/services"
 	"strings"
@@ -21,14 +20,13 @@ func FirebaseAuthMiddleware(auth *services.AuthService) gin.HandlerFunc {
 		idToken := strings.TrimPrefix(authHeader, "Bearer ")
 		token, err := auth.VerifyIDToken(c.Request.Context(), idToken)
 		if err != nil {
-			errors.HandleError(c, err)
+			errors.HandleError(c, errors.ErrUnauthorized)
 			c.Abort()
 			return
 		}
 
-		c.Set("uid", token)
+		c.Set("uid", token.UID)
 		c.Set("email", token.Claims["email"])
-		log.Println("Authenticated user:", token.UID, "with email:", token.Claims["email"])
 		c.Next()
 	}
 }

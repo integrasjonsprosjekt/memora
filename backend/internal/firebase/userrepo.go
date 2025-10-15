@@ -16,7 +16,7 @@ type UserRepository interface {
 	// AddUser adds a new user to Firestore.
 	// Error on failure or if the email is already present.
 	// Returns the new user's ID on success.
-	AddUser(ctx context.Context, u models.CreateUser) (string, error)
+	AddUser(ctx context.Context, u models.CreateUser, id string) error
 
 	// GetUser fetches a user from Firestore by ID.
 	// Error on failure or if the ID is invalid.
@@ -166,18 +166,20 @@ func (r *FirestoreUserRepo) GetDecksShared(
 func (r *FirestoreUserRepo) AddUser(
 	ctx context.Context,
 	user models.CreateUser,
-) (string, error) {
+	id string,
+) error {
 	// Check if the email is already present.
 	exists, err := utils.UserExistsByEmail(r.client, ctx, user.Email)
 	if err != nil {
-		return "", err
+		return err
 	}
 	if exists {
-		return "", errors.ErrInvalidEmailPresent
+		return errors.ErrInvalidEmailPresent
 	}
 
 	// Email is unique, add the user to Firestore.
-	return utils.AddToDB(r.client, ctx, config.UsersCollection, user)
+	_, err = r.client.Collection(config.UsersCollection).Doc(id).Set(ctx, user)
+	return err
 }
 
 // UpdateUser updates fields of an existing user in Firestore.

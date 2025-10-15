@@ -2,9 +2,27 @@ package utils
 
 import (
 	"encoding/json"
+	"memora/internal/errors"
 
 	"cloud.google.com/go/firestore"
+	"github.com/gin-gonic/gin"
 )
+
+func GetUID(c *gin.Context) (string, error) {
+	uid, ok := c.Get("uid")
+	if !ok {
+		return "", errors.ErrUnauthorized
+	}
+	return uid.(string), nil
+}
+
+func GetEmail(c *gin.Context) (string, error) {
+	email, ok := c.Get("email")
+	if !ok {
+		return "", errors.ErrUnauthorized
+	}
+	return email.(string), nil
+}
 
 // StructToUpdate converts a struct to a slice of Firestore updates.
 // It ignores zero-value fields to prevent overwriting existing data with empty values.
