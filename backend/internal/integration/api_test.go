@@ -23,7 +23,7 @@ func SetupRouter(t *testing.T) *gin.Engine {
 	repos := firebase.NewRepositories(client, nil)
 	svc := services.NewServices(repos, validate)
 
-	r := router.New()
+	r := router.New(svc.Auth)
 	router.Route(r, svc)
 
 	return r

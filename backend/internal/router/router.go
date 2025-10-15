@@ -14,7 +14,7 @@ import (
 )
 
 // New initializes a new Gin router with middleware.
-func New() *gin.Engine {
+func New(auth *services.AuthService) *gin.Engine {
 	router := gin.New()
 
 	logger := slog.Default()
@@ -22,6 +22,7 @@ func New() *gin.Engine {
 	router.Use(gin.Recovery())
 	router.Use(middleware.CORS())
 	router.Use(middleware.Logging(logger))
+	router.Use(middleware.FirebaseAuthMiddleware(auth))
 
 	return router
 }
@@ -44,7 +45,7 @@ func Route(c *gin.Engine, services *services.Services) {
 			userRoute.DELETE("/:id", users.DeleteUser(services.Users))
 
 			// Deck-related endpoints in the context of a user
-			decksRoute := userRoute.Group("/:id/decks")
+			decksRoute := userRoute.Group("/decks")
 			{
 				decksRoute.GET("/owned", users.GetDecksOwned(services.Users))
 				decksRoute.GET("/shared", users.GetDecksShared(services.Users))
