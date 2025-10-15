@@ -50,6 +50,24 @@ func (s *DeckService) CheckIfUserCanAccessDeck(
 	return false, nil
 }
 
+// CheckIfUserCanAccessDeck checks if a user has access to a deck based on ownership or shared emails.
+// Returns true if the user can access the deck, false otherwise.
+func (s *DeckService) CheckIfUserCanAccessDeck(
+	ctx context.Context,
+	deckID, userID, userEmail string,
+) (bool, error) {
+	deck, err := s.repo.GetOneDeck(ctx, deckID, []string{"owner_id", "shared_emails"})
+	if err != nil {
+		return false, err
+	}
+
+	if deck.OwnerID == userID || slices.Contains(deck.SharedEmails, userEmail) {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 // RegisterNewDeck creates a new deck from the provided data.
 // Validates the deck and returns its ID or an error if the operation fails.
 func (s *DeckService) RegisterNewDeck(

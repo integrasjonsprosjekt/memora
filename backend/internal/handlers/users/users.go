@@ -152,12 +152,6 @@ func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 			return
 		}
 
-		id, err := utils.GetUID(c)
-		if err != nil {
-			c.Status(http.StatusUnauthorized)
-			return
-		}
-
 		user, err := userRepo.UpdateUser(c.Request.Context(), updates, id)
 		if errors.HandleError(c, err) {
 			return
@@ -178,7 +172,7 @@ func DeleteUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetString("uid")
 
-		err := userRepo.DeleteUser(c.Request.Context(), id.(string))
+		err := userRepo.DeleteUser(c.Request.Context(), id)
 		if errors.HandleError(c, err) {
 			return
 		}
