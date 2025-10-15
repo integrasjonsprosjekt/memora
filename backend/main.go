@@ -38,7 +38,7 @@ func main() {
 	services := services.NewServices(repos, validate)
 
 	// Set up and run the router
-	r := router.New()
+	r := router.New(services.Auth)
 
 	// Register routes with the router
 	router.Route(r, services)

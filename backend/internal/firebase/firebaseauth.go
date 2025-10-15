@@ -8,7 +8,7 @@ import (
 )
 
 type FirebaseAuth interface {
-	VerifyIDToken(ctx context.Context, idToken string) (string, error)
+	VerifyIDToken(ctx context.Context, idToken string) (*auth.Token, error)
 }
 
 type FirebaseAuthRepo struct {
@@ -23,10 +23,10 @@ func NewFirebaseAuth(app *firebase.App) (*FirebaseAuthRepo, error) {
 	return &FirebaseAuthRepo{client: client}, nil
 }
 
-func (f *FirebaseAuthRepo) VerifyIDToken(ctx context.Context, idToken string) (string, error) {
+func (f *FirebaseAuthRepo) VerifyIDToken(ctx context.Context, idToken string) (*auth.Token, error) {
 	token, err := f.client.VerifyIDToken(ctx, idToken)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return token.UID, nil
+	return token, nil
 }
