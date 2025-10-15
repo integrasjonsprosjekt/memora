@@ -94,6 +94,7 @@ func GetDecksShared(userRepo *services.UserService) gin.HandlerFunc {
 func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var content models.CreateUser
+		uid := c.GetString("uid")
 
 		if err := c.ShouldBindBodyWithJSON(&content); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -102,24 +103,15 @@ func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 			return
 		}
 
-		id, err := utils.GetUID(c)
-		if err != nil {
-			c.Status(http.StatusUnauthorized)
-			return
-		}
-		content.Email, err = utils.GetEmail(c)
-		if err != nil {
-			c.Status(http.StatusUnauthorized)
-			return
-		}
+		content.Email = c.GetString("email")
 
-		if err := userRepo.RegisterNewUser(c.Request.Context(), content, id); err != nil {
+		if err := userRepo.RegisterNewUser(c.Request.Context(), content, uid); err != nil {
 			errors.HandleError(c, err)
 			return
 		}
 
 		c.JSON(http.StatusCreated, models.ReturnID{
-			ID: id,
+			ID: uid,
 		})
 	}
 }
@@ -137,16 +129,11 @@ func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var updates models.PatchUser
+		id := c.GetString("uid")
 		if err := c.ShouldBindBodyWithJSON(&updates); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "invalid JSON",
 			})
-			return
-		}
-
-		id, err := utils.GetUID(c)
-		if err != nil {
-			c.Status(http.StatusUnauthorized)
 			return
 		}
 
@@ -168,13 +155,9 @@ func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 // @Router /api/v1/users/{id} [delete]
 func DeleteUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id, ok := c.Get("uid")
-		if !ok {
-			c.Status(http.StatusUnauthorized)
-			return
-		}
+		id := c.GetString("uid")
 
-		err := userRepo.DeleteUser(c.Request.Context(), id.(string))
+		err := userRepo.DeleteUser(c.Request.Context(), id)
 		if errors.HandleError(c, err) {
 			return
 		}

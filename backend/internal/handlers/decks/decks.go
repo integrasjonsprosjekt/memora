@@ -4,7 +4,6 @@ import (
 	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/services"
-	"memora/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,14 +20,21 @@ import (
 func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
+		uid := c.GetString("uid")
+		email := c.GetString("email")
 
-		deck, err := deckRepo.GetOneDeck(c.Request.Context(), deckID)
-		if errors.HandleError(c, err) {
+		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+			c.Request.Context(),
+			deckID, uid, email,
+		)
+
+		if !canAccess || err != nil {
+			errors.HandleError(c, errors.ErrUnauthorized)
 			return
 		}
 
-		if !utils.CheckIfUserCanAccessDeck(c, deck.OwnerID, deck.SharedEmails) {
-			errors.HandleError(c, errors.ErrUnauthorized)
+		deck, err := deckRepo.GetOneDeck(c.Request.Context(), deckID)
+		if errors.HandleError(c, err) {
 			return
 		}
 
@@ -49,6 +55,18 @@ func GetCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
 		cardID := c.Param("cardID")
+		uid := c.GetString("uid")
+		email := c.GetString("email")
+
+		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+			c.Request.Context(),
+			deckID, uid, email,
+		)
+
+		if !canAccess || err != nil {
+			errors.HandleError(c, errors.ErrUnauthorized)
+			return
+		}
 
 		card, err := deckRepo.GetCardInDeck(c.Request.Context(), deckID, cardID)
 		if errors.HandleError(c, err) {
@@ -100,6 +118,18 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 func CreateCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
+		uid := c.GetString("uid")
+		email := c.GetString("email")
+
+		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+			c.Request.Context(),
+			deckID, uid, email,
+		)
+
+		if !canAccess || err != nil {
+			errors.HandleError(c, errors.ErrUnauthorized)
+			return
+		}
 
 		rawData, err := c.GetRawData()
 		if errors.HandleError(c, err) {
@@ -126,7 +156,19 @@ func CreateCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body models.UpdateDeck
-		id := c.Param("deckID")
+		deckID := c.Param("deckID")
+		uid := c.GetString("uid")
+		email := c.GetString("email")
+
+		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+			c.Request.Context(),
+			deckID, uid, email,
+		)
+
+		if !canAccess || err != nil {
+			errors.HandleError(c, errors.ErrUnauthorized)
+			return
+		}
 
 		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -135,7 +177,7 @@ func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
-		deck, err := deckRepo.UpdateDeck(c.Request.Context(), id, body)
+		deck, err := deckRepo.UpdateDeck(c.Request.Context(), deckID, body)
 		if errors.HandleError(c, err) {
 			return
 		}
@@ -155,6 +197,18 @@ func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
+		uid := c.GetString("uid")
+		email := c.GetString("email")
+
+		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+			c.Request.Context(),
+			deckID, uid, email,
+		)
+
+		if !canAccess || err != nil {
+			errors.HandleError(c, errors.ErrUnauthorized)
+			return
+		}
 
 		var body models.UpdateDeckEmails
 
@@ -188,6 +242,18 @@ func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
 		cardID := c.Param("cardID")
+		uid := c.GetString("uid")
+		email := c.GetString("email")
+
+		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+			c.Request.Context(),
+			deckID, uid, email,
+		)
+
+		if !canAccess || err != nil {
+			errors.HandleError(c, errors.ErrUnauthorized)
+			return
+		}
 
 		rawData, err := c.GetRawData()
 		if errors.HandleError(c, err) {
@@ -219,8 +285,20 @@ func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 func DeleteDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
+		uid := c.GetString("uid")
+		email := c.GetString("email")
 
-		err := deckRepo.DeleteDeck(c.Request.Context(), deckID)
+		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+			c.Request.Context(),
+			deckID, uid, email,
+		)
+
+		if !canAccess || err != nil {
+			errors.HandleError(c, errors.ErrUnauthorized)
+			return
+		}
+
+		err = deckRepo.DeleteDeck(c.Request.Context(), deckID)
 		if errors.HandleError(c, err) {
 			return
 		}
@@ -242,8 +320,20 @@ func DeleteCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
 		cardID := c.Param("cardID")
+		uid := c.GetString("uid")
+		email := c.GetString("email")
 
-		err := deckRepo.DeleteCardInDeck(c.Request.Context(), deckID, cardID)
+		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+			c.Request.Context(),
+			deckID, uid, email,
+		)
+
+		if !canAccess || err != nil {
+			errors.HandleError(c, errors.ErrUnauthorized)
+			return
+		}
+
+		err = deckRepo.DeleteCardInDeck(c.Request.Context(), deckID, cardID)
 		if errors.HandleError(c, err) {
 			return
 		}

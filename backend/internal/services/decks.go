@@ -6,6 +6,7 @@ import (
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
+	"slices"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -28,6 +29,22 @@ func NewDeckService(
 		validate: validate,
 		Cards:    cards,
 	}
+}
+
+func (s *DeckService) CheckIfUserCanAccessDeck(
+	ctx context.Context,
+	deckID, userID, userEmail string,
+) (bool, error) {
+	deck, err := s.repo.GetOneDeck(ctx, deckID)
+	if err != nil {
+		return false, err
+	}
+
+	if deck.OwnerID == userID || slices.Contains(deck.SharedEmails, userEmail) {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // RegisterNewDeck creates a new deck from the provided data.
