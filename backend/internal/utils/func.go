@@ -3,10 +3,26 @@ package utils
 import (
 	"encoding/json"
 	"memora/internal/errors"
+	"slices"
 
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
 )
+
+func CheckIfUserCanAccessDeck(c *gin.Context, ownerID string, sharedEmails []string) bool {
+	uid, err := GetUID(c)
+	if err != nil {
+		return false
+	}
+	email, err := GetEmail(c)
+	if err != nil {
+		return false
+	}
+	if uid != ownerID && !slices.Contains(sharedEmails, email) {
+		return false
+	}
+	return true
+}
 
 func GetUID(c *gin.Context) (string, error) {
 	uid, ok := c.Get("uid")

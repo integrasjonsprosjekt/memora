@@ -4,6 +4,7 @@ import (
 	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/services"
+	"memora/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,12 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		if errors.HandleError(c, err) {
 			return
 		}
+
+		if !utils.CheckIfUserCanAccessDeck(c, deck.OwnerID, deck.SharedEmails) {
+			errors.HandleError(c, errors.ErrUnauthorized)
+			return
+		}
+
 		c.JSON(http.StatusOK, deck)
 	}
 }
