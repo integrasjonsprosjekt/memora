@@ -1,10 +1,8 @@
 package middleware
 
 import (
-	"log"
 	"memora/internal/errors"
 	"memora/internal/services"
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
