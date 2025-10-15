@@ -2,12 +2,12 @@ package utils
 
 import (
 	"encoding/json"
+	"memora/internal/errors"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
-	"memora/internal/errors"
-	"slices"
 
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
