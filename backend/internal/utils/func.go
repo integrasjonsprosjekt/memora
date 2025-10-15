@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 	"memora/internal/errors"
+	"slices"
 
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
@@ -47,6 +48,24 @@ func ParseFilter(filter string) ([]string, error) {
 		result = append(result, part)
 	}
 	return result, nil
+}
+
+// CheckIfUserCanAccessDeck checks if the user making the request
+// is either the owner of the deck or has been granted access via shared emails.
+// Returns true if the user can access the deck, false otherwise.
+func CheckIfUserCanAccessDeck(c *gin.Context, ownerID string, sharedEmails []string) bool {
+	uid, err := GetUID(c)
+	if err != nil {
+		return false
+	}
+	email, err := GetEmail(c)
+	if err != nil {
+		return false
+	}
+	if uid != ownerID && !slices.Contains(sharedEmails, email) {
+		return false
+	}
+	return true
 }
 
 // GetUID retrieves the user ID (UID) from the Gin context.
