@@ -32,6 +32,21 @@ func ParseFilter(filter string) ([]string, error) {
 
 // GetUID retrieves the user ID from the Gin context.
 // Returns the user ID as a string or an error if not found.
+func CheckIfUserCanAccessDeck(c *gin.Context, ownerID string, sharedEmails []string) bool {
+	uid, err := GetUID(c)
+	if err != nil {
+		return false
+	}
+	email, err := GetEmail(c)
+	if err != nil {
+		return false
+	}
+	if uid != ownerID && !slices.Contains(sharedEmails, email) {
+		return false
+	}
+	return true
+}
+
 func GetUID(c *gin.Context) (string, error) {
 	uid, ok := c.Get("uid")
 	if !ok {

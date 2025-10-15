@@ -59,7 +59,7 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			errors.HandleError(c, errors.ErrUnauthorized)
 			return
 		}
-		
+
 		filter := c.DefaultQuery("filter", "title,owner_id,shared_emails")
 
 		deck, err := deckRepo.GetOneDeck(c.Request.Context(), deckID, filter)
