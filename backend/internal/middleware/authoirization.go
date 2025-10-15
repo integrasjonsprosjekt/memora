@@ -20,7 +20,7 @@ func FirebaseAuthMiddleware(auth *services.AuthService) gin.HandlerFunc {
 		idToken := strings.TrimPrefix(authHeader, "Bearer ")
 		token, err := auth.VerifyIDToken(c.Request.Context(), idToken)
 		if err != nil {
-			errors.HandleError(c, err)
+			errors.HandleError(c, errors.ErrUnauthorized)
 			c.Abort()
 			return
 		}

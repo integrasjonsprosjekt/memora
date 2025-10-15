@@ -10,22 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetUID(c *gin.Context) (string, error) {
-	uid, ok := c.Get("uid")
-	if !ok {
-		return "", errors.ErrUnauthorized
-	}
-	return uid.(string), nil
-}
-
-func GetEmail(c *gin.Context) (string, error) {
-	email, ok := c.Get("email")
-	if !ok {
-		return "", errors.ErrUnauthorized
-	}
-	return email.(string), nil
-}
-
 // ReadDataFromIterator reads all documents from a Firestore DocumentIterator
 // and unmarshals them into a slice of the specified type T.
 // Returns the slice of T or an error if the operation fails.
@@ -44,6 +28,26 @@ func ParseFilter(filter string) ([]string, error) {
 		result = append(result, part)
 	}
 	return result, nil
+}
+
+// GetUID retrieves the user ID from the Gin context.
+// Returns the user ID as a string or an error if not found.
+func GetUID(c *gin.Context) (string, error) {
+	uid, ok := c.Get("uid")
+	if !ok {
+		return "", errors.ErrUnauthorized
+	}
+	return uid.(string), nil
+}
+
+// GetEmail retrieves the user email from the Gin context.
+// Returns the email as a string or an error if not found.
+func GetEmail(c *gin.Context) (string, error) {
+	email, ok := c.Get("email")
+	if !ok {
+		return "", errors.ErrUnauthorized
+	}
+	return email.(string), nil
 }
 
 // StructToUpdate converts a struct to a slice of Firestore updates.
