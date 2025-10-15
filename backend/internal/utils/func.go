@@ -6,8 +6,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"memora/internal/errors"
 
 	"cloud.google.com/go/firestore"
+	"github.com/gin-gonic/gin"
 )
 
 const defaultLimitSize = 20
@@ -45,6 +47,26 @@ func ParseFilter(filter string) ([]string, error) {
 		result = append(result, part)
 	}
 	return result, nil
+}
+
+// GetUID retrieves the user ID (UID) from the Gin context.
+// Returns the UID as a string or an error if not found.
+func GetUID(c *gin.Context) (string, error) {
+	uid, ok := c.Get("uid")
+	if !ok {
+		return "", errors.ErrUnauthorized
+	}
+	return uid.(string), nil
+}
+
+// GetEmail retrieves the user email from the Gin context.
+// Returns the email as a string or an error if not found.
+func GetEmail(c *gin.Context) (string, error) {
+	email, ok := c.Get("email")
+	if !ok {
+		return "", errors.ErrUnauthorized
+	}
+	return email.(string), nil
 }
 
 // StructToUpdate converts a struct to a slice of Firestore updates.
