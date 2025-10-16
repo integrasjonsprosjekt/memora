@@ -128,7 +128,7 @@ func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 // Updates a user based on an id and returns the updated user
 func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var updates models.PatchUser
+		var updates models.CreateUser
 		id := c.GetString("uid")
 		if err := c.ShouldBindBodyWithJSON(&updates); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{

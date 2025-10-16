@@ -90,7 +90,7 @@ func (s *UserService) RegisterNewUser(
 // Validates the input and returns an error if the operation fails.
 func (s *UserService) UpdateUser(
 	ctx context.Context,
-	updateStruct models.PatchUser,
+	updateStruct models.CreateUser,
 	id string,
 ) (models.User, error) {
 	// Validate the input struct
