@@ -4,7 +4,7 @@ import (
 	"context"
 	"memora/internal/firebase"
 
-	"firebase.google.com/go/auth"
+	firebaseauth "firebase.google.com/go/auth"
 )
 
 type AuthService struct {
@@ -19,6 +19,6 @@ func NewAuthService(
 	}
 }
 
-func (s AuthService) VerifyIDToken(ctx context.Context, idToken string) (*auth.Token, error) {
+func (s AuthService) VerifyIDToken(ctx context.Context, idToken string) (*firebaseauth.Token, error) {
 	return s.repo.VerifyIDToken(ctx, idToken)
 }
