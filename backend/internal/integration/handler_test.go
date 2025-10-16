@@ -14,6 +14,12 @@ func TestHandlers(t *testing.T) {
 	// Setup router
 	r := SetupRouter(t)
 
+	uid := CreateTestUser(r, t)
+	if uid == "" {
+		t.Fatal("Failed to create test user")
+	}
+	t.Log(uid)
+
 	// POST /api/v1/users/ - Create a new user
 	t.Run("Missing parameter in body", func(t *testing.T) {
 		body := `{
