@@ -9,41 +9,27 @@ import (
 func TestHandlers(t *testing.T) {
 
 	// Store created user ID for further tests
-	var userID, email, deckID string
+	var deckID string
+	email := "test@user2.com"
 
 	// Setup router
 	r := SetupRouter(t)
 
-	uid := CreateTestUser(r, t)
-	if uid == "" {
+	token1 := CreateTestUser1(t)
+	if token1 == "" {
 		t.Fatal("Failed to create test user")
 	}
-	t.Log(uid)
+	token2 := CreateTestUser2(t)
+	if token2 == "" {
+		t.Fatal("Failed to create second test user")
+	}
 
 	// POST /api/v1/users/ - Create a new user
 	t.Run("Missing parameter in body", func(t *testing.T) {
 		body := `{
-			"email": "herman@example.com",
-			"password": "short"
+			"test": "invalid",
 		}`
-		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body))
-		if w.Code != 400 {
-			t.Errorf("Expected status code 400, got %d", w.Code)
-		}
-		resp := w.Body.String()
-		expected := `{"error":"invalid user data"}`
-		if resp != expected {
-			t.Errorf("Expected response body %q, got %q", expected, resp)
-		}
-	})
-
-	t.Run("Invalid email", func(t *testing.T) {
-		body := `{
-			"email": "not-an-email",
-			"password": "validpassword",
-			"name": "Herman"
-		}`
-		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body))
+		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body), token1)
 		if w.Code != 400 {
 			t.Errorf("Expected status code 400, got %d", w.Code)
 		}
@@ -56,11 +42,9 @@ func TestHandlers(t *testing.T) {
 
 	t.Run("Valid user creation", func(t *testing.T) {
 		body := `{
-        "email": "herman@example.com",
-        "password": "validpassword",
         "name": "Herman"
     }`
-		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body))
+		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body), token1)
 		if w.Code != 201 {
 			t.Errorf("Expected status code 201, got %d", w.Code)
 		}
@@ -76,8 +60,6 @@ func TestHandlers(t *testing.T) {
 		if respData.ID == "" {
 			t.Errorf("Expected a non-empty user ID, got empty string")
 		}
-
-		userID = respData.ID
 
 		// Optional: check that the response contains only the "id" field
 		var generic map[string]interface{}
@@ -92,11 +74,9 @@ func TestHandlers(t *testing.T) {
 	// POST /api/v1/users/ - Create another user
 	t.Run("Create another user", func(t *testing.T) {
 		body := `{
-			"email": "herman2@example.com",
-			"password": "validpassword",
 			"name": "Herman2"
 		}`
-		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body))
+		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body), token2)
 		if w.Code != 201 {
 			t.Errorf("Expected status code 201, got %d", w.Code)
 		}
@@ -112,16 +92,13 @@ func TestHandlers(t *testing.T) {
 		if respData.ID == "" {
 			t.Errorf("Expected a non-empty user ID, got empty string")
 		}
-		email = "herman2@example.com"
 	})
 
 	t.Run("Duplicate email", func(t *testing.T) {
 		body := `{
-			"email": "herman@example.com",
-			"password": "anotherpassword",
 			"name": "Herman2"
 		}`
-		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body))
+		w := PerformRequest(r, "POST", "/api/v1/users/", strings.NewReader(body), token2)
 		if w.Code != 400 {
 			t.Errorf("Expected status code 400, got %d", w.Code)
 		}
@@ -134,31 +111,27 @@ func TestHandlers(t *testing.T) {
 
 	// GET /api/v1/users/{userID} - Retrieve the created user
 	t.Run("Get created user", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform GET test")
-		}
-		path := "/api/v1/users/" + userID
-		w := PerformRequest(r, "GET", path, nil)
+		w := PerformRequest(r, "GET", "/api/v1/users/", nil, token1)
 		if w.Code != 200 {
 			t.Errorf("Expected status code 200, got %d", w.Code)
 		}
 		resp := w.Body.String()
-		expectedSubstring := `"email":"herman@example.com"`
+		expectedSubstring := `"email":"test@user.com"`
 		if !strings.Contains(resp, expectedSubstring) {
 			t.Errorf("Expected response body to contain %q, got %q", expectedSubstring, resp)
 		}
 	})
 
 	// GET /api/v1/users/{invalidID} - Attempt to retrieve a non-existent user
-	t.Run("Get non-existent user", func(t *testing.T) {
+	t.Run("Get non-existent user without validation", func(t *testing.T) {
 		invalidID := "nonexistentid"
 		path := "/api/v1/users/" + invalidID
-		w := PerformRequest(r, "GET", path, nil)
-		if w.Code != 400 {
-			t.Errorf("Expected status code 400, got %d", w.Code)
+		w := PerformRequest(r, "GET", path, nil, "")
+		if w.Code != 401 {
+			t.Errorf("Expected status code 401, got %d", w.Code)
 		}
 		resp := w.Body.String()
-		expected := `{"error":"did not find document"}`
+		expected := `{"error":"unauthorized operation"}`
 		if resp != expected {
 			t.Errorf("Expected response body %q, got %q", expected, resp)
 		}
@@ -166,14 +139,10 @@ func TestHandlers(t *testing.T) {
 
 	// PATCH /api/v1/users/{userID} - Update the created user
 	t.Run("Update user name", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform PATCH test")
-		}
 		body := `{
 			"name": "Herman Updated"
 		}`
-		path := "/api/v1/users/" + userID
-		w := PerformRequest(r, "PATCH", path, strings.NewReader(body))
+		w := PerformRequest(r, "PATCH", "/api/v1/users/", strings.NewReader(body), token1)
 		if w.Code != 200 {
 			t.Errorf("Expected status code 200, got %d", w.Code)
 		}
@@ -191,12 +160,12 @@ func TestHandlers(t *testing.T) {
 			"name": "Should Not Work"
 		}`
 		path := "/api/v1/users/" + invalidID
-		w := PerformRequest(r, "PATCH", path, strings.NewReader(body))
-		if w.Code != 400 {
-			t.Errorf("Expected status code 400, got %d", w.Code)
+		w := PerformRequest(r, "PATCH", path, strings.NewReader(body), "")
+		if w.Code != 401 {
+			t.Errorf("Expected status code 401, got %d", w.Code)
 		}
 		resp := w.Body.String()
-		expected := `{"error":"invalid id"}`
+		expected := `{"error":"unauthorized operation"}`
 		if resp != expected {
 			t.Errorf("Expected response body %q, got %q", expected, resp)
 		}
@@ -204,11 +173,7 @@ func TestHandlers(t *testing.T) {
 
 	// GET /api/v1/users/{userID} - Verify the update
 	t.Run("Verify user update", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform verification GET test")
-		}
-		path := "/api/v1/users/" + userID
-		w := PerformRequest(r, "GET", path, nil)
+		w := PerformRequest(r, "GET", "/api/v1/users/", nil, token1)
 		if w.Code != 200 {
 			t.Errorf("Expected status code 200, got %d", w.Code)
 		}
@@ -221,14 +186,10 @@ func TestHandlers(t *testing.T) {
 
 	// Decks and Shared tests can be added similarly once user tests are stable
 	t.Run("Create one deck for user", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform deck creation test")
-		}
 		body := `{
 			"title": "Test Deck",
-			"owner_id": "` + userID + `"
 		}`
-		w := PerformRequest(r, "POST", "/api/v1/decks/", strings.NewReader(body))
+		w := PerformRequest(r, "POST", "/api/v1/decks/", strings.NewReader(body), token1)
 		if w.Code != 201 {
 			t.Errorf("Expected status code 201, got %d", w.Code)
 		}
@@ -247,15 +208,12 @@ func TestHandlers(t *testing.T) {
 	})
 
 	t.Run("Update the created deck to share with another user", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform deck update test")
-		}
 		body := `{
 			"opp": "add",
 			"shared_emails": ["` + email + `"]
 		}`
 		// Now we can update the deck
-		w := PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body))
+		w := PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body), token1)
 		if w.Code != 200 {
 			t.Errorf("Expected status code 200, got %d", w.Code)
 		}
@@ -267,15 +225,12 @@ func TestHandlers(t *testing.T) {
 	})
 
 	t.Run("Add invalid email to deck", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform invalid email test")
-		}
 		body := `{
 			"opp": "add",
 			"shared_emails": ["invalid-email"]
 		}`
 		// Now we can update the deck
-		w := PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body))
+		w := PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body), token1)
 		if w.Code != 400 {
 			t.Errorf("Expected status code 400, got %d", w.Code)
 		}
@@ -287,16 +242,13 @@ func TestHandlers(t *testing.T) {
 	})
 
 	t.Run("Add cards to the created deck", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform deck update test")
-		}
 		body := `{
 			"type": "front_back",
 			"front": "What is the capital of France?",
 			"back": "Paris"
 		}`
 
-		w := PerformRequest(r, "POST", "/api/v1/decks/"+deckID+"/cards/", strings.NewReader(body))
+		w := PerformRequest(r, "POST", "/api/v1/decks/"+deckID+"/cards/", strings.NewReader(body), token1)
 		if w.Code != 201 {
 			t.Errorf("Expected status code 201, got %d", w.Code)
 		}
@@ -309,9 +261,6 @@ func TestHandlers(t *testing.T) {
 	})
 
 	t.Run("Add multiple choice card to the created deck", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform deck update test")
-		}
 		body := `{
 			"type": "multiple_choice",
 			"question": "What is 2 + 2?",
@@ -325,7 +274,7 @@ func TestHandlers(t *testing.T) {
 			"answer_index": 2
 		}`
 
-		w := PerformRequest(r, "POST", "/api/v1/decks/"+deckID+"/cards/", strings.NewReader(body))
+		w := PerformRequest(r, "POST", "/api/v1/decks/"+deckID+"/cards/", strings.NewReader(body), token2)
 		if w.Code != 201 {
 			t.Errorf("Expected status code 201, got %d", w.Code)
 		}
@@ -339,11 +288,8 @@ func TestHandlers(t *testing.T) {
 
 	// Delete one card from the deck
 	t.Run("Delete one card from the deck", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform deck update test")
-		}
 		// First, get the list of cards to find a card ID to delete
-		w := PerformRequest(r, "GET", "/api/v1/decks/"+deckID, nil)
+		w := PerformRequest(r, "GET", "/api/v1/decks/"+deckID, nil, token1)
 		if w.Code != 200 {
 			t.Errorf("Expected status code 200, got %d", w.Code)
 		}
@@ -365,20 +311,29 @@ func TestHandlers(t *testing.T) {
 		cardID := respData.Cards[0].ID
 
 		// Now we can delete the card
-		w = PerformRequest(r, "DELETE", "/api/v1/decks/"+deckID+"/cards/"+cardID, nil)
+		w = PerformRequest(r, "DELETE", "/api/v1/decks/"+deckID+"/cards/"+cardID, nil, token1)
 		if w.Code != 204 {
 			t.Errorf("Expected status code 204, got %d", w.Code)
 		}
 	})
 
 	t.Run("Delete the created user with the deck and cards", func(t *testing.T) {
-		if userID == "" {
-			t.Fatal("userID is empty, cannot perform user deletion test")
-		}
-		path := "/api/v1/users/" + userID
-		w := PerformRequest(r, "DELETE", path, nil)
+		w := PerformRequest(r, "DELETE", "/api/v1/users/", nil, token1)
 		if w.Code != 204 {
 			t.Errorf("Expected status code 204, got %d", w.Code)
+		}
+	})
+
+	// Shared deck should now be empty
+	t.Run("Verify shared decks are empty after owner deletion", func(t *testing.T) {
+		w := PerformRequest(r, "GET", "/api/v1/users/decks/shared", nil, token2)
+		if w.Code != 200 {
+			t.Errorf("Expected status code 200, got %d", w.Code)
+		}
+		resp := w.Body.String()
+		expected := `[]`
+		if resp != expected {
+			t.Errorf("Expected response body %q, got %q", expected, resp)
 		}
 	})
 }
