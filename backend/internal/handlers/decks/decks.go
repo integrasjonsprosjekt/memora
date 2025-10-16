@@ -129,6 +129,8 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
+		content.OwnerID = c.GetString("uid")
+
 		id, err := deckRepo.RegisterNewDeck(c.Request.Context(), content)
 		if errors.HandleError(c, err) {
 			return
