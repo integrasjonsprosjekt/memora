@@ -17,13 +17,18 @@ import (
 )
 
 func SetupRouter(t *testing.T) *gin.Engine {
-	client, err := firebase.InitEmulator()
+	client, app, err := firebase.InitEmulator()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	auth, err := firebase.NewFirebaseAuth(app)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	validate := validator.New()
-	repos := firebase.NewRepositories(client, nil)
+	repos := firebase.NewRepositories(client, auth)
 	svc := services.NewServices(repos, validate)
 
 	r := router.New(svc.Auth)
@@ -32,30 +37,69 @@ func SetupRouter(t *testing.T) *gin.Engine {
 	return r
 }
 
-func PerformRequest(r *gin.Engine, method, path string, body io.Reader) *httptest.ResponseRecorder {
+func PerformRequest(r *gin.Engine, method, path string, body io.Reader, token string) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(method, path, body)
 	req.Header.Set("content-type", "application/json")
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	return w
 }
 
-func CreateTestUser(r *gin.Engine, t *testing.T) string {
-	url := "http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=any"
+func CreateTestUser1(t *testing.T) string {
+	url := "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=any"
 	payload := map[string]string{
 		"email":             "test@user.com",
 		"password":          "verysecurepassword",
 		"returnSecureToken": "true",
 	}
 	body, _ := json.Marshal(payload)
+
 	resp, err := http.Post(url, "application/json", bytes.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
 
-	var result map[string]interface{}
+	var result map[string]any
 	json.NewDecoder(resp.Body).Decode(&result)
-	t.Log(result)
-	return result["idToken"].(string)
+
+	log.Println(result)
+
+	idToken, ok := result["idToken"].(string)
+	if !ok || idToken == "" {
+		t.Fatal("failed to get idToken from emulator")
+	}
+
+	return idToken
+}
+
+func CreateTestUser2(t *testing.T) string {
+	url := "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=any"
+	payload := map[string]string{
+		"email":             "test@user2.com",
+		"password":          "verysecurepassword",
+		"returnSecureToken": "true",
+	}
+	body, _ := json.Marshal(payload)
+
+	resp, err := http.Post(url, "application/json", bytes.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	var result map[string]any
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	log.Println(result)
+
+	idToken, ok := result["idToken"].(string)
+	if !ok || idToken == "" {
+		t.Fatal("failed to get idToken from emulator")
+	}
+
+	return idToken
 }
