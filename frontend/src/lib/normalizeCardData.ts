@@ -5,7 +5,9 @@ export default function normalizeCardData(card: CardType) {
     case "multiple_choice": {
       const options = Object.keys(card.options || {}).join(", ");
       const answer = Object.entries(card.options || {})
-        .find(([_, v]) => v === true)?.[0] ?? "";
+        .filter(([_, v]) => v === true)
+        .map(([key]) => key)
+        .join(", ");
       return {
         question: card.question ?? "",
         options,
