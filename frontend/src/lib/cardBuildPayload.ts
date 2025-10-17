@@ -20,8 +20,14 @@ export default function buildCardPayload(cardType: CardType, formData: Record<st
         .split(",")
         .map((s: string) => s.trim())
         .filter(Boolean);
+
+      const answerArray = formData.answer
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+
       const options = optionsArray.reduce((acc: Record<string, boolean>, opt: string) => {
-        acc[opt] = opt === formData.answer.trim();
+        acc[opt] = answerArray.includes(opt);
         return acc;
       }, {});
       return {
