@@ -1,4 +1,5 @@
 import { RenderCard } from '@/components/card';
+import { DeleteCardButton } from '@/components/delete-card-button';
 import { EditCardButton } from '@/components/edit-card-button';
 import { Card } from '@/components/ui/card';
 import { getApiEndpoint } from '@/config/api';
@@ -23,7 +24,10 @@ export default async function CardPage({ params }: { params: Promise<{ deckId: s
           className="[&>hr]:-mx-10 [&>hr]:w-auto"
         />
       </Card>
-      <EditCardButton deckId={deckId} cardId={card.id} cardType={card.type} initialData={normalizedData} />
+      <div className='flex flex-row items-center justify-center'>
+        <EditCardButton deckId={deckId} cardId={card.id} cardType={card.type} initialData={normalizedData} />
+        <DeleteCardButton deckId={deckId} cardId={card.id} />
+      </div>
     </div>
   );
 }
