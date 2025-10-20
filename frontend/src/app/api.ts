@@ -142,3 +142,15 @@ export async function updateDeck(deck_id: string, payload: UpdateDeckPayload) {
 
   return { success: true, data: resultTitle + resultEmails };
 }
+
+export async function deleteDeck(deck_id: string) {
+  const response = await fetch(`${process.env.API_URI}/v1/decks/${deck_id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    return { success: false, message: "Failed to delete deck" };
+  }
+
+  return { success: true };
+}
