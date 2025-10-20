@@ -26,7 +26,7 @@ interface EditCardMenuProps {
   deckId: string;
   cardId: string;
   cardType: CardType;
-  initialData: Record<string, any>;
+  initialData: Record<string, unknown>;
 }
 
 type CardForms = {

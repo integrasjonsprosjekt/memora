@@ -43,10 +43,20 @@ export async function deleteCard(deck_id: string, card_id: string) {
     method: "DELETE",
   });
 
-  const result = await response.json();
+  // 204 means "No Content" — don't try to parse JSON
+  if (response.status === 204) {
+    return { success: true };
+  }
+
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    result = null;
+  }
 
   if (!response.ok) {
-    return { success: false, message: result.error || "Failed to delete card" };
+    return { success: false, message: result?.error || "Failed to delete card" };
   }
 
   return { success: true, data: result };
