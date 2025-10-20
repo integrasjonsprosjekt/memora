@@ -9,7 +9,7 @@ interface CardButtonProps {
   deckId: string;
   cardId: string;
   cardType: CardType;
-  initialData: Record<string, any>;
+  initialData: Record<string, unknown>;
 }
 
 export function EditCardButton({ deckId, cardId, cardType, initialData }: CardButtonProps) {
@@ -18,7 +18,7 @@ export function EditCardButton({ deckId, cardId, cardType, initialData }: CardBu
   return (
     <>
       <Button
-        className="h-20 w-20 rounded-2xl border border-[var(--border)] bg-blue-600"
+        className="mx-20"
         onClick={() => setOpen(true)}
       >
         Edit card
