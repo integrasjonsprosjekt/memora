@@ -6,10 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { deckSchema } from "@/lib/deckSchema";
 import { z } from "zod";
 import { useState } from "react";
-import { EmailInput, Input } from "./ui/input";
+import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { createDeck } from "@/app/api";
 import { useRouter } from "next/navigation";
+import { EmailInput } from "./email-input";
 
 export function AddDeckMenu() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export function AddDeckMenu() {
   const onSubmit = form.handleSubmit(async (values) => {
     setLoading(true);
     try {
-      const res = await createDeck(values.title, values.shared_emails);
+      const res = await createDeck(values.title, values.shared_emails ?? []);
       if (res.success) {
         router.push(`/decks/${values.title}`);
       } else {
@@ -61,9 +62,9 @@ export function AddDeckMenu() {
           name="shared_emails"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Shared Emails (comma separated)</FormLabel>
+              <FormLabel>Shared Emails</FormLabel>
               <FormControl>
-                <EmailInput />
+                <EmailInput value={field.value ?? []} onChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}
