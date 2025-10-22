@@ -1,5 +1,6 @@
 import { JSX } from 'react';
-import { CardComponentProps, OrderedCard as OrderedCardType } from '../types';
+import { OrderedCard as OrderedCardType } from '@/types/card';
+import { CardComponentProps } from '../types';
 
 export function OrderedCard({ card, className }: CardComponentProps<OrderedCardType>): JSX.Element {
   return <div className={className}>{card.question}</div>;
