@@ -1,5 +1,6 @@
 import { JSX } from 'react';
-import { CardComponentProps, MultipleChoiceCard as MultipleChoiceCardType } from '../types';
+import { MultipleChoiceCard as MultipleChoiceCardType } from '@/types/card';
+import { CardComponentProps } from '../types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';

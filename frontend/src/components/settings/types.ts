@@ -1,3 +1,4 @@
+// TODO: Refactor like card types
 export type SettingType = 'boolean';
 
 interface BaseSetting {

@@ -31,8 +31,3 @@ export interface OrderedCard extends BaseCard {
 
 // Union type for all cards
 export type Card = FrontBackCard | FillBlanksCard | MultipleChoiceCard | OrderedCard;
-
-export type CardComponentProps<T> = {
-  card: T;
-  className?: string;
-};
