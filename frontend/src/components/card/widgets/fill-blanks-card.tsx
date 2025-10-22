@@ -1,5 +1,6 @@
 import { JSX } from 'react';
-import { CardComponentProps, FillBlanksCard as FillBlanksCardType } from '../types';
+import { FillBlanksCard as FillBlanksCardType } from '@/types/card';
+import { CardComponentProps } from '../types';
 
 export function FillBlanksCard({
   card,

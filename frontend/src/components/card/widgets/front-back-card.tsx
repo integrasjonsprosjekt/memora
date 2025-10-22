@@ -2,7 +2,8 @@
 
 import { JSX, useState } from 'react';
 import styles from '../card.module.css';
-import { CardComponentProps, FrontBackCard as FrontBackCardType } from '../types';
+import { FrontBackCard as FrontBackCardType } from '@/types/card';
+import { CardComponentProps } from '../types';
 import { ClientMarkdownRenderer } from '@/components/markdown/client-markdown-renderer';
 
 export function FrontBackCard({
