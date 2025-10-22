@@ -19,8 +19,9 @@ import (
 func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
+		filter := c.DefaultQuery("filter", "email,name")
 
-		user, err := userRepo.GetUser(c.Request.Context(), id)
+		user, err := userRepo.GetUser(c.Request.Context(), id, filter)
 		if errors.HandleError(c, err) {
 			return
 		}
@@ -39,8 +40,9 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
+		filter := c.DefaultQuery("filter", "title")
 
-		decks, err := userRepo.GetDecks(c.Request.Context(), id)
+		decks, err := userRepo.GetDecks(c.Request.Context(), id, filter)
 		if errors.HandleError(c, err) {
 			return
 		}

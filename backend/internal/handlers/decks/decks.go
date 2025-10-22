@@ -20,8 +20,9 @@ import (
 func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
+		filter := c.DefaultQuery("filter", "title,owner_id,shared_emails")
 
-		deck, err := deckRepo.GetOneDeck(c.Request.Context(), deckID)
+		deck, err := deckRepo.GetOneDeck(c.Request.Context(), deckID, filter)
 		if errors.HandleError(c, err) {
 			return
 		}

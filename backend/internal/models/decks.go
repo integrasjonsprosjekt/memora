@@ -10,9 +10,9 @@ type CreateDeck struct {
 
 type DeckResponse struct {
 	ID           string   `json:"id" firestore:"-"`
-	Title        string   `json:"title" firestore:"title"`
-	OwnerID      string   `json:"owner_id" firestore:"owner_id"`
-	SharedEmails []string `json:"shared_emails" firestore:"shared_emails"`
+	Title        string   `json:"title,omitempty" firestore:"title"`
+	OwnerID      string   `json:"owner_id,omitempty" firestore:"owner_id"`
+	SharedEmails []string `json:"shared_emails,omitempty" firestore:"shared_emails"`
 	Cards        []Card   `json:"cards" firestore:"cards"`
 }
 
