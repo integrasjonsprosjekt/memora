@@ -1,10 +1,17 @@
 import { RenderCard } from '@/components/card';
 import { Card } from '@/components/ui/card';
+import { getApiEndpoint } from '@/config/api';
 
-export default async function CardPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function CardPage({
+  params,
+}: {
+  params: Promise<{ deckId: string; cardId: string }>;
+}) {
+  const { deckId, cardId } = await params;
 
-  const card = await fetch(`${process.env.API_URI}/v1/cards/${slug}`).then((res) => res.json());
+  const card = await fetch(getApiEndpoint(`/v1/decks/${deckId}/cards/${cardId}`), {
+    cache: 'no-store',
+  }).then((res) => res.json());
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
