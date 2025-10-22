@@ -1,4 +1,5 @@
-_: let
+{pkgs', ...}: let
+  nix.excludes = ["pkgs/**/*.nix"];
   backend.includes = ["backend/**/*.go"];
   frontend.includes = ["frontend/**/*.{js,jsx,ts,tsx,md,mdx,json,yaml,yml,css,scss,html}"];
 in {
@@ -20,8 +21,14 @@ in {
 
   programs = {
     # Nix
-    alejandra.enable = true;
-    deadnix.enable = true;
+    alejandra = {
+      inherit (nix) excludes;
+      enable = true;
+    };
+    deadnix = {
+      inherit (nix) excludes;
+      enable = true;
+    };
 
     # Go
     gofmt = {
@@ -44,9 +51,17 @@ in {
     prettier = {
       inherit (frontend) includes;
       enable = true;
-      settings.pluginSearchDirs = [
-        "frontend"
-      ];
+      settings =
+        builtins.fromJSON (builtins.readFile ./frontend/.prettierrc)
+        // {
+          pluginSearchDirs = [
+            "frontend"
+          ];
+          plugins = [
+            # https://github.com/numtide/treefmt-nix/issues/112#issuecomment-1691563490
+            "${pkgs'.node-packages.prettier-plugin-tailwindcss}/lib/node_modules/prettier-plugin-tailwindcss/dist/index.mjs"
+          ];
+        };
     };
   };
 }
