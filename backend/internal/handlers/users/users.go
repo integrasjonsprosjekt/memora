@@ -41,7 +41,7 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 // @Success 200 {object} []models.DisplayDeck
 // @Router /api/v1/users/{id}/decks/owned [get]
 // Return the users' owned decks based on an id
-func GetDecksOwned(userRepo *services.UserService) gin.HandlerFunc {
+func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := utils.GetUID(c)
 		if err != nil {
@@ -49,31 +49,7 @@ func GetDecksOwned(userRepo *services.UserService) gin.HandlerFunc {
 			return
 		}
 
-		decks, err := userRepo.GetDecksOwned(c.Request.Context(), id)
-		if errors.HandleError(c, err) {
-			return
-		}
-
-		c.JSON(http.StatusOK, decks)
-	}
-}
-
-// @Summary GET a users' shared decks from firestore by their ID
-// @Description Return the user's shared decks
-// @Tags Users
-// @Produce json
-// @Success 200 {object} []models.DisplayDeck
-// @Router /api/v1/users/{id}/decks/shared [get]
-// Return the users' shared decks based on an id
-func GetDecksShared(userRepo *services.UserService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id, err := utils.GetUID(c)
-		if err != nil {
-			c.Status(http.StatusUnauthorized)
-			return
-		}
-
-		decks, err := userRepo.GetDecksShared(c.Request.Context(), id)
+		decks, err := userRepo.GetDecks(c.Request.Context(), id)
 		if errors.HandleError(c, err) {
 			return
 		}

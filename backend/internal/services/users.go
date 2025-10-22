@@ -40,34 +40,19 @@ func (s *UserService) GetUser(
 	return user, nil
 }
 
-// GetDecksOwned retrieves all decks owned by a user.
+// GetDecks retrieves all decks associated with a user.
 // Returns a list of decks or an error if the operation fails.
-func (s *UserService) GetDecksOwned(
+func (s *UserService) GetDecks(
 	ctx context.Context,
 	id string,
 ) ([]models.DisplayDeck, error) {
-	decks, err := s.repo.GetDecksOwned(ctx, id)
+	decks, err := s.repo.GetDecks(ctx, id)
 
 	if decks == nil {
 		return []models.DisplayDeck{}, err
 	}
 
 	// Return the list of decks
-	return decks, err
-}
-
-// GetDecksShared retrieves all decks shared with a user.
-// Returns a list of decks or an error if the operation fails.
-func (s *UserService) GetDecksShared(
-	ctx context.Context,
-	id string,
-) ([]models.DisplayDeck, error) {
-	decks, err := s.repo.GetDecksShared(ctx, id)
-
-	if decks == nil {
-		return []models.DisplayDeck{}, err
-	}
-
 	return decks, err
 }
 
