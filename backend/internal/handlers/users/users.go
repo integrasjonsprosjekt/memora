@@ -25,7 +25,7 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
-
+		
 		user, err := userRepo.GetUser(c.Request.Context(), id, filter)
 		if errors.HandleError(c, err) {
 			return

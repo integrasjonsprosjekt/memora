@@ -65,7 +65,7 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			errors.HandleError(c, errors.ErrUnauthorized)
 			return
 		}
-
+		
 		deck, err := deckRepo.GetOneDeck(c.Request.Context(), deckID, filter)
 		if errors.HandleError(c, err) {
 			return

@@ -89,10 +89,9 @@ func GetEmail(c *gin.Context) (string, error) {
 	return email.(string), nil
 }
 
-// ReadDataFromIterator reads all documents from a Firestore DocumentIterator
-// and unmarshals them into a slice of the specified type T.
+// ReadDataFromIterator reads data from a Firestore DocumentIterator
+// and unmarshals it into a slice of the specified type T.
 // Returns the slice of T or an error if the operation fails.
-
 func ReadDataFromIterator[T any](iter *firestore.DocumentIterator) ([]T, error) {
 	var results []T
 
