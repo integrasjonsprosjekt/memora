@@ -32,8 +32,9 @@ type UpdateDeckEmails struct {
 }
 
 type DisplayDeck struct {
-	ID    string `json:"id" firestore:"-"`
-	Title string `json:"title" firestore:"title"`
+	ID      string `json:"id" firestore:"-"`
+	Title   string `json:"title,omitempty" firestore:"title"`
+	OwnerID string `json:"owner_id,omitempty" firestore:"owner_id"`
 }
 
 func (d DeckResponse) MarshalJSON() ([]byte, error) {

@@ -85,8 +85,9 @@ func (r *FirestoreUserRepo) GetDecks(
 	// Get all decks owned by the user.
 	iter := r.client.Collection(config.DecksCollection).
 		Where("owner_id", "==", id).
+		Select(fields...).
 		Documents(ctx)
-	decksOwned, err := utils.ReadDataFromIterator[models.DisplayDeck](iter)
+	decksOwned, err := readDataFromIterator(iter)
 	if err != nil {
 		return nil, err
 	}
@@ -94,8 +95,9 @@ func (r *FirestoreUserRepo) GetDecks(
 	// Create iterator where shared_emails array contains the user's email.
 	iter = r.client.Collection(config.DecksCollection).
 		Where("shared_emails", "array-contains", user.Email).
+		Select(fields...).
 		Documents(ctx)
-	decksShared, err := utils.ReadDataFromIterator[models.DisplayDeck](iter)
+	decksShared, err := readDataFromIterator(iter)
 	if err != nil {
 		return nil, err
 	}
@@ -202,4 +204,27 @@ func (r *FirestoreUserRepo) DeleteUser(
 	bulkWriter.End()
 
 	return nil
+}
+
+func readDataFromIterator(iter *firestore.DocumentIterator) ([]models.DisplayDeck, error) {
+	var results []models.DisplayDeck
+
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			if err == iterator.Done {
+				break
+			}
+			return nil, err
+		}
+
+		var item models.DisplayDeck
+		if err := doc.DataTo(&item); err != nil {
+			return nil, err
+		}
+		item.ID = doc.Ref.ID
+		results = append(results, item)
+	}
+
+	return results, nil
 }

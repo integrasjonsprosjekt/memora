@@ -8,7 +8,6 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
-	"google.golang.org/api/iterator"
 )
 
 func GetUID(c *gin.Context) (string, error) {
@@ -45,29 +44,6 @@ func ParseFilter(filter string) ([]string, error) {
 		result = append(result, part)
 	}
 	return result, nil
-}
-
-func ReadDataFromIterator[T any](iter *firestore.DocumentIterator) ([]T, error) {
-	var results []T
-
-	for {
-		doc, err := iter.Next()
-		if err != nil {
-			if err == iterator.Done {
-				break
-			}
-			return nil, err
-		}
-
-		var item T
-		if err := doc.DataTo(&item); err != nil {
-			return nil, err
-		}
-
-		results = append(results, item)
-	}
-
-	return results, nil
 }
 
 // StructToUpdate converts a struct to a slice of Firestore updates.
