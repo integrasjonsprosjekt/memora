@@ -19,7 +19,12 @@
           inherit system;
           config.allowUnfree = true;
         };
-        treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
+        treefmtEval = treefmt-nix.lib.evalModule pkgs (import ./treefmt.nix {
+          inherit pkgs;
+          pkgs' = {
+            node-packages = pkgs.callPackage ./pkgs/node-packages {};
+          };
+        });
       in {
         inherit lib;
 
