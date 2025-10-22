@@ -1,4 +1,4 @@
-export default async function DashboardPage() {
+export default async function Page() {
   return (
     <div>
       <h1>Dashboard</h1>
