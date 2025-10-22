@@ -6,10 +6,7 @@ export function OrderedCard({ card, className }: CardComponentProps<OrderedCardT
   return <div className={className}>{card.question}</div>;
 }
 
-export function OrderedCardThumbnail({
-  card,
-  className,
-}: CardComponentProps<OrderedCardType>): JSX.Element {
+export function OrderedCardThumbnail({ card, className }: CardComponentProps<OrderedCardType>): JSX.Element {
   return (
     <div className={className}>
       {card.question && <p className="pb-2 font-bold">{card.question}</p>}

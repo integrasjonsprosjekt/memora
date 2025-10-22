@@ -1,19 +1,9 @@
 'use client';
 
-import {
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-} from '@/components/ui/breadcrumb';
+import { BreadcrumbItem, BreadcrumbLink, BreadcrumbPage } from '@/components/ui/breadcrumb';
 import { usePathname } from 'next/navigation';
 
-export function DeckBreadcrumb({
-  deckId,
-  deckTitle,
-}: {
-  deckId: string;
-  deckTitle: string;
-}) {
+export function DeckBreadcrumb({ deckId, deckTitle }: { deckId: string; deckTitle: string }) {
   const pathname = usePathname();
   const isOnDeckPage = pathname === `/decks/${deckId}`;
 

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import "./oiiai.scss";
+import * as React from 'react';
+import './oiiai.scss';
 
 interface OiiaiTriggerProps {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ interface OiiaiTriggerProps {
 export function OiiaiTrigger({
   children,
   targetId: targetId,
-  audioUrl = "/oiiai.wav",
+  audioUrl = '/oiiai.wav',
   holdDuration = 1500,
   animationDuration = 6800,
 }: OiiaiTriggerProps) {
@@ -30,11 +30,11 @@ export function OiiaiTrigger({
     // Play audio and animation
     audio.play().catch(console.error);
 
-    targetElement.classList.add("oiiai");
+    targetElement.classList.add('oiiai');
 
     // Remove the class after the animation completes
     setTimeout(() => {
-      targetElement.classList.remove("oiiai");
+      targetElement.classList.remove('oiiai');
     }, animationDuration);
   }, [targetId, audioUrl, animationDuration]);
 
@@ -76,12 +76,7 @@ export function OiiaiTrigger({
   }, []);
 
   return (
-    <div
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
-    >
+    <div onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave} onClick={handleClick}>
       {children}
     </div>
   );

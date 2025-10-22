@@ -27,11 +27,7 @@ interface BreadcrumbPathProps {
  * @param labelOverrides - Optional map to override labels at specific indices
  * @param capitalizeFrom - Index from which to start capitalizing labels (default: 0)
  */
-export function BreadcrumbPath({
-  segments,
-  labelOverrides = new Map(),
-  capitalizeFrom = 0,
-}: BreadcrumbPathProps) {
+export function BreadcrumbPath({ segments, labelOverrides = new Map(), capitalizeFrom = 0 }: BreadcrumbPathProps) {
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -46,17 +42,13 @@ export function BreadcrumbPath({
             <React.Fragment key={href}>
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage className={shouldCapitalize ? 'capitalize' : ''}>
-                    {label}
-                  </BreadcrumbPage>
+                  <BreadcrumbPage className={shouldCapitalize ? 'capitalize' : ''}>{label}</BreadcrumbPage>
                 ) : shouldLink ? (
                   <BreadcrumbLink href={href} className={shouldCapitalize ? 'capitalize' : ''}>
                     {label}
                   </BreadcrumbLink>
                 ) : (
-                  <BreadcrumbPage className={shouldCapitalize ? 'capitalize' : ''}>
-                    {label}
-                  </BreadcrumbPage>
+                  <BreadcrumbPage className={shouldCapitalize ? 'capitalize' : ''}>{label}</BreadcrumbPage>
                 )}
               </BreadcrumbItem>
               {!isLast && <BreadcrumbSeparator />}
