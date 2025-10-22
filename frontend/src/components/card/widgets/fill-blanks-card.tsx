@@ -2,17 +2,11 @@ import { JSX } from 'react';
 import { FillBlanksCard as FillBlanksCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 
-export function FillBlanksCard({
-  card,
-  className,
-}: CardComponentProps<FillBlanksCardType>): JSX.Element {
+export function FillBlanksCard({ card, className }: CardComponentProps<FillBlanksCardType>): JSX.Element {
   return <div className={className}>{card.question}</div>;
 }
 
-export function FillBlanksCardThumbnail({
-  card,
-  className,
-}: CardComponentProps<FillBlanksCardType>): JSX.Element {
+export function FillBlanksCardThumbnail({ card, className }: CardComponentProps<FillBlanksCardType>): JSX.Element {
   const parts = card.question.split('{}');
   return (
     <div className={className}>

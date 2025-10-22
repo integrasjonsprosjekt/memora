@@ -22,7 +22,7 @@ import { useSettings } from './use-settings';
 export function useSettingValue<T = unknown>(settingId: string): T | undefined {
   const { settings } = useSettings();
 
-  const setting = settings.find(s => s.id === settingId);
+  const setting = settings.find((s) => s.id === settingId);
   return setting?.value as T | undefined;
 }
 
@@ -59,9 +59,12 @@ export function useBooleanSetting(settingId: string, defaultValue: boolean = fal
 export function useSettingValues(settingIds: string[]): Record<string, unknown> {
   const { settings } = useSettings();
 
-  return settingIds.reduce((acc, id) => {
-    const setting = settings.find(s => s.id === id);
-    acc[id] = setting?.value;
-    return acc;
-  }, {} as Record<string, unknown>);
+  return settingIds.reduce(
+    (acc, id) => {
+      const setting = settings.find((s) => s.id === id);
+      acc[id] = setting?.value;
+      return acc;
+    },
+    {} as Record<string, unknown>
+  );
 }

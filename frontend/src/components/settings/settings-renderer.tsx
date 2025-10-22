@@ -10,11 +10,7 @@ export interface RenderSettingProps extends SettingComponentProps<Setting> {
 /**
  * Renders a setting item based on its type.
  */
-export function RenderSetting({
-  setting,
-  className,
-  onValueChange,
-}: RenderSettingProps): JSX.Element {
+export function RenderSetting({ setting, className, onValueChange }: RenderSettingProps): JSX.Element {
   const settingComponent = match(setting)
     .with({ type: 'boolean' }, () => (
       <BooleanSettingWidget

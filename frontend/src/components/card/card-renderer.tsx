@@ -30,18 +30,12 @@ import Link from 'next/link';
  */
 export function RenderCard({ card, className }: CardComponentProps<CardType>): JSX.Element {
   const cardComponent = match(card)
-    .with({ type: 'front_back' }, () => (
-      <FrontBackCard card={card as FrontBackCardType} className={className} />
-    ))
-    .with({ type: 'blanks' }, () => (
-      <FillBlanksCard card={card as FillBlanksCardType} className={className} />
-    ))
+    .with({ type: 'front_back' }, () => <FrontBackCard card={card as FrontBackCardType} className={className} />)
+    .with({ type: 'blanks' }, () => <FillBlanksCard card={card as FillBlanksCardType} className={className} />)
     .with({ type: 'multiple_choice' }, () => (
       <MultipleChoiceCard card={card as MultipleChoiceCardType} className={className} />
     ))
-    .with({ type: 'ordered' }, () => (
-      <OrderedCard card={card as OrderedCardType} className={className} />
-    ))
+    .with({ type: 'ordered' }, () => <OrderedCard card={card as OrderedCardType} className={className} />)
     .exhaustive();
 
   // TODO: Should the card boilerplate be moved from CardPage to here?
@@ -52,24 +46,16 @@ export function RenderCard({ card, className }: CardComponentProps<CardType>): J
 /**
  * Renders a non-interactive card thumbnail.
  */
-export function RenderCardThumbnail({
-  card,
-  className,
-  deckId,
-}: CardComponentProps<CardType>): JSX.Element {
+export function RenderCardThumbnail({ card, className, deckId }: CardComponentProps<CardType>): JSX.Element {
   const cardComponent = match(card)
     .with({ type: 'front_back' }, () => (
       <FrontBackCardThumbnail card={card as FrontBackCardType} className={className} />
     ))
-    .with({ type: 'blanks' }, () => (
-      <FillBlanksCardThumbnail card={card as FillBlanksCardType} className={className} />
-    ))
+    .with({ type: 'blanks' }, () => <FillBlanksCardThumbnail card={card as FillBlanksCardType} className={className} />)
     .with({ type: 'multiple_choice' }, () => (
       <MultipleChoiceCardThumbnail card={card as MultipleChoiceCardType} className={className} />
     ))
-    .with({ type: 'ordered' }, () => (
-      <OrderedCardThumbnail card={card as OrderedCardType} className={className} />
-    ))
+    .with({ type: 'ordered' }, () => <OrderedCardThumbnail card={card as OrderedCardType} className={className} />)
     .exhaustive();
 
   const tags = [card.type];

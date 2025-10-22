@@ -1,8 +1,4 @@
-export default async function DeckDashboardPage({
-  params,
-}: {
-  params: Promise<{ deckId: string }>;
-}) {
+export default async function DeckDashboardPage({ params }: { params: Promise<{ deckId: string }> }) {
   const { deckId } = await params;
 
   return (

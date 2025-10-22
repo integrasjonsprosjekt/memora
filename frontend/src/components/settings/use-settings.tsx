@@ -55,7 +55,7 @@ function loadAllSettingsFromStorage(): Setting[] {
       ({
         ...defaultSetting,
         value: loadSettingFromStorage(defaultSetting.id, defaultSetting.value),
-      }) as Setting,
+      }) as Setting
   );
 }
 
@@ -95,9 +95,7 @@ export function useSettings(): UseSettingsReturn {
   }, []);
 
   const updateSetting = useCallback((id: string, value: unknown) => {
-    setSettings((prev) =>
-      prev.map((setting) => (setting.id === id ? ({ ...setting, value } as Setting) : setting)),
-    );
+    setSettings((prev) => prev.map((setting) => (setting.id === id ? ({ ...setting, value } as Setting) : setting)));
   }, []);
 
   const saveSettings = useCallback(() => {

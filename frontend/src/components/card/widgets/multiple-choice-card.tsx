@@ -5,10 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
-export function MultipleChoiceCard({
-  card,
-  className,
-}: CardComponentProps<MultipleChoiceCardType>): JSX.Element {
+export function MultipleChoiceCard({ card, className }: CardComponentProps<MultipleChoiceCardType>): JSX.Element {
   return <div className={className}>{card.question}</div>;
 }
 

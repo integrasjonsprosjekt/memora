@@ -6,10 +6,7 @@ import { FrontBackCard as FrontBackCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { ClientMarkdownRenderer } from '@/components/markdown/client-markdown-renderer';
 
-export function FrontBackCard({
-  card,
-  className,
-}: CardComponentProps<FrontBackCardType>): JSX.Element {
+export function FrontBackCard({ card, className }: CardComponentProps<FrontBackCardType>): JSX.Element {
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
@@ -30,10 +27,7 @@ export function FrontBackCard({
   );
 }
 
-export function FrontBackCardThumbnail({
-  card,
-  className,
-}: CardComponentProps<FrontBackCardType>): JSX.Element {
+export function FrontBackCardThumbnail({ card, className }: CardComponentProps<FrontBackCardType>): JSX.Element {
   return (
     <div className={className}>
       <p>{card.front}</p>

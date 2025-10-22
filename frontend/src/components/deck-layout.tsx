@@ -15,7 +15,5 @@ export function DeckLayout({ children }: DeckLayoutProps) {
     return <MasonryGrid>{children}</MasonryGrid>;
   }
 
-  return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">{children}</div>
-  );
+  return <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">{children}</div>;
 }

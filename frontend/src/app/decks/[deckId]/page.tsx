@@ -23,9 +23,7 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
     return (
       <div className="p-8">
         <h1 className="text-3xl font-bold">Error loading deck</h1>
-        <p className="mt-4 text-[var(--muted-foreground)]">
-          There was a problem loading this deck.
-        </p>
+        <p className="mt-4 text-[var(--muted-foreground)]">There was a problem loading this deck.</p>
       </div>
     );
   }
@@ -44,8 +42,8 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
           .catch((error) => {
             console.error(`Error fetching card ${cardId}:`, error);
             return null;
-          }),
-      ),
+          })
+      )
   );
 
   return (

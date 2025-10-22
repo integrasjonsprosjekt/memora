@@ -6,11 +6,7 @@ export interface BooleanSettingWidgetProps extends SettingComponentProps<Boolean
   onValueChange?: (value: boolean) => void;
 }
 
-export function BooleanSettingWidget({
-  setting,
-  className,
-  onValueChange,
-}: BooleanSettingWidgetProps) {
+export function BooleanSettingWidget({ setting, className, onValueChange }: BooleanSettingWidgetProps) {
   return (
     <div className={`flex items-start space-x-3 ${className || ''}`}>
       <Checkbox
@@ -23,9 +19,7 @@ export function BooleanSettingWidget({
         <Label htmlFor={setting.id} className="cursor-pointer">
           <strong>{setting.label}</strong>
         </Label>
-        {setting.description && (
-          <p className="text-muted-foreground text-sm">{setting.description}</p>
-        )}
+        {setting.description && <p className="text-muted-foreground text-sm">{setting.description}</p>}
       </div>
     </div>
   );
