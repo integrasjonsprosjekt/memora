@@ -2,10 +2,28 @@ package utils
 
 import (
 	"encoding/json"
+	"net/url"
+	"strings"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 )
+
+func ParseFilter(filter string) ([]string, error) {
+	var result []string
+	decoded, err := url.QueryUnescape(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	parts := strings.SplitSeq(decoded, ",")
+	for part := range parts {
+		part = strings.TrimSpace(part)
+
+		result = append(result, part)
+	}
+	return result, nil
+}
 
 func ReadDataFromIterator[T any](iter *firestore.DocumentIterator) ([]T, error) {
 	var results []T

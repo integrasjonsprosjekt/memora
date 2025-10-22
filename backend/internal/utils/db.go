@@ -16,20 +16,30 @@ func FetchByID[T any](
 	client *firestore.Client,
 	ctx context.Context,
 	collection, id string,
+	fields []string,
 ) (T, error) {
 	// Initialize a variable of type T to hold the response
 	var responseStruct T
 
-	// Retrieve the document from Firestore
-	response, err := client.Collection(collection).Doc(id).Get(ctx)
+	docRef := client.Collection(collection).Doc(id)
 
-	// Handle errors during retrieval
+	// Retrieve the document from Firestore
+	iter := client.Collection(collection).
+		Where(firestore.DocumentID, "==", docRef).
+		Select(fields...).
+		Limit(1).
+		Documents(ctx)
+
+	doc, err := iter.Next()
 	if err != nil {
-		return responseStruct, errors.ErrNotFound
+		if err == iterator.Done {
+			return responseStruct, errors.ErrInvalidId
+		}
+		return responseStruct, err
 	}
 
 	// Map the document data to the response struct
-	if err := response.DataTo(&responseStruct); err != nil {
+	if err := doc.DataTo(&responseStruct); err != nil {
 		return responseStruct, err
 	}
 

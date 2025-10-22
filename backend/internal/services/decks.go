@@ -10,6 +10,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+var defaultFilterDecks = "title,owner_id,shared_emails"
+
 // DeckService provides methods for managing decks.
 type DeckService struct {
 	repo     firebase.DeckRepository
@@ -53,9 +55,15 @@ func (s *DeckService) RegisterNewDeck(
 func (s *DeckService) GetOneDeck(
 	ctx context.Context,
 	id string,
+	filter string,
 ) (models.DeckResponse, error) {
+	filterParsed, err := utils.ParseFilter(filter)
+	if err != nil {
+		return models.DeckResponse{}, err
+	}
+
 	// Fetch the deck data from the repository
-	deck, err := s.repo.GetOneDeck(ctx, id)
+	deck, err := s.repo.GetOneDeck(ctx, id, filterParsed)
 	if err != nil {
 		return models.DeckResponse{}, err
 	}
@@ -94,7 +102,7 @@ func (s *DeckService) AddCardToDeck(
 		return models.DeckResponse{}, err
 	}
 
-	return s.GetOneDeck(ctx, deckID)
+	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
 }
 
 // UpdateDeck updates an existing deck identified by its ID with the provided data.
@@ -118,7 +126,7 @@ func (s *DeckService) UpdateDeck(
 		return models.DeckResponse{}, err
 	}
 
-	return s.GetOneDeck(ctx, deckID)
+	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
 }
 
 func (s *DeckService) UpdateCardInDeck(
@@ -131,7 +139,7 @@ func (s *DeckService) UpdateCardInDeck(
 		return models.DeckResponse{}, err
 	}
 
-	return s.GetOneDeck(ctx, deckID)
+	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
 }
 
 // UpdateEmailsInDeck updates the shared emails of a deck based on the provided operation (add or remove).
@@ -162,7 +170,7 @@ func (s *DeckService) UpdateEmailsInDeck(
 	}
 
 	// Fetch and return the updated deck
-	return s.GetOneDeck(ctx, deckID)
+	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
 }
 
 // DeleteDeck deletes a deck by its ID.
