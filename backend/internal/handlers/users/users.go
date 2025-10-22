@@ -24,8 +24,10 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
+		
+		filter := c.DefaultQuery("filter", "email,name")
 
-		user, err := userRepo.GetUser(c.Request.Context(), id)
+		user, err := userRepo.GetUser(c.Request.Context(), id, filter)
 		if errors.HandleError(c, err) {
 			return
 		}
@@ -48,8 +50,9 @@ func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
+		filter := c.DefaultQuery("filter", "title")
 
-		decks, err := userRepo.GetDecks(c.Request.Context(), id)
+		decks, err := userRepo.GetDecks(c.Request.Context(), id, filter)
 		if errors.HandleError(c, err) {
 			return
 		}

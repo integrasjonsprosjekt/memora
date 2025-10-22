@@ -19,7 +19,7 @@ type DeckRepository interface {
 
 	// GetOneDeck fetches an existing deck from firestore.
 	// Error on fail or if the ID is invalid, returns deck on success
-	GetOneDeck(ctx context.Context, id string) (models.Deck, error)
+	GetOneDeck(ctx context.Context, id string, fields []string) (models.Deck, error)
 
 	// UpdateDeck updates everything except emails and cards in a given deck.
 	// Error on failure, or if ID is invalid, nil on success
@@ -83,8 +83,9 @@ func (r *FirestoreDeckRepo) AddDeck(
 func (r *FirestoreDeckRepo) GetOneDeck(
 	ctx context.Context,
 	id string,
+	fields []string,
 ) (models.Deck, error) {
-	return utils.FetchByID[models.Deck](r.client, ctx, config.DecksCollection, id)
+	return utils.FetchByID[models.Deck](r.client, ctx, config.DecksCollection, id, fields)
 }
 
 // AddEmailsToShared adds emails to a deck to gain permissions on the deck.

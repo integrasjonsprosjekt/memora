@@ -21,12 +21,12 @@ type UserRepository interface {
 	// GetUser fetches a user from Firestore by ID.
 	// Error on failure or if the ID is invalid.
 	// Returns the user on success.
-	GetUser(ctx context.Context, id string) (models.User, error)
+	GetUser(ctx context.Context, id string, fields []string) (models.User, error)
 
 	// GetDecks fetches all decks for a user.
 	// Error on failure or if the user ID is invalid.
 	// Returns the decks ID and title on success.
-	GetDecks(ctx context.Context, id string) ([]models.DisplayDeck, error)
+	GetDecks(ctx context.Context, id string, fields []string) ([]models.DisplayDeck, error)
 
 	// UpdateUser updates fields of an existing user in Firestore.
 	// Error on failure or if the ID is invalid.
@@ -55,8 +55,9 @@ func NewFirestoreUserRepo(client *firestore.Client) *FirestoreUserRepo {
 func (r *FirestoreUserRepo) GetUser(
 	ctx context.Context,
 	id string,
+	fields []string,
 ) (models.User, error) {
-	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id)
+	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id, fields)
 	if err != nil {
 		return user, err
 	}
@@ -72,10 +73,11 @@ func (r *FirestoreUserRepo) GetUser(
 func (r *FirestoreUserRepo) GetDecks(
 	ctx context.Context,
 	id string,
+	fields []string,
 ) ([]models.DisplayDeck, error) {
 
 	// Get the user by ID. After middleware is introduced, this can be omitted.
-	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id)
+	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id, fields)
 	if err != nil {
 		return nil, err
 	}

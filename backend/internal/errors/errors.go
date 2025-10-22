@@ -58,12 +58,14 @@ func HandleError(c *gin.Context, err error) bool {
 
 	for k, v := range ErrorMap {
 		if errors.Is(err, k) {
+			log.Println("Got error: ", err)
 			c.JSON(v.Status, gin.H{"error": v.Message})
 			return true
 		}
 	}
 
 	// fallback for unexpected errors
+	log.Println("Got unexpected error: ", err)
 	c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 	log.Println("Unhandled error:", err)
 	return true

@@ -10,6 +10,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+var defaultFilterUsers = "email,name"
+
 // UserService provides methods for managing users.
 type UserService struct {
 	repo     firebase.UserRepository
@@ -31,9 +33,14 @@ func NewUserService(
 // Returns the user or an error if the operation fails.
 func (s *UserService) GetUser(
 	ctx context.Context,
-	id string,
+	id, filter string,
 ) (models.User, error) {
-	user, err := s.repo.GetUser(ctx, id)
+	filterParsed, err := utils.ParseFilter(filter)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	user, err := s.repo.GetUser(ctx, id, filterParsed)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -45,11 +52,20 @@ func (s *UserService) GetUser(
 func (s *UserService) GetDecks(
 	ctx context.Context,
 	id string,
+	filter string,
 ) ([]models.DisplayDeck, error) {
-	decks, err := s.repo.GetDecks(ctx, id)
+	filterParsed, err := utils.ParseFilter(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	decks, err := s.repo.GetDecks(ctx, id, filterParsed)
+	if err != nil {
+		return nil, err
+	}
 
 	if decks == nil {
-		return []models.DisplayDeck{}, err
+		return []models.DisplayDeck{}, nil
 	}
 
 	// Return the list of decks
@@ -94,7 +110,7 @@ func (s *UserService) UpdateUser(
 	if err != nil {
 		return models.User{}, err
 	}
-	return s.GetUser(ctx, id)
+	return s.GetUser(ctx, id, defaultFilterUsers)
 }
 
 // DeleteUser removes a user by their ID.
