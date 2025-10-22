@@ -23,15 +23,10 @@ type UserRepository interface {
 	// Returns the user on success.
 	GetUser(ctx context.Context, id string) (models.User, error)
 
-	// GetDecksOwned fetches all decks owned by a user.
+	// GetDecks fetches all decks for a user.
 	// Error on failure or if the user ID is invalid.
 	// Returns the decks ID and title on success.
-	GetDecksOwned(ctx context.Context, id string) ([]models.DisplayDeck, error)
-
-	// GetDecksShared fetches all decks shared with a user.
-	// Error on failure or if the user ID is invalid.
-	// Returns the decks ID and title on success.
-	GetDecksShared(ctx context.Context, id string) ([]models.DisplayDeck, error)
+	GetDecks(ctx context.Context, id string) ([]models.DisplayDeck, error)
 
 	// UpdateUser updates fields of an existing user in Firestore.
 	// Error on failure or if the ID is invalid.
@@ -74,13 +69,13 @@ func (r *FirestoreUserRepo) GetUser(
 // GetUser fetches a user from Firestore by ID.
 // Error on failure or if the ID is invalid.
 // Returns the user on success.
-func (r *FirestoreUserRepo) GetDecksOwned(
+func (r *FirestoreUserRepo) GetDecks(
 	ctx context.Context,
 	id string,
 ) ([]models.DisplayDeck, error) {
-	var decks []models.DisplayDeck
 
-	_, err := utils.GetDocumentIfExists(r.client, ctx, config.UsersCollection, id)
+	// Get the user by ID. After middleware is introduced, this can be omitted.
+	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id)
 	if err != nil {
 		return nil, err
 	}
@@ -89,73 +84,21 @@ func (r *FirestoreUserRepo) GetDecksOwned(
 	iter := r.client.Collection(config.DecksCollection).
 		Where("owner_id", "==", id).
 		Documents(ctx)
-
-	// Append each deck to the slice.
-	for {
-		doc, err := iter.Next()
-
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		var deck models.DisplayDeck
-		// Map the document data to the DisplayDeck struct.
-		if err := doc.DataTo(&deck); err != nil {
-			return nil, err
-		}
-
-		// Set the ID and append to the slice.
-		deck.ID = doc.Ref.ID
-		decks = append(decks, deck)
-	}
-
-	return decks, nil
-}
-
-// GetDecksOwned fetches all decks owned by a user.
-// Error on failure or if the user ID is invalid.
-// Returns the decks ID and title on success.
-func (r *FirestoreUserRepo) GetDecksShared(
-	ctx context.Context,
-	id string,
-) ([]models.DisplayDeck, error) {
-	var decks []models.DisplayDeck
-
-	// Get the user by ID.
-	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id)
+	decksOwned, err := utils.ReadDataFromIterator[models.DisplayDeck](iter)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create iterator where shared_emails array contains the user's email.
-	iter := r.client.Collection(config.DecksCollection).
+	iter = r.client.Collection(config.DecksCollection).
 		Where("shared_emails", "array-contains", user.Email).
 		Documents(ctx)
-
-	// Loop through the documents and append to the decks slice.
-	for {
-		doc, err := iter.Next()
-
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		var deck models.DisplayDeck
-		// Map the document data to the DisplayDeck struct.
-		if err := doc.DataTo(&deck); err != nil {
-			return nil, err
-		}
-
-		// Set the ID and append to the slice.
-		deck.ID = doc.Ref.ID
-		decks = append(decks, deck)
+	decksShared, err := utils.ReadDataFromIterator[models.DisplayDeck](iter)
+	if err != nil {
+		return nil, err
 	}
+
+	decks := append(decksOwned, decksShared...)
 
 	return decks, nil
 }
