@@ -40,7 +40,7 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		filter := c.DefaultQuery("filter", "title")
+		filter := c.DefaultQuery("filter", "title,owner_id")
 
 		decks, err := userRepo.GetDecks(c.Request.Context(), id, filter)
 		if errors.HandleError(c, err) {
