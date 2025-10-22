@@ -4,13 +4,10 @@ import dynamic from 'next/dynamic';
 import { ReactNode } from 'react';
 // We have to dynamically import react-responsive-masonry to avoid hydration errors,
 // This will emit a loading indicator while the component is being loaded.
-const ResponsiveMasonry = dynamic(
-  () => import('react-responsive-masonry').then((mod) => mod.ResponsiveMasonry),
-  {
-    loading: () => <p>Loading...</p>,
-    ssr: false,
-  },
-);
+const ResponsiveMasonry = dynamic(() => import('react-responsive-masonry').then((mod) => mod.ResponsiveMasonry), {
+  loading: () => <p>Loading...</p>,
+  ssr: false,
+});
 const Masonry = dynamic(() => import('react-responsive-masonry').then((mod) => mod.default), {
   loading: () => <p>Loading...</p>,
   ssr: false,

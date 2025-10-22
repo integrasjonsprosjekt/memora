@@ -57,15 +57,7 @@ function fetchDecks(endpoint: string): Promise<Deck[]> {
   return promise;
 }
 
-function DeckGroup({
-  title,
-  endpoint,
-  action,
-}: {
-  title: string;
-  endpoint: string;
-  action?: React.ReactNode;
-}) {
+function DeckGroup({ title, endpoint, action }: { title: string; endpoint: string; action?: React.ReactNode }) {
   const pathname = usePathname();
   const decksPromise = useMemo(() => fetchDecks(endpoint), [endpoint]);
   const decks = use(decksPromise);
@@ -102,14 +94,7 @@ function DeckGroup({
       </SidebarGroupLabel>
       <SidebarMenu>
         {decks.map((deck) => {
-          return (
-            <DeckItem
-              key={deck.id}
-              deck={deck}
-              pathname={pathname}
-              isDeckMainActive={isDeckMainActive}
-            />
-          );
+          return <DeckItem key={deck.id} deck={deck} pathname={pathname} isDeckMainActive={isDeckMainActive} />;
         })}
       </SidebarMenu>
     </SidebarGroup>
@@ -161,10 +146,7 @@ function DeckItem({
                 <SidebarMenuSubItem>
                   <SidebarMenuSubButton
                     asChild
-                    className={cn(
-                      hoverAnimation,
-                      'transition-transform duration-100 active:scale-95',
-                    )}
+                    className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
                     isActive={pathname === `/decks/${deck.id}/dashboard`}
                   >
                     <Link href={`/decks/${deck.id}/dashboard`}>
@@ -175,10 +157,7 @@ function DeckItem({
                 <SidebarMenuSubItem>
                   <SidebarMenuSubButton
                     asChild
-                    className={cn(
-                      hoverAnimation,
-                      'transition-transform duration-100 active:scale-95',
-                    )}
+                    className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
                     isActive={pathname === `/decks/${deck.id}/today`}
                   >
                     <Link href={`/decks/${deck.id}/today`}>
@@ -211,15 +190,7 @@ function DeckItem({
   );
 }
 
-function DeckGroupSuspense({
-  title,
-  endpoint,
-  action,
-}: {
-  title: string;
-  endpoint: string;
-  action?: React.ReactNode;
-}) {
+function DeckGroupSuspense({ title, endpoint, action }: { title: string; endpoint: string; action?: React.ReactNode }) {
   return (
     <Suspense
       fallback={
@@ -246,10 +217,7 @@ export function NavMain() {
         title="Decks"
         endpoint="owned"
         action={
-          <button
-            onClick={() => alert('Adding new deck')}
-            className="hover:bg-accent rounded p-0.5"
-          >
+          <button onClick={() => alert('Adding new deck')} className="hover:bg-accent rounded p-0.5">
             <Plus className="h-4 w-4" />
           </button>
         }
