@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { CalendarClock, Boxes, PieChart, CircleQuestionMark, BookText } from 'lucide-react';
+import { CalendarClock, PieChart, CircleQuestionMark, BookText } from 'lucide-react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -36,56 +36,6 @@ const data = {
       name: 'Today',
       url: '/today',
       icon: CalendarClock,
-    },
-  ],
-  decks: [
-    {
-      title: 'Objektorientert Programmering',
-      url: '/decks/1',
-      isActive: true,
-      icon: Boxes,
-      items: [
-        {
-          title: 'Overview',
-          url: '/decks/1/dashboard',
-        },
-        {
-          title: 'Today',
-          url: '/decks/1/today',
-        },
-      ],
-    },
-    {
-      title: 'Trivia',
-      url: '/decks/2',
-      isActive: false,
-      icon: Boxes,
-      items: [
-        {
-          title: 'Overview',
-          url: '/decks/1/dashboard',
-        },
-        {
-          title: 'Today',
-          url: '/decks/1/today',
-        },
-      ],
-    },
-    {
-      title: 'Grunnleggende Programmering',
-      url: '/decks/3',
-      isActive: false,
-      icon: Boxes,
-      items: [
-        {
-          title: 'Overview',
-          url: '/decks/1/dashboard',
-        },
-        {
-          title: 'Today',
-          url: '/decks/1/today',
-        },
-      ],
     },
   ],
   footer: [
@@ -128,7 +78,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavActions projects={data.actions} />
-        <NavMain items={data.decks} />
+        <NavMain />
         <NavSecondary items={data.footer} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
