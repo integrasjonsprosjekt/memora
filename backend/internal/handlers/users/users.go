@@ -40,7 +40,7 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 // @Tags Users
 // @Produce json
 // @Success 200 {object} []models.DisplayDeck
-// @Router /api/v1/users/{id}/decks [get]
+// @Router /api/v1/users/decks [get]
 // Return the users' owned and shared decks based on an id
 func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
