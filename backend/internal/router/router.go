@@ -43,12 +43,7 @@ func Route(c *gin.Engine, services *services.Services) {
 			userRoute.PATCH("/:id", users.PatchUser(services.Users))
 			userRoute.DELETE("/:id", users.DeleteUser(services.Users))
 
-			// Deck-related endpoints in the context of a user
-			decksRoute := userRoute.Group("/:id/decks")
-			{
-				decksRoute.GET("/owned", users.GetDecksOwned(services.Users))
-				decksRoute.GET("/shared", users.GetDecksShared(services.Users))
-			}
+			userRoute.GET("/:id/decks", users.GetDecks(services.Users))
 		}
 
 		// Deck-related endpoints

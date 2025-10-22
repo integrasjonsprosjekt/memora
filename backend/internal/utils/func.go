@@ -4,7 +4,31 @@ import (
 	"encoding/json"
 
 	"cloud.google.com/go/firestore"
+	"google.golang.org/api/iterator"
 )
+
+func ReadDataFromIterator[T any](iter *firestore.DocumentIterator) ([]T, error) {
+	var results []T
+
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			if err == iterator.Done {
+				break
+			}
+			return nil, err
+		}
+
+		var item T
+		if err := doc.DataTo(&item); err != nil {
+			return nil, err
+		}
+
+		results = append(results, item)
+	}
+
+	return results, nil
+}
 
 // StructToUpdate converts a struct to a slice of Firestore updates.
 // It ignores zero-value fields to prevent overwriting existing data with empty values.
