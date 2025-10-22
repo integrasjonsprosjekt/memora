@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 type CreateDeck struct {
 	Title        string   `json:"title" validate:"required" firestore:"title"`
 	OwnerID      string   `json:"owner_id" validate:"required" firestore:"owner_id"`
@@ -32,4 +34,15 @@ type UpdateDeckEmails struct {
 type DisplayDeck struct {
 	ID    string `json:"id" firestore:"-"`
 	Title string `json:"title" firestore:"title"`
+}
+
+func (d DeckResponse) MarshalJSON() ([]byte, error) {
+	type Alias DeckResponse
+	if d.SharedEmails == nil {
+		d.SharedEmails = []string{}
+	}
+	if d.Cards == nil {
+		d.Cards = []Card{}
+	}
+	return json.Marshal(Alias(d))
 }
