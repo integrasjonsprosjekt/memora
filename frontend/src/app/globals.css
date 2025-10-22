@@ -194,3 +194,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+[data-slot='breadcrumb'] {
+  [data-slot='breadcrumb-link'] {
+    @apply text-foreground/70 hover:text-foreground transition-colors;
+    border-bottom: 1px dashed var(--border);
+    padding-top: 1px; /* Offset the border */
+
+    &:hover {
+      border-bottom-style: solid;
+    }
+  }
+
+  [data-slot='breadcrumb-page'] {
+    @apply text-foreground font-medium;
+  }
+}
