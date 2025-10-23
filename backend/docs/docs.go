@@ -465,39 +465,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/{id}/decks/owned": {
+        "/api/v1/users/{id}/decks": {
             "get": {
-                "description": "Return the user's owned decks",
+                "description": "Return the user's owned and shared decks",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Users"
                 ],
-                "summary": "GET a users' owned decks from firestore by their ID",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.DisplayDeck"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/users/{id}/decks/shared": {
-            "get": {
-                "description": "Return the user's shared decks",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "GET a users' shared decks from firestore by their ID",
+                "summary": "GET a users' owned and shared decks from firestore by their ID",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -628,6 +605,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
+                    "type": "string"
+                },
+                "owner_id": {
                     "type": "string"
                 },
                 "title": {
