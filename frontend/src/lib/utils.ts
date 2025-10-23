@@ -19,7 +19,7 @@ export function withDefaults<T extends object>(obj: Partial<T>, defaults: T): T 
 
   for (const key in defaults) {
     if (obj[key] != null) {
-      result[key] = obj[key];
+      result[key] = obj[key] as T[typeof key];
     }
   }
 
