@@ -12,6 +12,7 @@ import (
 // FetchByID retrieves a document by its ID from the specified collection
 // and maps it to the provided generic type T. Returns an error if the document
 // is not found or if there is an issue during retrieval or mapping.
+// fields specify which fields to retrieve from the document to ease the load.
 func FetchByID[T any](
 	client *firestore.Client,
 	ctx context.Context,

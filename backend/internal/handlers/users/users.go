@@ -36,13 +36,13 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 	}
 }
 
-// @Summary GET a users' owned decks from firestore by their ID
-// @Description Return the user's owned decks
+// @Summary GET a users' owned and shared decks from firestore by their ID
+// @Description Return the user's owned and shared decks
 // @Tags Users
 // @Produce json
 // @Success 200 {object} []models.DisplayDeck
-// @Router /api/v1/users/{id}/decks/owned [get]
-// Return the users' owned decks based on an id
+// @Router /api/v1/users/{id}/decks [get]
+// Return the users' owned and shared decks based on an id
 func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := utils.GetUID(c)
