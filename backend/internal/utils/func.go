@@ -8,6 +8,9 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
+// ParseFilter parses the query based on URI encoding
+// and splits it into a slice of fields.
+// Returns the slice of fields or an error if parsing fails.
 func ParseFilter(filter string) ([]string, error) {
 	var result []string
 	decoded, err := url.QueryUnescape(filter)

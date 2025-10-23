@@ -204,22 +204,30 @@ func (r *FirestoreUserRepo) DeleteUser(
 	return nil
 }
 
+// readDataFromIterator reads documents from a Firestore DocumentIterator
+// and converts them into a slice of DisplayDeck models.
+// Used to read decks owned or shared with a user
 func readDataFromIterator(iter *firestore.DocumentIterator) ([]models.DisplayDeck, error) {
 	var results []models.DisplayDeck
 
+	// Iterate through the documents and convert them to DisplayDeck models
 	for {
 		doc, err := iter.Next()
 		if err != nil {
+			// Break the loop if there are no more documents
 			if err == iterator.Done {
 				break
 			}
 			return nil, err
 		}
 
+		// Convert document data to DisplayDeck model
 		var item models.DisplayDeck
 		if err := doc.DataTo(&item); err != nil {
 			return nil, err
 		}
+
+		// Set the document ID and append to results
 		item.ID = doc.Ref.ID
 		results = append(results, item)
 	}

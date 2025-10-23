@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// Default filter for all fields, used when updating a user
 var defaultFilterUsers = "email,name"
 
 // UserService provides methods for managing users.
@@ -30,6 +31,7 @@ func NewUserService(
 }
 
 // GetUser retrieves a user by their ID.
+// Filter specifies which fields to return.
 // Returns the user or an error if the operation fails.
 func (s *UserService) GetUser(
 	ctx context.Context,
@@ -48,6 +50,7 @@ func (s *UserService) GetUser(
 }
 
 // GetDecks retrieves all decks associated with a user.
+// Filter specifies which fields to return.
 // Returns a list of decks or an error if the operation fails.
 func (s *UserService) GetDecks(
 	ctx context.Context,

@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// Default filter for all fields, used when updating a deck
 var defaultFilterDecks = "title,owner_id,shared_emails"
 
 // DeckService provides methods for managing decks.
@@ -52,6 +53,7 @@ func (s *DeckService) RegisterNewDeck(
 
 // GetOneDeck retrieves a deck by its ID, including its cards.
 // Returns the deck or an error if the operation fails.
+// Filter specifies which fields to return.
 func (s *DeckService) GetOneDeck(
 	ctx context.Context,
 	id string,
@@ -82,6 +84,8 @@ func (s *DeckService) GetOneDeck(
 	}, nil
 }
 
+// GetCardInDeck retrieves a specific card from a deck by their IDs.
+// Returns the card or an error if the operation fails.
 func (s *DeckService) GetCardInDeck(
 	ctx context.Context,
 	deckID, cardID string,
@@ -89,6 +93,8 @@ func (s *DeckService) GetCardInDeck(
 	return s.Cards.GetCardInDeck(ctx, deckID, cardID)
 }
 
+// AddCardToDeck creates a new card in the specified deck from the provided raw JSON data.
+// Validates the card and returns the updated deck or an error if the operation fails.
 func (s *DeckService) AddCardToDeck(
 	ctx context.Context,
 	deckID string,
@@ -129,6 +135,8 @@ func (s *DeckService) UpdateDeck(
 	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
 }
 
+// UpdateCardInDeck updates an existing card in a deck with the provided raw JSON data.
+// Validates the updated card and returns the updated deck or an error if the operation fails.
 func (s *DeckService) UpdateCardInDeck(
 	ctx context.Context,
 	deckID, cardID string,
