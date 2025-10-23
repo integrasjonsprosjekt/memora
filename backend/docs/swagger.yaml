@@ -76,6 +76,8 @@ definitions:
     properties:
       id:
         type: string
+      owner_id:
+        type: string
       title:
         type: string
     type: object
@@ -485,9 +487,9 @@ paths:
       summary: Update a user in firestore by their ID
       tags:
       - Users
-  /api/v1/users/{id}/decks/owned:
+  /api/v1/users/{id}/decks:
     get:
-      description: Return the user's owned decks
+      description: Return the user's owned and shared decks
       produces:
       - application/json
       responses:
@@ -497,22 +499,7 @@ paths:
             items:
               $ref: '#/definitions/models.DisplayDeck'
             type: array
-      summary: GET a users' owned decks from firestore by their ID
-      tags:
-      - Users
-  /api/v1/users/{id}/decks/shared:
-    get:
-      description: Return the user's shared decks
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.DisplayDeck'
-            type: array
-      summary: GET a users' shared decks from firestore by their ID
+      summary: GET a users' owned and shared decks from firestore by their ID
       tags:
       - Users
 swagger: "2.0"
