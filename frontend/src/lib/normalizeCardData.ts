@@ -1,36 +1,36 @@
-import { Card as CardType } from '@/types/cards';
+import { Card } from '@/types/card';
 
-export default function normalizeCardData(card: CardType) {
+export default function normalizeCardData(card: Card) {
   switch (card.type) {
-    case "multiple_choice": {
-      const options = Object.keys(card.options || {}).join(", ");
+    case 'multiple_choice': {
+      const options = Object.keys(card.options || {}).join(', ');
       const answer = Object.entries(card.options || {})
         .filter(([_, v]) => v === true)
         .map(([key]) => key)
-        .join(", ");
+        .join(', ');
       return {
-        question: card.question ?? "",
+        question: card.question ?? '',
         options,
         answer,
       };
     }
 
-    case "front_back":
+    case 'front_back':
       return {
-        front: card.front ?? "",
-        back: card.back ?? "",
+        front: card.front ?? '',
+        back: card.back ?? '',
       };
 
-    case "blanks":
+    case 'blanks':
       return {
-        question: card.question ?? "",
-        answers: Array.isArray(card.answers) ? card.answers.join(", ") : "",
+        question: card.question ?? '',
+        answers: Array.isArray(card.answers) ? card.answers.join(', ') : '',
       };
 
-    case "ordered":
+    case 'ordered':
       return {
-        question: card.question ?? "",
-        options: Array.isArray(card.options) ? card.options.join(", ") : "",
+        question: card.question ?? '',
+        options: Array.isArray(card.options) ? card.options.join(', ') : '',
       };
 
     default:

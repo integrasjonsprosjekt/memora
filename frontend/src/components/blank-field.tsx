@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { UseFormReturn } from "react-hook-form";
-import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { cardSchemas } from "@/lib/cardSchemas";
-import z from "zod";
+import { UseFormReturn } from 'react-hook-form';
+import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { cardInputSchemas } from '@/lib/cardSchemas';
+import z from 'zod';
 
-type Blank = z.infer<typeof cardSchemas.blanks>;
+type Blanks = z.infer<typeof cardInputSchemas.blanks>;
 
-type Props = { form: UseFormReturn<Blank> };
+type Props = { form: UseFormReturn<Blanks> };
 
 export const BlankFields = ({ form }: Props) => {
   return (
@@ -22,7 +22,7 @@ export const BlankFields = ({ form }: Props) => {
             <FormControl>
               <Input
                 placeholder="Use '{}' for blank fields"
-                value={field.value ?? ""}
+                value={field.value ?? ''}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
               />
@@ -39,7 +39,7 @@ export const BlankFields = ({ form }: Props) => {
             <FormControl>
               <Input
                 placeholder="e.g. apple, banana"
-                value={field.value ?? ""}
+                value={field.value ?? ''}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
               />

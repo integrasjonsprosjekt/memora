@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { UseFormReturn } from "react-hook-form";
-import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import z from "zod";
-import { cardSchemas } from "@/lib/cardSchemas";
+import { UseFormReturn } from 'react-hook-form';
+import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import z from 'zod';
+import { cardInputSchemas } from '@/lib/cardSchemas';
 
-type FrontBack = z.infer<typeof cardSchemas.front_back>;
+type FrontBack = z.infer<typeof cardInputSchemas.front_back>;
 
 type Props = { form: UseFormReturn<FrontBack> };
 
@@ -22,7 +22,7 @@ export const FrontBackField = ({ form }: Props) => {
             <FormControl>
               <Input
                 placeholder="Front text"
-                value={field.value ?? ""}
+                value={field.value ?? ''}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
               />
@@ -39,7 +39,7 @@ export const FrontBackField = ({ form }: Props) => {
             <FormControl>
               <Input
                 placeholder="Back text"
-                value={field.value ?? ""}
+                value={field.value ?? ''}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
               />

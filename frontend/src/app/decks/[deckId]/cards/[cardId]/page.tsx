@@ -1,9 +1,6 @@
 import { RenderCard } from '@/components/card';
-import { DeleteCardButton } from '@/components/delete-card-button';
-import { EditCardButton } from '@/components/edit-card-button';
 import { Card } from '@/components/ui/card';
 import { getApiEndpoint } from '@/config/api';
-import normalizeCardData from '@/lib/normalizeCardData';
 
 export default async function CardPage({ params }: { params: Promise<{ deckId: string; cardId: string }> }) {
   const { deckId, cardId } = await params;
@@ -11,8 +8,6 @@ export default async function CardPage({ params }: { params: Promise<{ deckId: s
   const card = await fetch(getApiEndpoint(`/v1/decks/${deckId}/cards/${cardId}`), {
     cache: 'no-store',
   }).then((res) => res.json());
-
-  const normalizedData = normalizeCardData(card);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
@@ -24,10 +19,7 @@ export default async function CardPage({ params }: { params: Promise<{ deckId: s
           className="[&>hr]:-mx-10 [&>hr]:w-auto"
         />
       </Card>
-      <div className='flex flex-row items-center justify-center'>
-        <EditCardButton deckId={deckId} cardId={card.id} cardType={card.type} initialData={normalizedData} />
-        <DeleteCardButton deckId={deckId} cardId={card.id} />
-      </div>
+      <div className="flex flex-row items-center justify-center"></div>
     </div>
   );
 }

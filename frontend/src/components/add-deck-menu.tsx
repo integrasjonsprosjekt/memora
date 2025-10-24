@@ -1,16 +1,15 @@
 'use client';
-import { useForm } from "react-hook-form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { deckSchema } from "@/lib/deckSchema";
-import { z } from "zod";
-import { useState } from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { createDeck } from "@/app/api";
-import { useRouter } from "next/navigation";
-import { EmailInput } from "./email-input";
+import { useForm } from 'react-hook-form';
+import { Form, FormControl, FormField, FormItem, FormLabel } from './ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { deckSchema } from '@/lib/deckSchema';
+import { z } from 'zod';
+import { useState } from 'react';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { createDeck } from '@/app/api';
+import { useRouter } from 'next/navigation';
+import { EmailInput } from './email-input';
 
 export function AddDeckMenu() {
   const router = useRouter();
@@ -32,7 +31,7 @@ export function AddDeckMenu() {
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong creating the deck");
+      alert('Something went wrong creating the deck');
     } finally {
       setLoading(false);
     }
@@ -49,7 +48,7 @@ export function AddDeckMenu() {
               <FormControl>
                 <Input
                   placeholder="Deck title"
-                  value={field.value ?? ""}
+                  value={field.value ?? ''}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                 />
@@ -71,7 +70,7 @@ export function AddDeckMenu() {
         />
         <Button type="submit" disabled={loading} className="mt-4">
           {/*Ensures that the button is disabled while loading*/}
-          {loading ? "Loading..." : "Add deck"}
+          {loading ? 'Loading...' : 'Add deck'}
         </Button>
       </form>
     </Form>

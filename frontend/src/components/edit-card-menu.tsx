@@ -1,116 +1,83 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useEffect, useState } from 'react';
+import { useForm, UseFormReturn } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form } from "./ui/form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Form } from './ui/form';
 
-import { FrontBackField } from "./front-back-field";
-import { BlankFields } from "./blank-field";
-import { MultipleChoiceFields } from "./multiple-choice-field";
+import { FrontBackField } from './front-back-field';
+import { BlankFields } from './blank-field';
+import { MultipleChoiceFields } from './multiple-choice-field';
 
-import { cardSchemas } from "@/lib/cardSchemas";
-import buildCardPayload from "@/lib/cardBuildPayload";
-import { CardType } from "@/types/cards";
-import { updateCard } from "@/app/api";
-import { Button } from "./ui/button";
-import { OrderedFields } from "./ordered-field";
-import { useRouter } from "next/navigation";
+import { CardInput, cardInputSchemas, CardPayload, cardPayloadSchemas } from '@/lib/cardSchemas';
+import { Card } from '@/types/card';
+import { updateCard } from '@/app/api';
+import { Button } from './ui/button';
+import { OrderedFields } from './ordered-field';
+import { useRouter } from 'next/navigation';
+import { match } from 'ts-pattern';
+import normalizeCardData from '@/lib/normalizeCardData';
 
 interface EditCardMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  card: Card;
   deckId: string;
-  cardId: string;
-  cardType: CardType;
-  initialData: Record<string, unknown>;
 }
 
-type CardForms = {
-  front_back: z.infer<typeof cardSchemas.front_back>;
-  blanks: z.infer<typeof cardSchemas.blanks>;
-  multiple_choice: z.infer<typeof cardSchemas.multiple_choice>;
-  ordered: z.infer<typeof cardSchemas.ordered>;
-};
-
-export function EditCardMenu({ open, onOpenChange, deckId, cardId, cardType, initialData }: EditCardMenuProps) {
+export function EditCardMenu({ open, onOpenChange, card, deckId }: EditCardMenuProps) {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  // Pick the schema for the current card type dynamically
-  const currentSchema = useMemo(() => cardSchemas[cardType], [cardType]);
+  const inputSchema = cardInputSchemas[card.type];
+  const payloadSchema = cardPayloadSchemas[card.type];
 
-  const form = useForm<CardForms[typeof cardType]>({
-    resolver: zodResolver(currentSchema),
-    defaultValues: initialData,
+  const form = useForm<CardInput>({
+    resolver: zodResolver(inputSchema),
+    defaultValues: card as CardInput,
   });
 
   useEffect(() => {
-    if (initialData) {
-      form.reset(initialData);
+    if (card) {
+      form.reset({ type: card.type, ...normalizeCardData(card) } as CardInput);
     }
-  }, [initialData, form]);
-
-  const router = useRouter();
+  }, [card, form]);
 
   const onSubmit = form.handleSubmit(async (values) => {
     setLoading(true);
     try {
-      const basePayload = buildCardPayload(cardType, values);
+      const payload: CardPayload = payloadSchema.parse(values);
 
-      let payload: Record<string, unknown>;
-
-      switch (cardType) {
-        case "front_back":
-          payload = { ...basePayload, id: cardId, type: cardType };
-          break;
-        case "blanks":
-          payload = { ...basePayload, id: cardId, type: cardType };
-          break;
-        case "multiple_choice":
-          payload = { ...basePayload, id: cardId, type: cardType };
-          break;
-        case "ordered":
-          payload = {...basePayload, id: cardId, type: cardType };
-          break;
-        default:
-          throw new Error("Unknown card type");
-      }
-
-      const res = await updateCard(deckId, cardId, payload);
+      const res = await updateCard(deckId, card.id, payload);
 
       if (res.success) {
         form.reset({});
         onOpenChange(false);
-        alert("Card updated successfully!");
+        alert('Card updated successfully!');
         router.refresh();
       } else {
         alert(`Failed to update card: ${res.message}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong updating the card");
+      alert('Something went wrong updating the card');
     } finally {
       setLoading(false);
     }
   });
 
-  const renderFields = () => {
-    switch (cardType) {
-      case "front_back":
-        return <FrontBackField form={form as UseFormReturn<CardForms["front_back"]>} />;
-      case "blanks":
-        return <BlankFields form={form as UseFormReturn<CardForms["blanks"]>} />;
-      case "multiple_choice":
-        return <MultipleChoiceFields form={form as UseFormReturn<CardForms["multiple_choice"]>} />;
-      case "ordered":
-        return <OrderedFields form={form as UseFormReturn<CardForms["ordered"]>} />;
-      default:
-        return null;
-    }
-  };
+  const renderFields = match(form.getValues())
+    .with({ type: 'front_back' }, () => (
+      <FrontBackField form={form as UseFormReturn<CardInput & { type: 'front_back' }>} />
+    ))
+    .with({ type: 'blanks' }, () => <BlankFields form={form as UseFormReturn<CardInput & { type: 'blanks' }>} />)
+    .with({ type: 'multiple_choice' }, () => (
+      <MultipleChoiceFields form={form as UseFormReturn<CardInput & { type: 'multiple_choice' }>} />
+    ))
+    .with({ type: 'ordered' }, () => <OrderedFields form={form as UseFormReturn<CardInput & { type: 'ordered' }>} />)
+    .exhaustive();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -120,10 +87,10 @@ export function EditCardMenu({ open, onOpenChange, deckId, cardId, cardType, ini
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={onSubmit} className="flex flex-col gap-4 py-4">
-            {renderFields()}
+            {renderFields}
             <Button type="submit" disabled={loading} className="mt-4">
               {/*Ensures that the button is disabled while loading*/}
-              {loading ? "Loading..." : "Edit card"}
+              {loading ? 'Loading...' : 'Edit card'}
             </Button>
           </form>
         </Form>
