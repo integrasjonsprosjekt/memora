@@ -28,6 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import { getApiEndpoint, USER_ID } from '@/config/api';
 import { Deck } from '@/types/deck';
+import { EditDeckMenu } from './edit-deck-menu';
 
 // Create a cache for deck promises
 const deckPromiseCache = new Map<string, Promise<Deck[]>>();
@@ -112,6 +113,7 @@ function DeckItem({
 }) {
   const shouldBeOpen = pathname?.startsWith(`/decks/${deck.id}`) || false;
   const [isOpen, setIsOpen] = useState(shouldBeOpen);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     setIsOpen(shouldBeOpen);
@@ -120,73 +122,76 @@ function DeckItem({
   const hoverAnimation = 'transition-all duration-200 hover:translate-x-0.5';
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger>
-        <Collapsible asChild open={isOpen} onOpenChange={setIsOpen}>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              tooltip={deck.title}
-              className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-98')}
-              isActive={isDeckMainActive(deck.id)}
-            >
-              <Link href={`/decks/${deck.id}`}>
-                <FileBox />
-                <span>{deck.title}</span>
-              </Link>
-            </SidebarMenuButton>
-            <CollapsibleTrigger asChild>
-              <SidebarMenuAction className="transition-transform duration-200 ease-out data-[state=open]:rotate-90">
-                <ChevronRight />
-                <span className="sr-only">Toggle</span>
-              </SidebarMenuAction>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden transition-all duration-200 ease-out">
-              <SidebarMenuSub>
-                <SidebarMenuSubItem>
-                  <SidebarMenuSubButton
-                    asChild
-                    className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
-                    isActive={pathname === `/decks/${deck.id}/dashboard`}
-                  >
-                    <Link href={`/decks/${deck.id}/dashboard`}>
-                      <span>Dashboard</span>
-                    </Link>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-                <SidebarMenuSubItem>
-                  <SidebarMenuSubButton
-                    asChild
-                    className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
-                    isActive={pathname === `/decks/${deck.id}/today`}
-                  >
-                    <Link href={`/decks/${deck.id}/today`}>
-                      <span>Today</span>
-                    </Link>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              </SidebarMenuSub>
-            </CollapsibleContent>
-          </SidebarMenuItem>
-        </Collapsible>
-      </ContextMenuTrigger>
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <Collapsible asChild open={isOpen} onOpenChange={setIsOpen}>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip={deck.title}
+                className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-98')}
+                isActive={isDeckMainActive(deck.id)}
+              >
+                <Link href={`/decks/${deck.id}`}>
+                  <FileBox />
+                  <span>{deck.title}</span>
+                </Link>
+              </SidebarMenuButton>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuAction className="transition-transform duration-200 ease-out data-[state=open]:rotate-90">
+                  <ChevronRight />
+                  <span className="sr-only">Toggle</span>
+                </SidebarMenuAction>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden transition-all duration-200 ease-out">
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      asChild
+                      className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
+                      isActive={pathname === `/decks/${deck.id}/dashboard`}
+                    >
+                      <Link href={`/decks/${deck.id}/dashboard`}>
+                        <span>Dashboard</span>
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      asChild
+                      className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
+                      isActive={pathname === `/decks/${deck.id}/today`}
+                    >
+                      <Link href={`/decks/${deck.id}/today`}>
+                        <span>Today</span>
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+        </ContextMenuTrigger>
 
-      <ContextMenuContent>
-        <ContextMenuItem>
-          <SquarePen />
-          Edit
-        </ContextMenuItem>
-        <ContextMenuItem>
-          <Share2 />
-          Share
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem variant="destructive">
-          <Trash2 />
-          Delete
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={() => setIsEditing(true)}>
+            <SquarePen />
+            Edit
+          </ContextMenuItem>
+          <ContextMenuItem>
+            <Share2 />
+            Share
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem variant="destructive">
+            <Trash2 />
+            Delete
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+      <EditDeckMenu open={isEditing} onOpenChange={setIsEditing} deckId={deck.id} />
+    </>
   );
 }
 

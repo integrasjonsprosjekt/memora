@@ -1,5 +1,7 @@
-export type CardComponentProps<T> = {
+export type CardRendererProps<T> = {
   card: T;
+  deckId: string;
   className?: string;
-  deckId?: string;
 };
+
+export type CardComponentProps<T> = Pick<CardRendererProps<T>, 'card' | 'className'>;

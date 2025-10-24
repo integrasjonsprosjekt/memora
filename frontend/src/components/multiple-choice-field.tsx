@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { UseFormReturn } from "react-hook-form";
-import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { cardSchemas } from "@/lib/cardSchemas";
-import z from "zod";
+import { UseFormReturn } from 'react-hook-form';
+import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { cardInputSchemas } from '@/lib/cardSchemas';
+import z from 'zod';
 
-type MultipleChoice = z.infer<typeof cardSchemas.multiple_choice>;
+type MultipleChoice = z.infer<typeof cardInputSchemas.multiple_choice>;
 
 type Props = { form: UseFormReturn<MultipleChoice> };
 
@@ -22,7 +22,7 @@ export const MultipleChoiceFields = ({ form }: Props) => {
             <FormControl>
               <Input
                 placeholder="Enter the question"
-                value={field.value ?? ""}
+                value={field.value ?? ''}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
               />
@@ -39,7 +39,7 @@ export const MultipleChoiceFields = ({ form }: Props) => {
             <FormControl>
               <Input
                 placeholder="e.g. A, B, C, D"
-                value={field.value ?? ""}
+                value={field.value ?? ''}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
               />
@@ -54,7 +54,7 @@ export const MultipleChoiceFields = ({ form }: Props) => {
           <FormItem>
             <FormLabel>Correct answer</FormLabel>
             <FormControl>
-              <Input placeholder="e.g. B" value={field.value ?? ""} onChange={field.onChange} onBlur={field.onBlur} />
+              <Input placeholder="e.g. B" value={field.value ?? ''} onChange={field.onChange} onBlur={field.onBlur} />
             </FormControl>
           </FormItem>
         )}

@@ -56,7 +56,7 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
       </header>
 
       <DeckLayout>
-        <AddCardButton />
+        <AddCardButton deckId={deckId} />
         {cards.map((card) => (
           <RenderCardThumbnail key={card.id} card={card} deckId={deckId} />
         ))}
