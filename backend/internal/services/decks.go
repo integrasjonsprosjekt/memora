@@ -33,6 +33,13 @@ func NewDeckService(
 	}
 }
 
+func (s *DeckService) GetCardsInDeck(
+	ctx context.Context,
+	deckID string,
+) ([]models.Card, error) {
+	return s.Cards.GetCardsInDeck(ctx, deckID)
+}
+
 // RegisterNewDeck creates a new deck from the provided data.
 // Validates the deck and returns its ID or an error if the operation fails.
 func (s *DeckService) RegisterNewDeck(
@@ -58,30 +65,19 @@ func (s *DeckService) GetOneDeck(
 	ctx context.Context,
 	id string,
 	filter string,
-) (models.DeckResponse, error) {
+) (models.Deck, error) {
 	filterParsed, err := utils.ParseFilter(filter)
 	if err != nil {
-		return models.DeckResponse{}, err
+		return models.Deck{}, err
 	}
 
 	// Fetch the deck data from the repository
 	deck, err := s.repo.GetOneDeck(ctx, id, filterParsed)
 	if err != nil {
-		return models.DeckResponse{}, err
+		return models.Deck{}, err
 	}
 
-	cards, err := s.Cards.GetCardsInDeck(ctx, id)
-	if err != nil {
-		return models.DeckResponse{}, err
-	}
-
-	return models.DeckResponse{
-		ID:           id,
-		Title:        deck.Title,
-		OwnerID:      deck.OwnerID,
-		SharedEmails: deck.SharedEmails,
-		Cards:        cards,
-	}, nil
+	return deck, nil
 }
 
 // GetCardInDeck retrieves a specific card from a deck by their IDs.
@@ -99,16 +95,16 @@ func (s *DeckService) AddCardToDeck(
 	ctx context.Context,
 	deckID string,
 	rawData []byte,
-) (models.DeckResponse, error) {
+) ([]models.Card, error) {
 	if err := s.Cards.CreateCard(
 		ctx,
 		rawData,
 		deckID,
 	); err != nil {
-		return models.DeckResponse{}, err
+		return nil, err
 	}
 
-	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
+	return s.GetCardsInDeck(ctx, deckID)
 }
 
 // UpdateDeck updates an existing deck identified by its ID with the provided data.
@@ -117,19 +113,19 @@ func (s *DeckService) UpdateDeck(
 	ctx context.Context,
 	deckID string,
 	update models.UpdateDeck,
-) (models.DeckResponse, error) {
+) (models.Deck, error) {
 	if err := s.validate.Struct(update); err != nil {
-		return models.DeckResponse{}, errors.ErrInvalidDeck
+		return models.Deck{}, errors.ErrInvalidDeck
 	}
 
 	updateMap, err := utils.StructToUpdate(update)
 	if err != nil {
-		return models.DeckResponse{}, err
+		return models.Deck{}, err
 	}
 
 	// Perform the update in the repository
 	if err := s.repo.UpdateDeck(ctx, updateMap, deckID); err != nil {
-		return models.DeckResponse{}, err
+		return models.Deck{}, err
 	}
 
 	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
@@ -141,13 +137,13 @@ func (s *DeckService) UpdateCardInDeck(
 	ctx context.Context,
 	deckID, cardID string,
 	rawData []byte,
-) (models.DeckResponse, error) {
+) ([]models.Card, error) {
 	err := s.Cards.UpdateCard(ctx, rawData, deckID, cardID)
 	if err != nil {
-		return models.DeckResponse{}, err
+		return nil, err
 	}
 
-	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
+	return s.GetCardsInDeck(ctx, deckID)
 }
 
 // UpdateEmailsInDeck updates the shared emails of a deck based on the provided operation (add or remove).
@@ -156,12 +152,12 @@ func (s *DeckService) UpdateEmailsInDeck(
 	ctx context.Context,
 	deckID string,
 	emails models.UpdateDeckEmails,
-) (models.DeckResponse, error) {
+) (models.Deck, error) {
 	var err error
 
 	// Validate the input struct
 	if err := s.validate.Struct(emails); err != nil {
-		return models.DeckResponse{}, errors.ErrInvalidDeck
+		return models.Deck{}, errors.ErrInvalidDeck
 	}
 
 	// Perform the appropriate operation based on the Opp field
@@ -174,7 +170,7 @@ func (s *DeckService) UpdateEmailsInDeck(
 		err = s.repo.RemoveEmailsFromShared(ctx, deckID, emails.Emails)
 	}
 	if err != nil {
-		return models.DeckResponse{}, err
+		return models.Deck{}, err
 	}
 
 	// Fetch and return the updated deck

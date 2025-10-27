@@ -59,6 +59,7 @@ func Route(c *gin.Engine, services *services.Services) {
 
 			cardRoute := deckRoute.Group("/:deckID/cards")
 			{
+				cardRoute.GET("/", decks.GetCardsInDeck(services.Decks))
 				cardRoute.POST("/", decks.CreateCardInDeck(services.Decks))
 				cardRoute.GET("/:cardID", decks.GetCardInDeck(services.Decks))
 				cardRoute.PUT("/:cardID", decks.UpdateCard(services.Decks))
