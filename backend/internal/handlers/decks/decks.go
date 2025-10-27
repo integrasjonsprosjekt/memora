@@ -9,6 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		deckID := c.Param("deckID")
+
+		cards, err := deckRepo.GetCardsInDeck(c.Request.Context(), deckID)
+		if errors.HandleError(c, err) {
+			return
+		}
+		c.JSON(http.StatusOK, cards)
+	}
+}
+
 // @Summary Get a deck
 // @Description Retrieves card information from Firestore by its ID
 // @Tags Decks
