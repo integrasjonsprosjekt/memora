@@ -13,8 +13,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary Get cards in a deck
-// @Description Retrieves cards from a specified deck in Firestore
+// @Summary Get a deck
+// @Description Retrieves card information from Firestore by its ID
 // @Tags Decks
 // @Accept json
 // @Produce json
