@@ -4,6 +4,7 @@ import (
 	"context"
 	"memora/internal/config"
 	"memora/internal/errors"
+	"memora/internal/models"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -40,6 +41,10 @@ type CardRepository interface {
 	// DeleteCard deletes an existing card in firestore.
 	// Error on fail or if the ID is not valid, nil on success
 	DeleteCard(ctx context.Context, deckID, cardID string) error
+
+	// CreateProgress creates a new progress entry for a card and user.
+	// Error on fail, returns the ID if successful
+	CreateProgress(ctx context.Context, deckID, cardID, userID string, progress models.CardProgress) (string, error)
 }
 
 // FirestoreCardRepo holds the connection to the database
@@ -181,4 +186,18 @@ func (r *FirestoreCardRepo) DeleteCard(
 	// Delete the document
 	_, err = docRef.Delete(ctx)
 	return err
+}
+
+func (r *FirestoreCardRepo) CreateProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+	progress models.CardProgress,
+) (string, error) {
+	id, _, err := r.client.
+		Collection(config.DecksCollection).Doc(deckID).
+		Collection(config.CardsCollection).Doc(cardID).
+		Collection(config.UsersCollection).Doc(userID).
+		Collection("progress").
+		Add(ctx, progress)
+	return id.ID, err
 }
