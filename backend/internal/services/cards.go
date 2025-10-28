@@ -70,10 +70,12 @@ func (s *CardService) GetCardInDeck(
 func (s *CardService) GetCardsInDeck(
 	ctx context.Context,
 	deckID string,
+	limit, offset int,
 ) ([]models.Card, error) {
 
+
 	// Fetch raw card documents from the repository
-	docs, err := s.repo.GetCardsInDeck(ctx, deckID)
+	docs, err := s.repo.GetCardsInDeck(ctx, deckID, limit, offset)
 	if err != nil {
 		return nil, err
 	}

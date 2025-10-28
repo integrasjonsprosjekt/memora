@@ -17,7 +17,7 @@ type CardRepository interface {
 
 	// GetCardsInDeck fetches all cards in a given deck.
 	// Error on fail, returns a list of cards on success
-	GetCardsInDeck(ctx context.Context, deckID string) ([]map[string]any, error)
+	GetCardsInDeck(ctx context.Context, deckID string, limit, offset int) ([]map[string]any, error)
 
 	// GetCard returns the raw data for a card for a given ID.
 	// Error on fail, or if ID is not valid
@@ -51,11 +51,25 @@ func NewFirestoreCardRepo(client *firestore.Client) *FirestoreCardRepo {
 func (r *FirestoreCardRepo) GetCardsInDeck(
 	ctx context.Context,
 	deckID string,
+	limit, offset int,
 ) ([]map[string]any, error) {
+	lastDoc := r.client.Collection(config.DecksCollection).
+		Doc(deckID).
+		Collection(config.CardsCollection).
+		OrderBy("type", firestore.Asc).
+		Limit(limit).
+		Documents(ctx)
+
 	// Reference to the cards subcollection
 	cardsColl := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
-		Collection(config.CardsCollection)
+		Collection(config.CardsCollection).
+		OrderBy("type", firestore.Asc).
+		Limit(limit)
+	if lastDoc != nil {
+		cardsColl = cardsColl.StartAfter(lastDoc)
+	}
+
 	iter := cardsColl.Documents(ctx)
 	defer iter.Stop()
 
