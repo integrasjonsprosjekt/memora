@@ -271,3 +271,27 @@ func DeleteCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		c.Status(http.StatusNoContent)
 	}
 }
+
+func CreateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		deckID := c.Param("deckID")
+		cardID := c.Param("cardID")
+		userID := c.Param("userID")
+
+		var body models.CardProgress
+
+		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid body",
+			})
+			return
+		}
+
+		id, err := deckRepo.CreateProgress(c.Request.Context(), deckID, cardID, userID, body)
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		c.JSON(http.StatusCreated, gin.H{"id": id})
+	}
+}
