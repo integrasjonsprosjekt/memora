@@ -200,3 +200,12 @@ func GetCardStruct(
 
 	return card, nil
 }
+
+// CreateProgress creates a new progress entry for a card and user.
+func (s *CardService) CreateProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+	progress models.CardProgress,
+) (string, error) {
+	return s.repo.CreateProgress(ctx, deckID, cardID, userID, progress)
+}

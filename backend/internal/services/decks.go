@@ -200,3 +200,11 @@ func (s *DeckService) DeleteCardInDeck(
 ) error {
 	return s.Cards.DeleteCard(ctx, deckID, cardID)
 }
+
+func (s *DeckService) CreateProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+	progress models.CardProgress,
+) (string, error) {
+	return s.Cards.CreateProgress(ctx, deckID, cardID, userID, progress)
+}
