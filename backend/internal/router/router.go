@@ -67,7 +67,7 @@ func Route(c *gin.Engine, services *services.Services) {
 
 				progress := cardRoute.Group("/:cardID/progress/:userID")
 				{
-					progress.POST("/", )
+					progress.POST("/", decks.CreateProgress(services.Decks))
 				}
 			}
 		}

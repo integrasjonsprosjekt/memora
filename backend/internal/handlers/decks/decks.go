@@ -278,7 +278,7 @@ func CreateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 		cardID := c.Param("cardID")
 		userID := c.Param("userID")
 
-		var body models.CardProgress
+		var body models.CardRating
 
 		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -292,6 +292,8 @@ func CreateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusCreated, gin.H{"id": id})
+		c.JSON(http.StatusCreated, models.ReturnID{
+			ID: id,
+		})
 	}
 }

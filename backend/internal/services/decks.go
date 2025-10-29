@@ -204,7 +204,7 @@ func (s *DeckService) DeleteCardInDeck(
 func (s *DeckService) CreateProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
-	progress models.CardProgress,
+	rating models.CardRating,
 ) (string, error) {
-	return s.Cards.CreateProgress(ctx, deckID, cardID, userID, progress)
+	return s.Cards.CreateProgress(ctx, deckID, cardID, userID, rating)
 }
