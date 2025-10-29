@@ -11,7 +11,8 @@ import (
 )
 
 // Default filter for all fields, used when updating a deck
-var defaultFilterDecks = "title,owner_id,shared_emails"
+const defaultFilterDecks = "title,owner_id,shared_emails"
+const defaultCardLimit = "20"
 
 // DeckService provides methods for managing decks.
 type DeckService struct {
@@ -109,7 +110,7 @@ func (s *DeckService) AddCardToDeck(
 		return nil, err
 	}
 
-	return s.GetCardsInDeck(ctx, deckID, "20", "")
+	return s.GetCardsInDeck(ctx, deckID, defaultCardLimit, "")
 }
 
 // UpdateDeck updates an existing deck identified by its ID with the provided data.
@@ -148,7 +149,7 @@ func (s *DeckService) UpdateCardInDeck(
 		return nil, err
 	}
 
-	return s.GetCardsInDeck(ctx, deckID, "20", "")
+	return s.GetCardsInDeck(ctx, deckID, defaultCardLimit, "")
 }
 
 // UpdateEmailsInDeck updates the shared emails of a deck based on the provided operation (add or remove).
