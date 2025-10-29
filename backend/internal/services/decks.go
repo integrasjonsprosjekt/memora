@@ -208,3 +208,18 @@ func (s *DeckService) CreateProgress(
 ) (string, error) {
 	return s.Cards.CreateProgress(ctx, deckID, cardID, userID, rating)
 }
+
+func (s *DeckService) GetCardProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+) (models.CardProgress, error) {
+	return s.Cards.GetCardProgress(ctx, deckID, cardID, userID)
+}
+
+func (s *DeckService) UpdateCardProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+	rating models.CardRating,
+) error {
+	return s.Cards.UpdateCardProgress(ctx, deckID, cardID, userID, rating)
+}

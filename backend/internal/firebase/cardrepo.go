@@ -45,6 +45,12 @@ type CardRepository interface {
 	// CreateProgress creates a new progress entry for a card and user.
 	// Error on fail, returns the ID if successful
 	CreateProgress(ctx context.Context, deckID, cardID, userID string, progress models.CardProgress) (string, error)
+
+	// GetCardProgress retrieves the progress of a card for a specific user.
+	// Error on fail, returns the progress if successful
+	GetCardProgress(ctx context.Context, deckID, cardID, userID string) (models.CardProgress, error)
+
+	UpdateProgress(ctx context.Context, deckID, cardID, userID string, firestoreUpdates []firestore.Update) error
 }
 
 // FirestoreCardRepo holds the connection to the database
@@ -203,4 +209,43 @@ func (r *FirestoreCardRepo) CreateProgress(
 	}
 
 	return userID, nil
+}
+
+func (r *FirestoreCardRepo) GetCardProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+) (models.CardProgress, error) {
+	doc, err := r.client.
+		Collection(config.DecksCollection).Doc(deckID).
+		Collection(config.CardsCollection).Doc(cardID).
+		Collection(config.ProgressCollection).Doc(userID).
+		Get(ctx)
+	if err != nil {
+		return models.CardProgress{}, errors.ErrInvalidId
+	}
+
+	var progress models.CardProgress
+	if err := doc.DataTo(&progress); err != nil {
+		return models.CardProgress{}, err
+	}
+
+	return progress, nil
+}
+
+
+func (r *FirestoreCardRepo) UpdateProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+	firestoreUpdates []firestore.Update,
+) error {
+	docRef := r.client.
+		Collection(config.DecksCollection).Doc(deckID).
+		Collection(config.CardsCollection).Doc(cardID).
+		Collection(config.ProgressCollection).Doc(userID)
+
+	_, err := docRef.Update(ctx, firestoreUpdates)
+	if err != nil {
+		return err
+	}
+	return nil
 }
