@@ -76,7 +76,6 @@ func (s *CardService) GetCardsInDeck(
 	cursor string,
 ) ([]models.Card, bool, error) {
 
-
 	// Fetch raw card documents from the repository
 	docs, hasMore, err := s.repo.GetCardsInDeck(ctx, deckID, limit, cursor)
 	if err != nil {
