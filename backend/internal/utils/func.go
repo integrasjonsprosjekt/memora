@@ -9,16 +9,14 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-func ParseLimitOffset(limitStr, offsetStr string) (int, int, error) {
+// ParseLimit parses a limit string and returns it as an integer.
+// Returns an error if the string is not a valid integer.
+func ParseLimit(limitStr string) (int, error) {
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
-		return 0, 0, err
+		return 0, err
 	}
-	offset, err := strconv.Atoi(offsetStr)
-	if err != nil {
-		return 0, 0, err
-	}
-	return limit, offset * limit, nil	
+	return limit, nil
 }
 
 // ParseFilter parses the query based on URI encoding

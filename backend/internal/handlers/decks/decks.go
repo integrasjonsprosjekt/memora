@@ -13,9 +13,9 @@ func GetCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
 		limit := c.DefaultQuery("limit", "20")
-		offset := c.DefaultQuery("offset", "0")
+		cursor := c.DefaultQuery("cursor", "")
 
-		cards, err := deckRepo.GetCardsInDeck(c.Request.Context(), deckID, limit, offset)
+		cards, err := deckRepo.GetCardsInDeck(c.Request.Context(), deckID, limit, cursor)
 		if errors.HandleError(c, err) {
 			return
 		}
