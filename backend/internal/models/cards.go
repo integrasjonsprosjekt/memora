@@ -63,3 +63,8 @@ func (b *BlanksCard) SetID(id string) { b.ID = id }
 type CardType struct {
 	Type string `json:"type"`
 }
+
+type CardsResponse struct {
+	Cards   []Card `json:"cards"`
+	HasMore bool   `json:"has_more"`
+}

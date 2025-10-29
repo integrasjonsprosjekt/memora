@@ -168,8 +168,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {}
+                            "$ref": "#/definitions/models.CardsResponse"
                         }
                     }
                 }
@@ -569,6 +568,18 @@
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "models.CardsResponse": {
+            "type": "object",
+            "properties": {
+                "cards": {
+                    "type": "array",
+                    "items": {}
+                },
+                "has_more": {
+                    "type": "boolean"
                 }
             }
         },
