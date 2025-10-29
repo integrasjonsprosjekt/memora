@@ -14,7 +14,7 @@ import (
 )
 
 // @Summary Get a deck
-// @Description Retrieves card information from Firestore by its ID
+// @Description Retrieves deck information from Firestore by its ID
 // @Tags Decks
 // @Accept json
 // @Produce json
