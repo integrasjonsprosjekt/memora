@@ -72,11 +72,15 @@ type CardsResponse struct {
 	HasMore bool   `json:"has_more"`
 }
 
+type CardRating struct {
+	Rating string `json:"rating" validate:"oneof=again hard good easy"`
+}
+
 type CardProgress struct {
-	EaseFactor   int       `firestore:"ease_factor"`
-	Interval     float64   `firestore:"interval"`
-	Due          time.Time `firestore:"due"`
-	Reps         int       `firestore:"reps"`
-	Lapses       int       `firestore:"lapses"`
-	LastReviewed time.Time `firestore:"last_reviewed_at"`
+	EaseFactor   int       `firestore:"ease_factor" json:"ease_factor"`
+	Interval     float64   `firestore:"interval" json:"interval"`
+	Due          time.Time `firestore:"due" json:"due"`
+	Reps         int       `firestore:"reps" json:"reps"`
+	Lapses       int       `firestore:"lapses" json:"lapses"`
+	LastReviewed time.Time `firestore:"last_reviewed_at" json:"last_reviewed_at"`
 }

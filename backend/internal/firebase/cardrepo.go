@@ -193,11 +193,14 @@ func (r *FirestoreCardRepo) CreateProgress(
 	deckID, cardID, userID string,
 	progress models.CardProgress,
 ) (string, error) {
-	id, _, err := r.client.
+	_, err := r.client.
 		Collection(config.DecksCollection).Doc(deckID).
 		Collection(config.CardsCollection).Doc(cardID).
-		Collection(config.UsersCollection).Doc(userID).
-		Collection("progress").
-		Add(ctx, progress)
-	return id.ID, err
+		Collection(config.ProgressCollection).Doc(userID).
+		Set(ctx, progress)
+	if err != nil {
+		return "", err
+	}
+
+	return userID, nil
 }

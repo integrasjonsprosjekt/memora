@@ -9,14 +9,15 @@ import (
 )
 
 var (
-	Port            string
-	Host            string
-	CurrentLevel    LogLevel
-	StartTime       time.Time
-	BasePath        = "/api/v1"
-	UsersCollection string
-	CardsCollection string
-	DecksCollection string
+	Port               string
+	Host               string
+	CurrentLevel       LogLevel
+	StartTime          time.Time
+	BasePath           = "/api/v1"
+	UsersCollection    string
+	CardsCollection    string
+	DecksCollection    string
+	ProgressCollection string
 )
 
 func GetEnv(key, defaultValue string) string {
@@ -36,6 +37,7 @@ func Init() {
 	UsersCollection = GetEnv("USERS_COLLECTION", "users")
 	CardsCollection = GetEnv("CARDS_COLLECTION", "cards")
 	DecksCollection = GetEnv("DECKS_COLLECTION", "decks")
+	ProgressCollection = GetEnv("PROGRESS_COLLECTION", "progress")
 
 	level, err := ParseLogLevel(GetEnv("LOG_LEVEL", "info"))
 	if err != nil {
