@@ -37,10 +37,10 @@ func NewDeckService(
 func (s *DeckService) GetCardsInDeck(
 	ctx context.Context,
 	deckID, limit_str, cursor string,
-) ([]models.Card, error) {
+) ([]models.Card, bool, error) {
 	limit, err := utils.ParseLimit(limit_str)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	return s.Cards.GetCardsInDeck(ctx, deckID, limit, cursor)
@@ -101,16 +101,17 @@ func (s *DeckService) AddCardToDeck(
 	ctx context.Context,
 	deckID string,
 	rawData []byte,
-) ([]models.Card, error) {
-	if err := s.Cards.CreateCard(
+) (models.Card, error) {
+	id, err := s.Cards.CreateCard(
 		ctx,
 		rawData,
 		deckID,
-	); err != nil {
+	)
+	if err != nil {
 		return nil, err
 	}
 
-	return s.GetCardsInDeck(ctx, deckID, defaultCardLimit, "")
+	return s.Cards.GetCardInDeck(ctx, deckID, id)
 }
 
 // UpdateDeck updates an existing deck identified by its ID with the provided data.
@@ -143,13 +144,13 @@ func (s *DeckService) UpdateCardInDeck(
 	ctx context.Context,
 	deckID, cardID string,
 	rawData []byte,
-) ([]models.Card, error) {
+) (models.Card, error) {
 	err := s.Cards.UpdateCard(ctx, rawData, deckID, cardID)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.GetCardsInDeck(ctx, deckID, defaultCardLimit, "")
+	return s.GetCardInDeck(ctx, deckID, cardID)
 }
 
 // UpdateEmailsInDeck updates the shared emails of a deck based on the provided operation (add or remove).

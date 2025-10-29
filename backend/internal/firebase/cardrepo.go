@@ -13,7 +13,7 @@ import (
 type CardRepository interface {
 	// CreateCard adds a new card into firestore.
 	// Error on fail, returns the ID if succesfull
-	CreateCard(ctx context.Context, card any, deckID string) error
+	CreateCard(ctx context.Context, card any, deckID string) (string, error)
 
 	// GetCardsInDeck fetches all cards in a given deck with cursor-based pagination.
 	// cursor is the ID of the last card from the previous page (empty string for first page)
@@ -23,7 +23,7 @@ type CardRepository interface {
 		deckID string,
 		limit int,
 		cursor string,
-	) ([]map[string]any, error)
+	) ([]map[string]any, bool, error)
 
 	// GetCard returns the raw data for a card for a given ID.
 	// Error on fail, or if ID is not valid
@@ -60,13 +60,13 @@ func (r *FirestoreCardRepo) GetCardsInDeck(
 	deckID string,
 	limit int,
 	cursor string,
-) ([]map[string]any, error) {
+) ([]map[string]any, bool, error) {
 	// Build the base query
 	query := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
 		Collection(config.CardsCollection).
 		OrderBy(firestore.DocumentID, firestore.Asc).
-		Limit(limit)
+		Limit(limit + 1) // Fetch one extra to check for more pages
 
 	// If we have a cursor, start after that document ID
 	// Using just the ID value is more efficient than fetching the document
@@ -86,7 +86,7 @@ func (r *FirestoreCardRepo) GetCardsInDeck(
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
 		// Append the document data along with its ID
@@ -96,7 +96,13 @@ func (r *FirestoreCardRepo) GetCardsInDeck(
 		result = append(result, data)
 	}
 
-	return result, nil
+	hasMore := false
+	if len(result) > limit {
+		hasMore = true
+		result = result[:limit] // Trim the extra document used for pagination check
+	}
+
+	return result, hasMore, nil
 }
 
 // GetCard takes a context and id, and returns the raw data for a card
@@ -122,12 +128,15 @@ func (r *FirestoreCardRepo) GetCardInDeck(
 func (r *FirestoreCardRepo) CreateCard(
 	ctx context.Context,
 	card any, deckID string,
-) error {
-	_, _, err := r.client.Collection(config.DecksCollection).
+) (string, error) {
+	docRef, _, err := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
 		Collection(config.CardsCollection).
 		Add(ctx, card)
-	return err
+	if err != nil {
+		return "", err
+	}
+	return docRef.ID, nil
 }
 
 // UpdateCard takes a context, an update payload, and an ID, and updates

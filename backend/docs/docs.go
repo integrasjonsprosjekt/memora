@@ -51,7 +51,7 @@ const docTemplate = `{
         },
         "/api/v1/decks/{deckID}": {
             "get": {
-                "description": "Retrieves card information from Firestore by its ID",
+                "description": "Retrieves deck information from Firestore by its ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -186,7 +186,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Creates a new card in a specified deck and returns the updated deck",
+                "description": "Creates a new card in a specified deck and returns the cards",
                 "consumes": [
                     "application/json"
                 ],
@@ -219,7 +219,8 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.DeckResponse"
+                            "type": "array",
+                            "items": {}
                         }
                     }
                 }
@@ -237,7 +238,7 @@ const docTemplate = `{
                 "tags": [
                     "Decks"
                 ],
-                "summary": "Get a card",
+                "summary": "Get a card in a deck",
                 "parameters": [
                     {
                         "type": "string",
@@ -304,7 +305,8 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.DeckResponse"
+                            "type": "array",
+                            "items": {}
                         }
                     }
                 }
