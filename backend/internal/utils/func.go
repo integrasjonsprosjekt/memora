@@ -21,7 +21,7 @@ func ParseLimit(limitStr string) (int, error) {
 
 	// If the limit is less than 1, default value of 20 used
 	if limit < 1 {
-		return defaultLimitSize, nil
+		limit = defaultLimitSize
 	}
 
 	return limit, nil
