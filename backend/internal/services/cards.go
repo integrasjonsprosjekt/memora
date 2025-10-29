@@ -73,12 +73,12 @@ func (s *CardService) GetCardsInDeck(
 	deckID string,
 	limit int,
 	cursor string,
-) ([]models.Card, error) {
+) ([]models.Card, bool, error) {
 
 	// Fetch raw card documents from the repository
-	docs, err := s.repo.GetCardsInDeck(ctx, deckID, limit, cursor)
+	docs, hasMore, err := s.repo.GetCardsInDeck(ctx, deckID, limit, cursor)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	// Convert each document to the appropriate card struct
@@ -87,19 +87,19 @@ func (s *CardService) GetCardsInDeck(
 	for _, doc := range docs {
 		raw, err := json.Marshal(doc)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
 		card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
 		card.SetID(doc["id"].(string))
 		cards = append(cards, card)
 	}
 
-	return cards, nil
+	return cards, hasMore, nil
 }
 
 // CreateCard creates a new card from the provided raw JSON data.
@@ -108,15 +108,15 @@ func (s *CardService) CreateCard(
 	ctx context.Context,
 	rawData []byte,
 	deckID string,
-) error {
+) (string, error) {
 	// Parse the raw data to determine the card type and unmarshal into the correct struct
 	card, err := GetCardStruct(rawData, errors.ErrInvalidCard)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if err := s.validate.Struct(card); err != nil {
-		return errors.ErrInvalidCard
+		return "", errors.ErrInvalidCard
 	}
 
 	return s.repo.CreateCard(ctx, card, deckID)

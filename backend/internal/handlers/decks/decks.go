@@ -25,16 +25,19 @@ func GetCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		limit := c.DefaultQuery("limit", "20")
 		cursor := c.DefaultQuery("cursor", "")
 
-		cards, err := deckRepo.GetCardsInDeck(c.Request.Context(), deckID, limit, cursor)
+		cards, hasMore, err := deckRepo.GetCardsInDeck(c.Request.Context(), deckID, limit, cursor)
 		if errors.HandleError(c, err) {
 			return
 		}
-		c.JSON(http.StatusOK, cards)
+		c.JSON(http.StatusOK, gin.H{
+			"cards":  cards,
+			"has_more": hasMore,
+		})
 	}
 }
 
 // @Summary Get a deck
-// @Description Retrieves card information from Firestore by its ID
+// @Description Retrieves deck information from Firestore by its ID
 // @Tags Decks
 // @Accept json
 // @Produce json
@@ -68,7 +71,7 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
-// @Summary Get a card
+// @Summary Get a card in a deck
 // @Description Retrieves card information from Firestore by its ID
 // @Tags Decks
 // @Accept json
@@ -135,13 +138,13 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 }
 
 // @Summary Create a card in a deck
-// @Description Creates a new card in a specified deck and returns the updated deck
+// @Description Creates a new card in a specified deck and returns the cards
 // @Tags Decks
 // @Accept json
 // @Produce json
 // @Param deckID path string true "Deck ID"
 // @Param card body object true "Card info (can be MultipleChoiceCard, FrontBackCard, OrderedCard, or BlanksCard)"
-// @Success 201 {object} models.DeckResponse
+// @Success 201 {object} []models.Card
 // @Router /api/v1/decks/{deckID}/cards [post]
 func CreateCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -164,12 +167,12 @@ func CreateCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
-		deck, err := deckRepo.AddCardToDeck(c.Request.Context(), deckID, rawData)
+		cards, err := deckRepo.AddCardToDeck(c.Request.Context(), deckID, rawData)
 		if errors.HandleError(c, err) {
 			return
 		}
 
-		c.JSON(http.StatusCreated, deck)
+		c.JSON(http.StatusCreated, cards)
 	}
 }
 
@@ -264,7 +267,7 @@ func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Param user body models.AnyCard true "Deck info"
 // @Param deckID path string true "Deck ID"
 // @Param cardID path string true "Card ID"
-// @Success 200 {object} models.DeckResponse
+// @Success 200 {object} []models.Card
 // @Router /api/v1/decks/{deckID}/cards/{cardID} [put]
 func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
