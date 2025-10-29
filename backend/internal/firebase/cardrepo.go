@@ -18,7 +18,12 @@ type CardRepository interface {
 	// GetCardsInDeck fetches all cards in a given deck with cursor-based pagination.
 	// cursor is the ID of the last card from the previous page (empty string for first page)
 	// Error on fail, returns a list of cards on success
-	GetCardsInDeck(ctx context.Context, deckID string, limit int, cursor string) ([]map[string]any, error)
+	GetCardsInDeck(
+		ctx context.Context,
+		deckID string,
+		limit int,
+		cursor string,
+	) ([]map[string]any, error)
 
 	// GetCard returns the raw data for a card for a given ID.
 	// Error on fail, or if ID is not valid
