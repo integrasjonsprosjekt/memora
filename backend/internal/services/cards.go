@@ -202,15 +202,32 @@ func GetCardStruct(
 	return card, nil
 }
 
+func (s *CardService) GetCardProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+) (models.CardProgress, error) {
+	return s.repo.GetCardProgress(ctx, deckID, cardID, userID)
+}
+
 // CreateProgress creates a new progress entry for a card and user.
 func (s *CardService) CreateProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
 	rating models.CardRating,
 ) (string, error) {
+	if err := s.validate.Struct(rating); err != nil {
+		return "", errors.ErrInvalidUser
+	}
+
+	_, err := s.GetCardProgress(ctx, deckID, cardID, userID)
+	if err == nil && err != errors.ErrInvalidId {
+		return "", errors.ErrInvalidUser
+	}
+
 	now := time.Now()
 	easeFactor := 2500
 	lapses := 0
+	interval := 1.0
 
 	switch rating.Rating {
 	case "again":
@@ -222,6 +239,57 @@ func (s *CardService) CreateProgress(
 		easeFactor += 150
 	}
 
+	progress := models.CardProgress{
+		LastReviewed: now,
+		Interval:     interval,
+		EaseFactor:   easeFactor,
+		Reps:         1,
+		Lapses:       lapses,
+		Due:          now.Add(time.Duration(interval*24) * time.Hour),
+	}
+
+	return s.repo.CreateProgress(ctx, deckID, cardID, userID, progress)
+}
+
+func (s *CardService) UpdateCardProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+	rating models.CardRating,
+) error {
+	if err := s.validate.Struct(rating); err != nil {
+		return errors.ErrInvalidUser
+	}
+
+	progress, err := s.GetCardProgress(ctx, deckID, cardID, userID)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+	easeFactor := progress.EaseFactor
+	reps := progress.Reps
+	lapses := progress.Lapses
+	interval := float64(progress.Interval)
+
+	switch rating.Rating {
+	case "again":
+		easeFactor -= 200
+		lapses += 1
+		reps = 0
+		interval = 1.0
+	case "hard":
+		easeFactor -= 150
+		reps += 1
+		interval *= 1.2
+	case "good":
+		reps += 1
+		interval *= 1.5
+	case "easy":
+		easeFactor += 150
+		reps += 1
+		interval *= 2.0
+	}
+
 	if easeFactor < 1300 {
 		easeFactor = 1300
 	}
@@ -230,13 +298,19 @@ func (s *CardService) CreateProgress(
 		easeFactor = 3000
 	}
 
-	progress := models.CardProgress{
+	updatedProgress := models.CardProgress{
 		LastReviewed: now,
-		Interval:     1,
+		Interval:     interval,
 		EaseFactor:   easeFactor,
-		Reps:         1,
+		Reps:         reps,
 		Lapses:       lapses,
+		Due:          now.Add(time.Duration(interval*24) * time.Hour),
 	}
 
-	return s.repo.CreateProgress(ctx, deckID, cardID, userID, progress)
+	firestoreUpdates, err := utils.StructToUpdate(updatedProgress)
+	if err != nil {
+		return errors.ErrInvalidUser
+	}
+
+	return s.repo.UpdateProgress(ctx, deckID, cardID, userID, firestoreUpdates)
 }

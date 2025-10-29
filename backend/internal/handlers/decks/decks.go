@@ -297,3 +297,43 @@ func CreateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 		})
 	}
 }
+
+func GetProgress(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		deckID := c.Param("deckID")
+		cardID := c.Param("cardID")
+		userID := c.Param("userID")
+
+		progress, err := deckRepo.GetCardProgress(c.Request.Context(), deckID, cardID, userID)
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		c.JSON(http.StatusOK, progress)
+	}
+}
+
+func UpdateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		deckID := c.Param("deckID")
+		cardID := c.Param("cardID")
+		userID := c.Param("userID")
+
+		var body models.CardRating
+
+		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid body",
+			})
+			return
+		}
+
+		go func() {
+			if err := deckRepo.UpdateCardProgress(c.Request.Context(), deckID, cardID, userID, body); err != nil {
+				errors.HandleError(c, err)
+			}
+		}()
+
+		c.Status(http.StatusAccepted)
+	}
+}
