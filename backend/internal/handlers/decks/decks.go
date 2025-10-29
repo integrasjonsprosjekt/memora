@@ -9,6 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Get cards in a deck
+// @Description Retrieves cards from a specified deck in Firestore
+// @Tags Decks
+// @Accept json
+// @Produce json
+// @Param deckID path string true "Deck ID"
+// @Param limit query string false "Number of cards to retrieve" default(20)
+// @Param cursor query string false "Cursor for pagination"
+// @Success 200 {object} []models.Card
+// @Router /api/v1/decks/{deckID}/cards [get]
 func GetCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
