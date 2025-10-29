@@ -179,8 +179,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {}
+                            "$ref": "#/definitions/models.CardsResponse"
                         }
                     }
                 }
@@ -580,6 +579,18 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "models.CardsResponse": {
+            "type": "object",
+            "properties": {
+                "cards": {
+                    "type": "array",
+                    "items": {}
+                },
+                "has_more": {
+                    "type": "boolean"
                 }
             }
         },

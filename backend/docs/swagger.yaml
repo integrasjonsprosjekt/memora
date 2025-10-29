@@ -29,6 +29,14 @@ definitions:
     - question
     - type
     type: object
+  models.CardsResponse:
+    properties:
+      cards:
+        items: {}
+        type: array
+      has_more:
+        type: boolean
+    type: object
   models.CreateDeck:
     properties:
       owner_id:
@@ -296,8 +304,7 @@ paths:
         "200":
           description: OK
           schema:
-            items: {}
-            type: array
+            $ref: '#/definitions/models.CardsResponse'
       summary: Get cards in a deck
       tags:
       - Decks

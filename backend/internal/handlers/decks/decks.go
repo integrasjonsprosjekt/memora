@@ -17,7 +17,7 @@ import (
 // @Param deckID path string true "Deck ID"
 // @Param limit query string false "Number of cards to retrieve" default(20)
 // @Param cursor query string false "Cursor for pagination"
-// @Success 200 {object} []models.Card
+// @Success 200 {object} models.CardsResponse
 // @Router /api/v1/decks/{deckID}/cards [get]
 func GetCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -29,9 +29,9 @@ func GetCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		if errors.HandleError(c, err) {
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"cards":  cards,
-			"has_more": hasMore,
+		c.JSON(http.StatusOK, models.CardsResponse{
+			Cards:   cards,
+			HasMore: hasMore,
 		})
 	}
 }
