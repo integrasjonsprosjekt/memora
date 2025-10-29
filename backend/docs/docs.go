@@ -141,6 +141,50 @@ const docTemplate = `{
             }
         },
         "/api/v1/decks/{deckID}/cards": {
+            "get": {
+                "description": "Retrieves cards from a specified deck in Firestore",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Get cards in a deck",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "deckID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "20",
+                        "description": "Number of cards to retrieve",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cursor for pagination",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {}
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Creates a new card in a specified deck and returns the updated deck",
                 "consumes": [
