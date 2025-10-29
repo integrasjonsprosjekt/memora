@@ -15,9 +15,10 @@ type CardRepository interface {
 	// Error on fail, returns the ID if succesfull
 	CreateCard(ctx context.Context, card any, deckID string) error
 
-	// GetCardsInDeck fetches all cards in a given deck.
+	// GetCardsInDeck fetches all cards in a given deck with cursor-based pagination.
+	// cursor is the ID of the last card from the previous page (empty string for first page)
 	// Error on fail, returns a list of cards on success
-	GetCardsInDeck(ctx context.Context, deckID string, limit, offset int) ([]map[string]any, error)
+	GetCardsInDeck(ctx context.Context, deckID string, limit int, cursor string) ([]map[string]any, error)
 
 	// GetCard returns the raw data for a card for a given ID.
 	// Error on fail, or if ID is not valid
@@ -46,31 +47,29 @@ func NewFirestoreCardRepo(client *firestore.Client) *FirestoreCardRepo {
 	return &FirestoreCardRepo{client: client}
 }
 
-// GetCardsInDeck fetches all cards in a given deck.
-// Error on fail, returns a list of cards on success to be parsed
+// GetCardsInDeck fetches all cards in a given deck with cursor-based pagination.
+// cursor is the document ID of the last card from the previous page (empty for first page)
+// Returns a list of cards and an error if the operation fails.
 func (r *FirestoreCardRepo) GetCardsInDeck(
 	ctx context.Context,
 	deckID string,
-	limit, offset int,
+	limit int,
+	cursor string,
 ) ([]map[string]any, error) {
-	lastDoc := r.client.Collection(config.DecksCollection).
+	// Build the base query
+	query := r.client.Collection(config.DecksCollection).
 		Doc(deckID).
 		Collection(config.CardsCollection).
-		OrderBy("type", firestore.Asc).
-		Limit(limit).
-		Documents(ctx)
-
-	// Reference to the cards subcollection
-	cardsColl := r.client.Collection(config.DecksCollection).
-		Doc(deckID).
-		Collection(config.CardsCollection).
-		OrderBy("type", firestore.Asc).
+		OrderBy(firestore.DocumentID, firestore.Asc).
 		Limit(limit)
-	if lastDoc != nil {
-		cardsColl = cardsColl.StartAfter(lastDoc)
+
+	// If we have a cursor, start after that document ID
+	// Using just the ID value is more efficient than fetching the document
+	if cursor != "" {
+		query = query.StartAfter(cursor)
 	}
 
-	iter := cardsColl.Documents(ctx)
+	iter := query.Documents(ctx)
 	defer iter.Stop()
 
 	var result []map[string]any

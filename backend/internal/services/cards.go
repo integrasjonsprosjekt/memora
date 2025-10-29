@@ -65,17 +65,18 @@ func (s *CardService) GetCardInDeck(
 	return card, nil
 }
 
-// GetCardsInDeck retrieves all cards in a specified deck.
+// GetCardsInDeck retrieves all cards in a specified deck with cursor-based pagination.
+// cursor is the ID of the last card from the previous page (empty string for first page)
 // Returns a list of cards or an error if the operation fails.
 func (s *CardService) GetCardsInDeck(
 	ctx context.Context,
 	deckID string,
-	limit, offset int,
+	limit int,
+	cursor string,
 ) ([]models.Card, error) {
 
-
 	// Fetch raw card documents from the repository
-	docs, err := s.repo.GetCardsInDeck(ctx, deckID, limit, offset)
+	docs, err := s.repo.GetCardsInDeck(ctx, deckID, limit, cursor)
 	if err != nil {
 		return nil, err
 	}
