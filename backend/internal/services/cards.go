@@ -8,6 +8,7 @@ import (
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -205,7 +206,37 @@ func GetCardStruct(
 func (s *CardService) CreateProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
-	progress models.CardProgress,
+	rating models.CardRating,
 ) (string, error) {
+	now := time.Now()
+	easeFactor := 2500
+	lapses := 0
+
+	switch rating.Rating {
+	case "again":
+		easeFactor -= 200
+		lapses = 1
+	case "hard":
+		easeFactor -= 150
+	case "easy":
+		easeFactor += 150
+	}
+
+	if easeFactor < 1300 {
+		easeFactor = 1300
+	}
+
+	if easeFactor > 3000 {
+		easeFactor = 3000
+	}
+
+	progress := models.CardProgress{
+		LastReviewed: now,
+		Interval:     1,
+		EaseFactor:   easeFactor,
+		Reps:         1,
+		Lapses:       lapses,
+	}
+
 	return s.repo.CreateProgress(ctx, deckID, cardID, userID, progress)
 }
