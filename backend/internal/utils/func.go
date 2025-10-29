@@ -9,6 +9,8 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
+const defaultLimitSize = 20
+
 // ParseLimit parses a limit string and returns it as an integer.
 // Returns an error if the string is not a valid integer.
 func ParseLimit(limitStr string) (int, error) {
@@ -16,6 +18,12 @@ func ParseLimit(limitStr string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	// If the limit is less than 1, default value of 20 used
+	if limit < 1 {
+		return defaultLimitSize, nil
+	}
+
 	return limit, nil
 }
 
