@@ -114,7 +114,7 @@ func (s *DeckService) AddCardToDeck(
 		return nil, err
 	}
 
-	return s.GetCardsInDeck(ctx, deckID, "20", "0")
+	return s.GetCardsInDeck(ctx, deckID, "20", "")
 }
 
 // UpdateDeck updates an existing deck identified by its ID with the provided data.
@@ -153,7 +153,7 @@ func (s *DeckService) UpdateCardInDeck(
 		return nil, err
 	}
 
-	return s.GetCardsInDeck(ctx, deckID, "20", "0")
+	return s.GetCardsInDeck(ctx, deckID, "20", "")
 }
 
 // UpdateEmailsInDeck updates the shared emails of a deck based on the provided operation (add or remove).
