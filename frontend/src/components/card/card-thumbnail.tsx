@@ -16,13 +16,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { EditCardMenu } from '@/components/edit-card-menu';
-
-interface CardButtonProps {
-  deckId: string;
-  cardId: string;
-  cardType: CardType;
-  initialData: Partial<CardType>;
-}
+import { deleteCard } from '@/app/api';
+import { useRouter } from 'next/navigation';
 
 export function CardThumbnail({
   card,
@@ -32,6 +27,17 @@ export function CardThumbnail({
   children,
 }: CardRendererProps<CardType> & { tags?: string[]; children: JSX.Element }): JSX.Element {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  async function handleDelete() {
+    const res = await deleteCard(deckId, card.id);
+    if (res.success) {
+      alert('Card deleted successfully');
+      router.refresh();
+    } else {
+      alert('Failed to delete card');
+    }
+  }
 
   return (
     <>
@@ -57,7 +63,7 @@ export function CardThumbnail({
               Edit
             </ContextMenuItem>
             <ContextMenuSeparator />
-            <ContextMenuItem variant="destructive">
+            <ContextMenuItem variant="destructive" onClick={() => handleDelete()}>
               <Trash2 />
               Delete
             </ContextMenuItem>
