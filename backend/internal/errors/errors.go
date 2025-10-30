@@ -18,6 +18,7 @@ var (
 	ErrInvalidId              = errors.New("invalid id")
 	ErrFailedUpdatingEmail    = errors.New("failed to update emails")
 	ErrFailedUpdatingCards    = errors.New("failed to update cards")
+	ErrAlreadyExists          = errors.New("resource already exists")
 	ErrorMap                  = map[error]struct {
 		Status  int
 		Message string
@@ -45,6 +46,10 @@ var (
 		ErrFailedUpdatingCards: {
 			Status:  http.StatusBadRequest,
 			Message: "failed to update cards",
+		},
+		ErrAlreadyExists: {
+			Status:  http.StatusConflict,
+			Message: "resource already exists",
 		},
 	}
 )

@@ -1,10 +1,12 @@
 package decks
 
 import (
+	"context"
 	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/services"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -329,7 +331,11 @@ func UpdateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 		}
 
 		go func() {
-			if err := deckRepo.UpdateCardProgress(c.Request.Context(), deckID, cardID, userID, body); err != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+
+			defer cancel()
+
+			if err := deckRepo.UpdateCardProgress(ctx, deckID, cardID, userID, body); err != nil {
 				errors.HandleError(c, err)
 			}
 		}()

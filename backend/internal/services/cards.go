@@ -219,9 +219,10 @@ func (s *CardService) CreateProgress(
 		return "", errors.ErrInvalidUser
 	}
 
-	_, err := s.GetCardProgress(ctx, deckID, cardID, userID)
-	if err == nil && err != errors.ErrInvalidId {
-		return "", errors.ErrInvalidUser
+	if exists, err := checkProgressExists(ctx, s.repo, deckID, cardID, userID); err != nil {
+		return "", err
+	} else if exists {
+		return "", errors.ErrAlreadyExists
 	}
 
 	now := time.Now()
@@ -307,10 +308,21 @@ func (s *CardService) UpdateCardProgress(
 		Due:          now.Add(time.Duration(interval*24) * time.Hour),
 	}
 
-	firestoreUpdates, err := utils.StructToUpdate(updatedProgress)
+	return s.repo.UpdateProgress(ctx, deckID, cardID, userID, updatedProgress)
+}
+
+func checkProgressExists(
+	ctx context.Context,
+	repo firebase.CardRepository,
+	deckID, cardID, userID string,
+) (bool, error) {
+	_, err := repo.GetCardProgress(ctx, deckID, cardID, userID)
 	if err != nil {
-		return errors.ErrInvalidUser
+		if err == errors.ErrInvalidId {
+			return false, nil
+		}
+		return false, err
 	}
 
-	return s.repo.UpdateProgress(ctx, deckID, cardID, userID, firestoreUpdates)
+	return true, nil
 }

@@ -50,7 +50,7 @@ type CardRepository interface {
 	// Error on fail, returns the progress if successful
 	GetCardProgress(ctx context.Context, deckID, cardID, userID string) (models.CardProgress, error)
 
-	UpdateProgress(ctx context.Context, deckID, cardID, userID string, firestoreUpdates []firestore.Update) error
+	UpdateProgress(ctx context.Context, deckID, cardID, userID string, firestoreUpdates models.CardProgress) error
 }
 
 // FirestoreCardRepo holds the connection to the database
@@ -236,14 +236,14 @@ func (r *FirestoreCardRepo) GetCardProgress(
 func (r *FirestoreCardRepo) UpdateProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
-	firestoreUpdates []firestore.Update,
+	firestoreUpdates models.CardProgress,
 ) error {
 	docRef := r.client.
 		Collection(config.DecksCollection).Doc(deckID).
 		Collection(config.CardsCollection).Doc(cardID).
 		Collection(config.ProgressCollection).Doc(userID)
 
-	_, err := docRef.Update(ctx, firestoreUpdates)
+	_, err := docRef.Set(ctx, firestoreUpdates)
 	if err != nil {
 		return err
 	}
