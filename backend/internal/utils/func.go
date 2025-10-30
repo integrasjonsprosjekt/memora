@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/firestore"
 )
@@ -88,6 +89,8 @@ func validateValue(v any) bool {
 		return len(val) > 0
 	case bool:
 		return true
+	case time.Time:
+		return !val.IsZero()
 	default:
 		return v != nil
 	}
