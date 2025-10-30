@@ -12,7 +12,6 @@ import (
 
 // Default filter for all fields, used when updating a deck
 const defaultFilterDecks = "title,owner_id,shared_emails"
-const defaultCardLimit = "20"
 
 // DeckService provides methods for managing decks.
 type DeckService struct {
