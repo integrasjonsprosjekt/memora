@@ -5,6 +5,7 @@ import (
 	"memora/internal/config"
 	"memora/internal/errors"
 	"memora/internal/models"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -51,6 +52,8 @@ type CardRepository interface {
 	GetCardProgress(ctx context.Context, deckID, cardID, userID string) (models.CardProgress, error)
 
 	UpdateProgress(ctx context.Context, deckID, cardID, userID string, firestoreUpdates models.CardProgress) error
+
+	GetDueCardsInDeck(ctx context.Context, deckID, userID string, limit int) ([]map[string]any, error)
 }
 
 // FirestoreCardRepo holds the connection to the database
@@ -247,4 +250,90 @@ func (r *FirestoreCardRepo) UpdateProgress(
 		return err
 	}
 	return nil
+}
+
+func (r *FirestoreCardRepo) GetDueCardsInDeck(
+	ctx context.Context,
+	deckID, userID string,
+	limit int,
+) ([]map[string]any, error) {
+	now := time.Now()
+
+	progressQuery := r.client.
+		Collection(config.DecksCollection).Doc(deckID).
+		Collection(config.UsersCollection).Doc(userID).
+		Collection(config.ProgressCollection).
+		Where("due", "<=", now).
+		OrderBy("due", firestore.Asc).
+		Limit(limit)
+
+	iter := progressQuery.Documents(ctx)
+	defer iter.Stop()
+
+	var dueCards []map[string]any
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		cardID := doc.Ref.ID
+
+		cardDoc, err := r.client.
+			Collection(config.DecksCollection).Doc(deckID).
+			Collection(config.CardsCollection).Doc(cardID).
+			Get(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		cardData := cardDoc.Data()
+		cardData["id"] = cardDoc.Ref.ID
+		dueCards = append(dueCards, cardData)
+	}
+
+	if len(dueCards) < limit {
+		remaining := limit - len(dueCards)
+
+		allCardsIter := r.client.
+			Collection(config.DecksCollection).Doc(deckID).
+			Collection(config.CardsCollection).
+			Limit(remaining).
+			Documents(ctx)
+
+		for {
+			if len(dueCards) >= limit {
+				allCardsIter.Stop()
+				break
+			}
+
+			cardDoc, err := allCardsIter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return nil, err
+			}
+
+			cardID := cardDoc.Ref.ID
+
+			_, err = r.client.
+				Collection(config.DecksCollection).Doc(deckID).
+				Collection(config.UsersCollection).Doc(userID).
+				Collection(config.ProgressCollection).Doc(cardID).
+				Get(ctx)
+
+			if err != nil {
+				cardData := cardDoc.Data()
+				cardData["id"] = cardDoc.Ref.ID
+				dueCards = append(dueCards, cardData)
+			}
+		}
+		allCardsIter.Stop()
+	}
+	return dueCards, nil
 }

@@ -6,6 +6,7 @@ import (
 	"memora/internal/models"
 	"memora/internal/services"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -297,6 +298,25 @@ func CreateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 		c.JSON(http.StatusCreated, models.ReturnID{
 			ID: id,
 		})
+	}
+}
+
+func GetDueCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		deckID := c.Param("deckID")
+		userID := c.Param("userID")
+		limit := c.DefaultQuery("limit", "20")
+
+		limitInt, err := strconv.Atoi(limit)
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		cards, err := deckRepo.GetDueCardsInDeck(c.Request.Context(), deckID, userID, limitInt)
+		if errors.HandleError(c, err) {
+			return
+		}
+		c.JSON(http.StatusOK, cards)
 	}
 }
 

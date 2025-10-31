@@ -294,7 +294,7 @@ func (s *CardService) UpdateCardProgress(
 	if easeFactor < 1300 {
 		easeFactor = 1300
 	}
-	
+
 	if easeFactor > 3000 {
 		easeFactor = 3000
 	}
@@ -307,6 +307,35 @@ func (s *CardService) UpdateCardProgress(
 	progress.Due = now.Add(time.Duration(interval*24) * time.Hour)
 
 	return s.repo.UpdateProgress(ctx, deckID, cardID, userID, progress)
+}
+
+func (s *CardService) GetDueCardsInDeck(
+	ctx context.Context,
+	deckID, userID string,
+	limit int,
+) ([]models.Card, error) {
+	docs, err := s.repo.GetDueCardsInDeck(ctx, deckID, userID, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var cards []models.Card
+	for _, doc := range docs {
+		raw, err := json.Marshal(doc)
+		if err != nil {
+			return nil, err
+		}
+
+		card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
+		if err != nil {
+			return nil, err
+		}
+
+		card.SetID(doc["id"].(string))
+		cards = append(cards, card)
+	}
+
+	return cards, nil
 }
 
 func checkProgressExists(
