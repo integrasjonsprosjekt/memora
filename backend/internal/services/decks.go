@@ -223,3 +223,11 @@ func (s *DeckService) UpdateCardProgress(
 ) error {
 	return s.Cards.UpdateCardProgress(ctx, deckID, cardID, userID, rating)
 }
+
+func (s *DeckService) GetDueCardsInDeck(
+	ctx context.Context,
+	deckID, userID string,
+	limit int,
+) ([]models.Card, error) {
+	return s.Cards.GetDueCardsInDeck(ctx, deckID, userID, limit)
+}
