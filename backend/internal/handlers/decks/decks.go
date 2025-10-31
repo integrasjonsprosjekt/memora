@@ -275,48 +275,27 @@ func DeleteCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	}
 }
 
-func CreateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		deckID := c.Param("deckID")
-		cardID := c.Param("cardID")
-		userID := c.Param("userID")
-
-		var body models.CardRating
-
-		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "invalid body",
-			})
-			return
-		}
-
-		id, err := deckRepo.CreateProgress(c.Request.Context(), deckID, cardID, userID, body)
-		if errors.HandleError(c, err) {
-			return
-		}
-
-		c.JSON(http.StatusCreated, models.ReturnID{
-			ID: id,
-		})
-	}
-}
-
 func GetDueCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
 		userID := c.Param("userID")
 		limit := c.DefaultQuery("limit", "20")
+		cursor := c.DefaultQuery("cursor", "")
 
 		limitInt, err := strconv.Atoi(limit)
 		if errors.HandleError(c, err) {
 			return
 		}
 
-		cards, err := deckRepo.GetDueCardsInDeck(c.Request.Context(), deckID, userID, limitInt)
+		cards, nextCursor, hasMore, err := deckRepo.GetDueCardsInDeck(c.Request.Context(), deckID, userID, limitInt, cursor)
 		if errors.HandleError(c, err) {
 			return
 		}
-		c.JSON(http.StatusOK, cards)
+		c.JSON(http.StatusOK, gin.H{
+			"cards":       cards,
+			"next_cursor": nextCursor,
+			"has_more":    hasMore,
+		})
 	}
 }
 

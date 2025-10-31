@@ -201,14 +201,6 @@ func (s *DeckService) DeleteCardInDeck(
 	return s.Cards.DeleteCard(ctx, deckID, cardID)
 }
 
-func (s *DeckService) CreateProgress(
-	ctx context.Context,
-	deckID, cardID, userID string,
-	rating models.CardRating,
-) (string, error) {
-	return s.Cards.CreateProgress(ctx, deckID, cardID, userID, rating)
-}
-
 func (s *DeckService) GetCardProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
@@ -228,6 +220,7 @@ func (s *DeckService) GetDueCardsInDeck(
 	ctx context.Context,
 	deckID, userID string,
 	limit int,
-) ([]models.Card, error) {
-	return s.Cards.GetDueCardsInDeck(ctx, deckID, userID, limit)
+	cursor string,
+) ([]models.Card, string, bool, error) {
+	return s.Cards.GetDueCardsInDeck(ctx, deckID, userID, limit, cursor)
 }
