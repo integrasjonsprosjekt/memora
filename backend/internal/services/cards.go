@@ -209,49 +209,6 @@ func (s *CardService) GetCardProgress(
 	return s.repo.GetCardProgress(ctx, deckID, cardID, userID)
 }
 
-// CreateProgress creates a new progress entry for a card and user.
-func (s *CardService) CreateProgress(
-	ctx context.Context,
-	deckID, cardID, userID string,
-	rating models.CardRating,
-) (string, error) {
-	if err := s.validate.Struct(rating); err != nil {
-		return "", errors.ErrInvalidUser
-	}
-
-	if exists, err := checkProgressExists(ctx, s.repo, deckID, cardID, userID); err != nil {
-		return "", err
-	} else if exists {
-		return "", errors.ErrAlreadyExists
-	}
-
-	now := time.Now()
-	easeFactor := 2500
-	lapses := 0
-	interval := 1.0
-
-	switch rating.Rating {
-	case "again":
-		easeFactor -= 200
-		lapses = 1
-	case "hard":
-		easeFactor -= 150
-	case "easy":
-		easeFactor += 150
-	}
-
-	progress := models.CardProgress{
-		LastReviewed: now,
-		Interval:     interval,
-		EaseFactor:   easeFactor,
-		Reps:         1,
-		Lapses:       lapses,
-		Due:          now.Add(time.Duration(interval*24) * time.Hour),
-	}
-
-	return s.repo.CreateProgress(ctx, deckID, cardID, userID, progress)
-}
-
 func (s *CardService) UpdateCardProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
@@ -313,29 +270,30 @@ func (s *CardService) GetDueCardsInDeck(
 	ctx context.Context,
 	deckID, userID string,
 	limit int,
-) ([]models.Card, error) {
-	docs, err := s.repo.GetDueCardsInDeck(ctx, deckID, userID, limit)
+	cursor string,
+) ([]models.Card, string, bool, error) {
+	docs, nextCursor, hasMore, err := s.repo.GetDueCardsInDeck(ctx, deckID, userID, limit, cursor)
 	if err != nil {
-		return nil, err
+		return nil, "", false, err
 	}
 
 	var cards []models.Card
 	for _, doc := range docs {
 		raw, err := json.Marshal(doc)
 		if err != nil {
-			return nil, err
+			return nil, "", false, err
 		}
 
 		card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
 		if err != nil {
-			return nil, err
+			return nil, "", false, err
 		}
 
 		card.SetID(doc["id"].(string))
 		cards = append(cards, card)
 	}
 
-	return cards, nil
+	return cards, nextCursor, hasMore, nil
 }
 
 func checkProgressExists(

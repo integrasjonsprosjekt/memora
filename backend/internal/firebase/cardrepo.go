@@ -43,17 +43,13 @@ type CardRepository interface {
 	// Error on fail or if the ID is not valid, nil on success
 	DeleteCard(ctx context.Context, deckID, cardID string) error
 
-	// CreateProgress creates a new progress entry for a card and user.
-	// Error on fail, returns the ID if successful
-	CreateProgress(ctx context.Context, deckID, cardID, userID string, progress models.CardProgress) (string, error)
-
 	// GetCardProgress retrieves the progress of a card for a specific user.
 	// Error on fail, returns the progress if successful
 	GetCardProgress(ctx context.Context, deckID, cardID, userID string) (models.CardProgress, error)
 
 	UpdateProgress(ctx context.Context, deckID, cardID, userID string, firestoreUpdates models.CardProgress) error
 
-	GetDueCardsInDeck(ctx context.Context, deckID, userID string, limit int) ([]map[string]any, error)
+	GetDueCardsInDeck(ctx context.Context, deckID, userID string, limit int, cursor string) ([]map[string]any, string, bool, error)
 }
 
 // FirestoreCardRepo holds the connection to the database
@@ -197,23 +193,6 @@ func (r *FirestoreCardRepo) DeleteCard(
 	return err
 }
 
-func (r *FirestoreCardRepo) CreateProgress(
-	ctx context.Context,
-	deckID, cardID, userID string,
-	progress models.CardProgress,
-) (string, error) {
-	_, err := r.client.
-		Collection(config.DecksCollection).Doc(deckID).
-		Collection(config.UsersCollection).Doc(userID).
-		Collection(config.ProgressCollection).Doc(cardID).
-		Set(ctx, progress)
-	if err != nil {
-		return "", err
-	}
-
-	return userID, nil
-}
-
 func (r *FirestoreCardRepo) GetCardProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
@@ -252,88 +231,164 @@ func (r *FirestoreCardRepo) UpdateProgress(
 	return nil
 }
 
+// GetDueCardsInDeck fetches due cards for a user in a deck with pagination support
+// It first gets cards with progress that are due, then fills remaining slots with unstudied cards
 func (r *FirestoreCardRepo) GetDueCardsInDeck(
 	ctx context.Context,
 	deckID, userID string,
 	limit int,
-) ([]map[string]any, error) {
+	cursor string,
+) ([]map[string]any, string, bool, error) {
 	now := time.Now()
+	var dueCards []map[string]any
+	var nextCursor string
 
-	progressQuery := r.client.
+	// Step 1: Get due cards (cards with progress where due <= now)
+	dueQuery := r.client.
 		Collection(config.DecksCollection).Doc(deckID).
 		Collection(config.UsersCollection).Doc(userID).
 		Collection(config.ProgressCollection).
 		Where("due", "<=", now).
 		OrderBy("due", firestore.Asc).
-		Limit(limit)
+		OrderBy(firestore.DocumentID, firestore.Asc) // Secondary sort for consistent pagination
 
-	iter := progressQuery.Documents(ctx)
-	defer iter.Stop()
+	// Handle pagination cursor for due cards
+	if cursor != "" && cursor[:4] == "due_" {
+		// Parse cursor format: "due_<timestamp>_<cardID>"
+		// This allows us to resume from where we left off
+		dueQuery = dueQuery.StartAfter(cursor[4:])
+	}
 
-	var dueCards []map[string]any
+	dueQuery = dueQuery.Limit(limit + 1)
+	dueIter := dueQuery.Documents(ctx)
+	defer dueIter.Stop()
 
+	dueCount := 0
 	for {
-		doc, err := iter.Next()
+		doc, err := dueIter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, "", false, err
 		}
 
 		cardID := doc.Ref.ID
 
+		// Fetch the actual card data
 		cardDoc, err := r.client.
 			Collection(config.DecksCollection).Doc(deckID).
 			Collection(config.CardsCollection).Doc(cardID).
 			Get(ctx)
 		if err != nil {
-			return nil, err
+			// Card might have been deleted, skip it
+			continue
 		}
 
 		cardData := cardDoc.Data()
 		cardData["id"] = cardDoc.Ref.ID
+
+		// Add progress data if needed
+		var progress models.CardProgress
+		if err := doc.DataTo(&progress); err == nil {
+			cardData["due"] = progress.Due
+			cardData["interval"] = progress.Interval
+			cardData["ease_factor"] = progress.EaseFactor
+		}
+
 		dueCards = append(dueCards, cardData)
+		dueCount++
+
+		if dueCount > limit {
+			break
+		}
 	}
 
+	// Check if there are more due cards
+	hasMoreDue := dueCount > limit
+	if hasMoreDue {
+		// Trim to limit and set cursor for next page
+		dueCards = dueCards[:limit]
+		lastCard := dueCards[len(dueCards)-1]
+		nextCursor = "due_" + lastCard["id"].(string)
+		return dueCards, nextCursor, true, nil
+	}
+
+	// Step 2: If we don't have enough due cards, fill with unstudied cards
 	if len(dueCards) < limit {
 		remaining := limit - len(dueCards)
 
-		allCardsIter := r.client.
+		// Get all progress card IDs to exclude them
+		progressMap := make(map[string]bool)
+		allProgressIter := r.client.
 			Collection(config.DecksCollection).Doc(deckID).
-			Collection(config.CardsCollection).
-			Limit(remaining).
+			Collection(config.UsersCollection).Doc(userID).
+			Collection(config.ProgressCollection).
 			Documents(ctx)
 
 		for {
-			if len(dueCards) >= limit {
-				allCardsIter.Stop()
-				break
-			}
-
-			cardDoc, err := allCardsIter.Next()
+			doc, err := allProgressIter.Next()
 			if err == iterator.Done {
 				break
 			}
 			if err != nil {
-				return nil, err
+				allProgressIter.Stop()
+				return nil, "", false, err
+			}
+			progressMap[doc.Ref.ID] = true
+		}
+		allProgressIter.Stop()
+
+		// Fetch unstudied cards
+		unstudiedQuery := r.client.
+			Collection(config.DecksCollection).Doc(deckID).
+			Collection(config.CardsCollection).
+			OrderBy(firestore.DocumentID, firestore.Asc)
+
+		// Handle cursor for unstudied cards
+		if cursor != "" && cursor[:10] == "unstudied_" {
+			unstudiedQuery = unstudiedQuery.StartAfter(cursor[10:])
+		}
+
+		unstudiedQuery = unstudiedQuery.Limit(remaining * 2) // Fetch extra to account for filtered cards
+		unstudiedIter := unstudiedQuery.Documents(ctx)
+		defer unstudiedIter.Stop()
+
+		unstudiedCount := 0
+		lastUnstudiedID := ""
+
+		for {
+			if unstudiedCount >= remaining {
+				break
+			}
+
+			cardDoc, err := unstudiedIter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return nil, "", false, err
 			}
 
 			cardID := cardDoc.Ref.ID
+			lastUnstudiedID = cardID
 
-			_, err = r.client.
-				Collection(config.DecksCollection).Doc(deckID).
-				Collection(config.UsersCollection).Doc(userID).
-				Collection(config.ProgressCollection).Doc(cardID).
-				Get(ctx)
-
-			if err != nil {
+			// Only include cards without progress
+			if !progressMap[cardID] {
 				cardData := cardDoc.Data()
 				cardData["id"] = cardDoc.Ref.ID
 				dueCards = append(dueCards, cardData)
+				unstudiedCount++
 			}
 		}
-		allCardsIter.Stop()
+
+		// Check if there might be more unstudied cards
+		// This is approximate since we filter, but good enough
+		if unstudiedCount >= remaining && lastUnstudiedID != "" {
+			nextCursor = "unstudied_" + lastUnstudiedID
+			return dueCards, nextCursor, true, nil
+		}
 	}
-	return dueCards, nil
+
+	return dueCards, "", false, nil
 }
