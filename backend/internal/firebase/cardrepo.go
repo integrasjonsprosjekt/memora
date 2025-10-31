@@ -201,8 +201,8 @@ func (r *FirestoreCardRepo) CreateProgress(
 ) (string, error) {
 	_, err := r.client.
 		Collection(config.DecksCollection).Doc(deckID).
-		Collection(config.CardsCollection).Doc(cardID).
-		Collection(config.ProgressCollection).Doc(userID).
+		Collection(config.UsersCollection).Doc(userID).
+		Collection(config.ProgressCollection).Doc(cardID).
 		Set(ctx, progress)
 	if err != nil {
 		return "", err
@@ -217,8 +217,8 @@ func (r *FirestoreCardRepo) GetCardProgress(
 ) (models.CardProgress, error) {
 	doc, err := r.client.
 		Collection(config.DecksCollection).Doc(deckID).
-		Collection(config.CardsCollection).Doc(cardID).
-		Collection(config.ProgressCollection).Doc(userID).
+		Collection(config.UsersCollection).Doc(userID).
+		Collection(config.ProgressCollection).Doc(cardID).
 		Get(ctx)
 	if err != nil {
 		return models.CardProgress{}, errors.ErrInvalidId
@@ -232,7 +232,6 @@ func (r *FirestoreCardRepo) GetCardProgress(
 	return progress, nil
 }
 
-
 func (r *FirestoreCardRepo) UpdateProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
@@ -240,8 +239,8 @@ func (r *FirestoreCardRepo) UpdateProgress(
 ) error {
 	docRef := r.client.
 		Collection(config.DecksCollection).Doc(deckID).
-		Collection(config.CardsCollection).Doc(cardID).
-		Collection(config.ProgressCollection).Doc(userID)
+		Collection(config.UsersCollection).Doc(userID).
+		Collection(config.ProgressCollection).Doc(cardID)
 
 	_, err := docRef.Set(ctx, firestoreUpdates)
 	if err != nil {

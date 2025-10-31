@@ -294,21 +294,19 @@ func (s *CardService) UpdateCardProgress(
 	if easeFactor < 1300 {
 		easeFactor = 1300
 	}
-
+	
 	if easeFactor > 3000 {
 		easeFactor = 3000
 	}
 
-	updatedProgress := models.CardProgress{
-		LastReviewed: now,
-		Interval:     interval,
-		EaseFactor:   easeFactor,
-		Reps:         reps,
-		Lapses:       lapses,
-		Due:          now.Add(time.Duration(interval*24) * time.Hour),
-	}
+	progress.EaseFactor = easeFactor
+	progress.Reps = reps
+	progress.Lapses = lapses
+	progress.Interval = interval
+	progress.LastReviewed = now
+	progress.Due = now.Add(time.Duration(interval*24) * time.Hour)
 
-	return s.repo.UpdateProgress(ctx, deckID, cardID, userID, updatedProgress)
+	return s.repo.UpdateProgress(ctx, deckID, cardID, userID, progress)
 }
 
 func checkProgressExists(
