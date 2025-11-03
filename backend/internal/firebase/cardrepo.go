@@ -2,10 +2,10 @@ package firebase
 
 import (
 	"context"
+	"log"
 	"memora/internal/config"
 	"memora/internal/errors"
 	"memora/internal/models"
-	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -239,33 +239,48 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 	limit int,
 	cursor string,
 ) ([]map[string]any, string, bool, error) {
-	now := time.Now()
-	var dueCards []map[string]any
+
+	var cards []map[string]any
 	var nextCursor string
 
-	// Step 1: Get due cards (cards with progress where due <= now)
-	dueQuery := r.client.
+	progressMap := make(map[string]bool)
+	allProgressIter := r.client.
 		Collection(config.DecksCollection).Doc(deckID).
 		Collection(config.UsersCollection).Doc(userID).
 		Collection(config.ProgressCollection).
-		Where("due", "<=", now).
-		OrderBy("due", firestore.Asc).
-		OrderBy(firestore.DocumentID, firestore.Asc) // Secondary sort for consistent pagination
+		Documents(ctx)
 
-	// Handle pagination cursor for due cards
-	if cursor != "" && cursor[:4] == "due_" {
-		// Parse cursor format: "due_<timestamp>_<cardID>"
-		// This allows us to resume from where we left off
-		dueQuery = dueQuery.StartAfter(cursor[4:])
+	for {
+		doc, err := allProgressIter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, "", false, err
+		}
+		progressMap[doc.Ref.ID] = true
 	}
 
-	dueQuery = dueQuery.Limit(limit + 1)
-	dueIter := dueQuery.Documents(ctx)
-	defer dueIter.Stop()
+	allProgressIter.Stop()
 
-	dueCount := 0
+	unstudiedQuery := r.client.
+		Collection(config.DecksCollection).Doc(deckID).
+		Collection(config.CardsCollection).
+		OrderBy(firestore.DocumentID, firestore.Asc).
+		Limit(limit + 1)
+
+	if cursor != "" && cursor[:10] == "unstudied_" {
+		unstudiedQuery = unstudiedQuery.StartAfter(cursor[10:])
+	}
+
+	unstudiedIter := unstudiedQuery.Documents(ctx)
+	defer unstudiedIter.Stop()
+
+	lastUnstudiedID := ""
+	skipped := 0
+
 	for {
-		doc, err := dueIter.Next()
+		cardDoc, err := unstudiedIter.Next()
 		if err == iterator.Done {
 			break
 		}
@@ -273,96 +288,49 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 			return nil, "", false, err
 		}
 
-		cardID := doc.Ref.ID
+		cardID := cardDoc.Ref.ID
+		lastUnstudiedID = cardID
 
-		// Fetch the actual card data
-		cardDoc, err := r.client.
-			Collection(config.DecksCollection).Doc(deckID).
-			Collection(config.CardsCollection).Doc(cardID).
-			Get(ctx)
-		if err != nil {
-			// Card might have been deleted, skip it
-			continue
-		}
-
-		cardData := cardDoc.Data()
-		cardData["id"] = cardDoc.Ref.ID
-
-		// Add progress data if needed
-		var progress models.CardProgress
-		if err := doc.DataTo(&progress); err == nil {
-			cardData["due"] = progress.Due
-			cardData["interval"] = progress.Interval
-			cardData["ease_factor"] = progress.EaseFactor
-		}
-
-		dueCards = append(dueCards, cardData)
-		dueCount++
-
-		if dueCount > limit {
-			break
+		if !progressMap[cardID] {
+			cardData := cardDoc.Data()
+			cardData["id"] = cardID
+			cards = append(cards, cardData)
+		} else {
+			skipped++
 		}
 	}
 
-	// Check if there are more due cards
-	hasMoreDue := dueCount > limit
-	if hasMoreDue {
-		// Trim to limit and set cursor for next page
-		dueCards = dueCards[:limit]
-		lastCard := dueCards[len(dueCards)-1]
-		nextCursor = "due_" + lastCard["id"].(string)
-		return dueCards, nextCursor, true, nil
+	hasMoreUnstudied := len(cards) + skipped > limit
+	if hasMoreUnstudied {
+		nextCursor = "unstudied_" + lastUnstudiedID
+		return cards, nextCursor, true, nil
 	}
 
-	// Step 2: If we don't have enough due cards, fill with unstudied cards
-	if len(dueCards) < limit {
-		remaining := limit - len(dueCards)
+	if len(cards) < limit {
+		remaining := limit - len(cards)
 
-		// Get all progress card IDs to exclude them
-		progressMap := make(map[string]bool)
-		allProgressIter := r.client.
+		dueQuery := r.client.
 			Collection(config.DecksCollection).Doc(deckID).
 			Collection(config.UsersCollection).Doc(userID).
 			Collection(config.ProgressCollection).
-			Documents(ctx)
+			OrderBy("due", firestore.Asc).
+			Limit(remaining + 1)
 
-		for {
-			doc, err := allProgressIter.Next()
-			if err == iterator.Done {
-				break
-			}
-			if err != nil {
-				allProgressIter.Stop()
-				return nil, "", false, err
-			}
-			progressMap[doc.Ref.ID] = true
-		}
-		allProgressIter.Stop()
-
-		// Fetch unstudied cards
-		unstudiedQuery := r.client.
-			Collection(config.DecksCollection).Doc(deckID).
-			Collection(config.CardsCollection).
-			OrderBy(firestore.DocumentID, firestore.Asc)
-
-		// Handle cursor for unstudied cards
-		if cursor != "" && cursor[:10] == "unstudied_" {
-			unstudiedQuery = unstudiedQuery.StartAfter(cursor[10:])
+		if cursor != "" && cursor[:4] == "due_" {
+			log.Println("Starting after due cursor:", cursor[4:])
+			dueQuery = dueQuery.StartAfter(cursor[4:])
 		}
 
-		unstudiedQuery = unstudiedQuery.Limit(remaining * 2) // Fetch extra to account for filtered cards
-		unstudiedIter := unstudiedQuery.Documents(ctx)
-		defer unstudiedIter.Stop()
+		dueIter := dueQuery.Documents(ctx)
 
-		unstudiedCount := 0
-		lastUnstudiedID := ""
+		defer dueIter.Stop()
+
+		lastDueID := ""
+
+		cardRefs := []*firestore.DocumentRef{}
 
 		for {
-			if unstudiedCount >= remaining {
-				break
-			}
-
-			cardDoc, err := unstudiedIter.Next()
+			progressDoc, err := dueIter.Next()
 			if err == iterator.Done {
 				break
 			}
@@ -370,25 +338,33 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 				return nil, "", false, err
 			}
 
-			cardID := cardDoc.Ref.ID
-			lastUnstudiedID = cardID
+			cardID := progressDoc.Ref.ID
+			lastDueID = cardID
 
-			// Only include cards without progress
-			if !progressMap[cardID] {
+			cardRef := r.client.
+				Collection(config.DecksCollection).Doc(deckID).
+				Collection(config.CardsCollection).Doc(cardID)
+
+			cardRefs = append(cardRefs, cardRef)
+		}
+
+		if len(cardRefs) > 0 {
+			cardDocs, err := r.client.GetAll(ctx, cardRefs)
+			if err != nil {
+				return nil, "", false, err
+			}
+
+			for _, cardDoc := range cardDocs {
 				cardData := cardDoc.Data()
 				cardData["id"] = cardDoc.Ref.ID
-				dueCards = append(dueCards, cardData)
-				unstudiedCount++
+				cards = append(cards, cardData)
 			}
 		}
 
-		// Check if there might be more unstudied cards
-		// This is approximate since we filter, but good enough
-		if unstudiedCount >= remaining && lastUnstudiedID != "" {
-			nextCursor = "unstudied_" + lastUnstudiedID
-			return dueCards, nextCursor, true, nil
+		if len(cards) > limit {
+			nextCursor = "due_" + lastDueID
+			return cards[:limit], nextCursor, true, nil
 		}
 	}
-
-	return dueCards, "", false, nil
+	return cards, "", false, nil
 }

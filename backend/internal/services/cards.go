@@ -220,7 +220,18 @@ func (s *CardService) UpdateCardProgress(
 
 	progress, err := s.GetCardProgress(ctx, deckID, cardID, userID)
 	if err != nil {
-		return err
+		if err == errors.ErrInvalidId {
+			progress = models.CardProgress{
+				EaseFactor:   2500,
+				Reps:         0,
+				Lapses:       0,
+				Interval:     0,
+				LastReviewed: time.Time{},
+				Due:          time.Time{},
+			}
+		} else {
+			return err
+		}
 	}
 
 	now := time.Now()
@@ -294,20 +305,4 @@ func (s *CardService) GetDueCardsInDeck(
 	}
 
 	return cards, nextCursor, hasMore, nil
-}
-
-func checkProgressExists(
-	ctx context.Context,
-	repo firebase.CardRepository,
-	deckID, cardID, userID string,
-) (bool, error) {
-	_, err := repo.GetCardProgress(ctx, deckID, cardID, userID)
-	if err != nil {
-		if err == errors.ErrInvalidId {
-			return false, nil
-		}
-		return false, err
-	}
-
-	return true, nil
 }
