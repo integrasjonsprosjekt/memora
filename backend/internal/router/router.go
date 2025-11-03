@@ -64,12 +64,12 @@ func Route(c *gin.Engine, services *services.Services) {
 				cardRoute.GET("/:cardID", decks.GetCardInDeck(services.Decks))
 				cardRoute.PUT("/:cardID", decks.UpdateCard(services.Decks))
 				cardRoute.DELETE("/:cardID", decks.DeleteCardInDeck(services.Decks))
-			}
-			progress := deckRoute.Group("/:deckID/users/:userID/progress/:cardID")
-			{
-				progress.GET("/due", decks.GetDueCardsInDeck(services.Decks))
-				progress.GET("/", decks.GetProgress(services.Decks))
-				progress.PUT("/", decks.UpdateProgress(services.Decks))
+				progress := cardRoute.Group("/:cardID/progress/:userID")
+				{
+					progress.GET("/due", decks.GetDueCardsInDeck(services.Decks))
+					progress.GET("/", decks.GetProgress(services.Decks))
+					progress.PUT("/", decks.UpdateProgress(services.Decks))
+				}
 			}
 		}
 	}
