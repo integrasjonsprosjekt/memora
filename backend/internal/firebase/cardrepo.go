@@ -2,7 +2,6 @@ package firebase
 
 import (
 	"context"
-	"log"
 	"memora/internal/config"
 	"memora/internal/errors"
 	"memora/internal/models"
@@ -47,9 +46,18 @@ type CardRepository interface {
 	// Error on fail, returns the progress if successful
 	GetCardProgress(ctx context.Context, deckID, cardID, userID string) (models.CardProgress, error)
 
-	UpdateProgress(ctx context.Context, deckID, cardID, userID string, firestoreUpdates models.CardProgress) error
+	UpdateProgress(
+		ctx context.Context,
+		deckID, cardID, userID string,
+		firestoreUpdates models.CardProgress,
+	) error
 
-	GetDueCardsInDeck(ctx context.Context, deckID, userID string, limit int, cursor string) ([]map[string]any, string, bool, error)
+	GetDueCardsInDeck(
+		ctx context.Context,
+		deckID, userID string,
+		limit int,
+		cursor string,
+	) ([]map[string]any, string, bool, error)
 }
 
 // FirestoreCardRepo holds the connection to the database
@@ -193,6 +201,8 @@ func (r *FirestoreCardRepo) DeleteCard(
 	return err
 }
 
+// GetCardProgress retrieves the progress of a card for a specific user.
+// Returns the progress or an error if the operation fails.
 func (r *FirestoreCardRepo) GetCardProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
@@ -214,6 +224,8 @@ func (r *FirestoreCardRepo) GetCardProgress(
 	return progress, nil
 }
 
+// UpdateProgress updates the progress of a card for a specific user.
+// Returns an error if the operation fails.
 func (r *FirestoreCardRepo) UpdateProgress(
 	ctx context.Context,
 	deckID, cardID, userID string,
@@ -232,7 +244,7 @@ func (r *FirestoreCardRepo) UpdateProgress(
 }
 
 // GetDueCardsInDeck fetches due cards for a user in a deck with pagination support
-// It first gets cards with progress that are due, then fills remaining slots with unstudied cards
+// Returns a list of cards, next cursor, hasMore flag, and an error if the operation fails.
 func (r *FirestoreCardRepo) GetDueCardsInDeck(
 	ctx context.Context,
 	deckID, userID string,
@@ -243,6 +255,7 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 	var cards []map[string]any
 	var nextCursor string
 
+	// Fetch all progress documents for the user to identify studied cards
 	progressMap := make(map[string]bool)
 	allProgressIter := r.client.
 		Collection(config.DecksCollection).Doc(deckID).
@@ -263,12 +276,14 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 
 	allProgressIter.Stop()
 
+	// Prioritize unstudied cards first
 	unstudiedQuery := r.client.
 		Collection(config.DecksCollection).Doc(deckID).
 		Collection(config.CardsCollection).
 		OrderBy(firestore.DocumentID, firestore.Asc).
 		Limit(limit + 1)
 
+	// Apply a cursor if provided
 	if cursor != "" && cursor[:10] == "unstudied_" {
 		unstudiedQuery = unstudiedQuery.StartAfter(cursor[10:])
 	}
@@ -279,6 +294,7 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 	lastUnstudiedID := ""
 	skipped := 0
 
+	// Iterate through unstudied cards
 	for {
 		cardDoc, err := unstudiedIter.Next()
 		if err == iterator.Done {
@@ -291,24 +307,30 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 		cardID := cardDoc.Ref.ID
 		lastUnstudiedID = cardID
 
+		// If the card is unstudied, add it to the results
 		if !progressMap[cardID] {
 			cardData := cardDoc.Data()
 			cardData["id"] = cardID
 			cards = append(cards, cardData)
 		} else {
+			// Skip studied cards used to decide if it has more unstudied
 			skipped++
 		}
 	}
 
-	hasMoreUnstudied := len(cards) + skipped > limit
+	// Check if we have enough unstudied cards
+	hasMoreUnstudied := len(cards)+skipped > limit
 	if hasMoreUnstudied {
+		// Get the new pagination cursor and return
 		nextCursor = "unstudied_" + lastUnstudiedID
 		return cards, nextCursor, true, nil
 	}
 
+	// We need more cards, fetch studied cards based on due date
 	if len(cards) < limit {
 		remaining := limit - len(cards)
 
+		// Build the due date query
 		dueQuery := r.client.
 			Collection(config.DecksCollection).Doc(deckID).
 			Collection(config.UsersCollection).Doc(userID).
@@ -316,8 +338,8 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 			OrderBy("due", firestore.Asc).
 			Limit(remaining + 1)
 
+		// Apply cursor if provided in previous query
 		if cursor != "" && cursor[:4] == "due_" {
-			log.Println("Starting after due cursor:", cursor[4:])
 			dueQuery = dueQuery.StartAfter(cursor[4:])
 		}
 
@@ -329,6 +351,7 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 
 		cardRefs := []*firestore.DocumentRef{}
 
+		// Batch fetch due cards to not load network multiple times
 		for {
 			progressDoc, err := dueIter.Next()
 			if err == iterator.Done {
@@ -348,6 +371,7 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 			cardRefs = append(cardRefs, cardRef)
 		}
 
+		// If there are card references, fetch their data
 		if len(cardRefs) > 0 {
 			cardDocs, err := r.client.GetAll(ctx, cardRefs)
 			if err != nil {
@@ -361,10 +385,13 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 			}
 		}
 
+		// Check if we have more studied cards for pagination
 		if len(cards) > limit {
 			nextCursor = "due_" + lastDueID
-			return cards[:limit], nextCursor, true, nil
+			return cards, nextCursor, true, nil
 		}
 	}
+
+	// No more cards to paginate through
 	return cards, "", false, nil
 }

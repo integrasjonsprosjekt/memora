@@ -23,6 +23,12 @@ type AnyCard struct {
 	BlanksCard         BlanksCard
 }
 
+type AnyCardWithPaging struct {
+	Cards   []AnyCard `json:"cards"`
+	HasMore bool      `json:"has_more"`
+	Cursor  string    `json:"cursor,omitempty"`
+}
+
 type MultipleChoiceCard struct {
 	ID       string          `json:"id,omitempty" validate:"omitempty" firestore:"-"`
 	Type     string          `json:"type" validate:"required" firestore:"type"`
