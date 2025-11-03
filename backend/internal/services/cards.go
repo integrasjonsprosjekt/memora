@@ -223,7 +223,7 @@ func (s *CardService) UpdateCardProgress(
 		if err == errors.ErrInvalidId {
 			progress = models.CardProgress{
 				EaseFactor:   2500,
-				Reps:         0,
+				Reps:         1,
 				Lapses:       0,
 				Interval:     0,
 				LastReviewed: time.Time{},
@@ -244,7 +244,7 @@ func (s *CardService) UpdateCardProgress(
 	case "again":
 		easeFactor -= 200
 		lapses += 1
-		reps = 0
+		reps += 1
 		interval = 1.0
 	case "hard":
 		easeFactor -= 150

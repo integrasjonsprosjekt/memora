@@ -339,7 +339,7 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 			Limit(remaining + 1)
 
 		// Apply cursor if provided in previous query
-		if cursor != "" && cursor[:4] == "due_" {
+		if len(cursor) >= 4 && cursor[:4] == "due_" {
 			dueQuery = dueQuery.StartAfter(cursor[4:])
 		}
 
@@ -388,7 +388,7 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 		// Check if we have more studied cards for pagination
 		if len(cards) > limit {
 			nextCursor = "due_" + lastDueID
-			return cards, nextCursor, true, nil
+			return cards[:limit], nextCursor, true, nil
 		}
 	}
 
