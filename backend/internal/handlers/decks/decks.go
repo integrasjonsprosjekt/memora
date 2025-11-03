@@ -2,6 +2,7 @@ package decks
 
 import (
 	"context"
+	"log/slog"
 	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/services"
@@ -374,7 +375,7 @@ func UpdateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 			defer cancel()
 
 			if err := deckRepo.UpdateCardProgress(ctx, deckID, cardID, userID, body); err != nil {
-				errors.HandleError(c, err)
+				slog.Any("Got error ", err)
 			}
 		}()
 
