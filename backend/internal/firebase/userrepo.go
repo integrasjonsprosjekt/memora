@@ -77,7 +77,13 @@ func (r *FirestoreUserRepo) GetDecks(
 ) ([]models.DisplayDeck, error) {
 
 	// Get the user by ID. After middleware is introduced, this can be omitted.
-	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id, []string{"email"})
+	user, err := utils.FetchByID[models.User](
+		r.client,
+		ctx,
+		config.UsersCollection,
+		id,
+		[]string{"email"},
+	)
 	if err != nil {
 		return nil, err
 	}
