@@ -19,12 +19,13 @@ import (
 // Return the user based on an id
 func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		filter := c.DefaultQuery("filter", "email,name")
 		id, err := utils.GetUID(c)
 		if err != nil {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
+
+		filter := c.DefaultQuery("filter", "email,name")
 
 		user, err := userRepo.GetUser(c.Request.Context(), id, filter)
 		if errors.HandleError(c, err) {
