@@ -71,9 +71,9 @@ export async function deleteCard(deckId: string, cardId: string) {
 
 // ---------- Decks ----------
 
-export async function createDeck(title: string, shared_emails?: string[]) {
+export async function createDeck(owner_id: string, title: string, shared_emails?: string[]) {
   const body = {
-    owner_id: 'zb8FOCiyYCfXmqpPpxaU7Kjm5p92', // TODO: Remove hardcoded user ID
+    owner_id,
     title,
     shared_emails,
   };

@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { getApiEndpoint, USER_ID } from '@/config/api';
 import { Deck } from '@/types/deck';
 import { EditDeckMenu } from './edit-deck-menu';
+import { AddDeckMenu } from './add-deck-menu';
 
 // Create a cache for deck promises
 let deckPromiseCache: Promise<Deck[]> | null = null;
@@ -78,7 +79,11 @@ function DeckGroup({
   cacheKey: number;
 }) {
   const pathname = usePathname();
-  const decksPromise = useMemo(() => fetchDecks(), [cacheKey]);
+  // Use cacheKey to force re-fetching when cache is invalidated
+  const decksPromise = useMemo(() => {
+    void cacheKey;
+    return fetchDecks();
+  }, [cacheKey]);
   const allDecks = use(decksPromise);
 
   const decks = useMemo(() => {
@@ -139,8 +144,7 @@ function DeckItem({
 }) {
   const invalidateCache = useContext(DeckCacheContext);
   const shouldBeOpen = pathname?.startsWith(`/decks/${deck.id}`) || false;
-  // Initialize with false to avoid hydration mismatch
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(shouldBeOpen);
   const [isEditing, setIsEditing] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -278,24 +282,36 @@ function DeckGroupSuspense({
 
 export function NavMain() {
   const [cacheKey, setCacheKey] = useState(cacheInvalidationCounter);
+  const [isAddingDeck, setIsAddingDeck] = useState(false);
 
   const handleInvalidateCache = () => {
     invalidateDeckCache();
     setCacheKey(cacheInvalidationCounter);
   };
+
+  const handleAddDeckClose = (open: boolean) => {
+    setIsAddingDeck(open);
+    if (!open) {
+      handleInvalidateCache();
+    }
+  };
+
   return (
-    <DeckCacheContext.Provider value={handleInvalidateCache}>
-      <DeckGroupSuspense
-        title="Decks"
-        filterType="owned"
-        cacheKey={cacheKey}
-        action={
-          <button onClick={() => alert('Adding new deck')} className="hover:bg-accent rounded p-0.5">
-            <Plus className="h-4 w-4" />
-          </button>
-        }
-      />
-      <DeckGroupSuspense title="Shared" filterType="shared" cacheKey={cacheKey} />
-    </DeckCacheContext.Provider>
+    <>
+      <DeckCacheContext.Provider value={handleInvalidateCache}>
+        <DeckGroupSuspense
+          title="Decks"
+          filterType="owned"
+          cacheKey={cacheKey}
+          action={
+            <button onClick={() => setIsAddingDeck(true)} className="hover:bg-accent rounded p-0.5">
+              <Plus className="h-4 w-4" />
+            </button>
+          }
+        />
+        <DeckGroupSuspense title="Shared" filterType="shared" cacheKey={cacheKey} />
+      </DeckCacheContext.Provider>
+      <AddDeckMenu userId={USER_ID} open={isAddingDeck} onOpenChange={handleAddDeckClose} />
+    </>
   );
 }
