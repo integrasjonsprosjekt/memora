@@ -2,7 +2,7 @@
 
 import { FileBox, ChevronRight, Plus, Trash2, SquarePen, Share2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { use, useMemo, Suspense, useState, useEffect } from 'react';
+import { use, useMemo, Suspense, useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -31,16 +31,22 @@ import { Deck } from '@/types/deck';
 import { EditDeckMenu } from './edit-deck-menu';
 
 // Create a cache for deck promises
-const deckPromiseCache = new Map<string, Promise<Deck[]>>();
+let deckPromiseCache: Promise<Deck[]> | null = null;
+let cacheInvalidationCounter = 0;
 
-function fetchDecks(endpoint: string): Promise<Deck[]> {
+function invalidateDeckCache() {
+  deckPromiseCache = null;
+  cacheInvalidationCounter++;
+}
+
+function fetchDecks(): Promise<Deck[]> {
   // Return cached promise if it exists
-  if (deckPromiseCache.has(endpoint)) {
-    return deckPromiseCache.get(endpoint)!;
+  if (deckPromiseCache) {
+    return deckPromiseCache;
   }
 
   // Create new promise and cache it
-  const promise = fetch(getApiEndpoint(`/v1/users/${USER_ID}/decks/${endpoint}`), {
+  const promise = fetch(getApiEndpoint(`/v1/users/${USER_ID}/decks`), {
     next: { revalidate: 300 }, // Cache for 5 minutes
   })
     .then((res) => {
@@ -48,20 +54,40 @@ function fetchDecks(endpoint: string): Promise<Deck[]> {
       return res.json();
     })
     .catch((error) => {
-      console.error(`Error fetching ${endpoint} decks:`, error);
+      console.error(`Error fetching decks:`, error);
       // Remove failed promise from cache
-      deckPromiseCache.delete(endpoint);
+      deckPromiseCache = null;
       throw error;
     });
 
-  deckPromiseCache.set(endpoint, promise);
+  deckPromiseCache = promise;
   return promise;
 }
 
-function DeckGroup({ title, endpoint, action }: { title: string; endpoint: string; action?: React.ReactNode }) {
+const DeckCacheContext = createContext<() => void>(() => {});
+
+function DeckGroup({
+  title,
+  filterType,
+  action,
+  cacheKey,
+}: {
+  title: string;
+  filterType: 'owned' | 'shared';
+  action?: React.ReactNode;
+  cacheKey: number;
+}) {
   const pathname = usePathname();
-  const decksPromise = useMemo(() => fetchDecks(endpoint), [endpoint]);
-  const decks = use(decksPromise);
+  const decksPromise = useMemo(() => fetchDecks(), [cacheKey]);
+  const allDecks = use(decksPromise);
+
+  const decks = useMemo(() => {
+    if (filterType === 'owned') {
+      return allDecks.filter((deck) => deck.owner_id === USER_ID);
+    } else {
+      return allDecks.filter((deck) => deck.owner_id !== USER_ID);
+    }
+  }, [allDecks, filterType]);
 
   /**
    * Helper to check if main deck item should be active
@@ -111,15 +137,39 @@ function DeckItem({
   pathname: string | null;
   isDeckMainActive: (deckId: string) => boolean;
 }) {
+  const invalidateCache = useContext(DeckCacheContext);
   const shouldBeOpen = pathname?.startsWith(`/decks/${deck.id}`) || false;
-  const [isOpen, setIsOpen] = useState(shouldBeOpen);
+  // Initialize with false to avoid hydration mismatch
+  const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setIsOpen(shouldBeOpen);
   }, [shouldBeOpen]);
 
+  const handleEditClose = (open: boolean) => {
+    setIsEditing(open);
+    if (!open) {
+      invalidateCache();
+    }
+  };
+
   const hoverAnimation = 'transition-all duration-200 hover:translate-x-0.5';
+
+  if (!mounted) {
+    return (
+      <SidebarMenuItem>
+        <div className="px-2 py-1.5">
+          <Skeleton className="h-5 w-full" />
+        </div>
+      </SidebarMenuItem>
+    );
+  }
 
   return (
     <>
@@ -190,14 +240,25 @@ function DeckItem({
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
-      <EditDeckMenu open={isEditing} onOpenChange={setIsEditing} deckId={deck.id} />
+      <EditDeckMenu open={isEditing} onOpenChange={handleEditClose} deckId={deck.id} />
     </>
   );
 }
 
-function DeckGroupSuspense({ title, endpoint, action }: { title: string; endpoint: string; action?: React.ReactNode }) {
+function DeckGroupSuspense({
+  title,
+  filterType,
+  action,
+  cacheKey,
+}: {
+  title: string;
+  filterType: 'owned' | 'shared';
+  action?: React.ReactNode;
+  cacheKey: number;
+}) {
   return (
     <Suspense
+      key={cacheKey}
       fallback={
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between pr-1">
@@ -210,24 +271,31 @@ function DeckGroupSuspense({ title, endpoint, action }: { title: string; endpoin
         </SidebarGroup>
       }
     >
-      <DeckGroup title={title} endpoint={endpoint} action={action} />
+      <DeckGroup title={title} filterType={filterType} action={action} cacheKey={cacheKey} />
     </Suspense>
   );
 }
 
 export function NavMain() {
+  const [cacheKey, setCacheKey] = useState(cacheInvalidationCounter);
+
+  const handleInvalidateCache = () => {
+    invalidateDeckCache();
+    setCacheKey(cacheInvalidationCounter);
+  };
   return (
-    <>
+    <DeckCacheContext.Provider value={handleInvalidateCache}>
       <DeckGroupSuspense
         title="Decks"
-        endpoint="owned"
+        filterType="owned"
+        cacheKey={cacheKey}
         action={
           <button onClick={() => alert('Adding new deck')} className="hover:bg-accent rounded p-0.5">
             <Plus className="h-4 w-4" />
           </button>
         }
       />
-      <DeckGroupSuspense title="Shared" endpoint="shared" />
-    </>
+      <DeckGroupSuspense title="Shared" filterType="shared" cacheKey={cacheKey} />
+    </DeckCacheContext.Provider>
   );
 }
