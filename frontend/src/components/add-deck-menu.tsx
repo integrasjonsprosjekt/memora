@@ -10,8 +10,16 @@ import { Button } from './ui/button';
 import { createDeck } from '@/app/api';
 import { useRouter } from 'next/navigation';
 import { EmailInput } from './email-input';
+import { Dialog, DialogContent, DialogHeader } from './ui/dialog';
+import { DialogTitle } from '@radix-ui/react-dialog';
 
-export function AddDeckMenu() {
+interface AddDeckMenuProps {
+  userId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function AddDeckMenu({ userId, open, onOpenChange }: AddDeckMenuProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -23,9 +31,11 @@ export function AddDeckMenu() {
   const onSubmit = form.handleSubmit(async (values) => {
     setLoading(true);
     try {
-      const res = await createDeck(values.title, values.shared_emails ?? []);
+      const res = await createDeck(userId, values.title, values.shared_emails ?? []);
       if (res.success) {
-        router.push(`/decks/${values.title}`);
+        form.reset();
+        onOpenChange(false);
+        router.push(`/decks/${res.data.id}`);
       } else {
         alert(res.message);
       }
@@ -37,42 +47,49 @@ export function AddDeckMenu() {
     }
   });
   return (
-    <Form {...form}>
-      <form onSubmit={onSubmit} className="flex flex-col gap-4 py-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Deck title"
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="shared_emails"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Shared Emails</FormLabel>
-              <FormControl>
-                <EmailInput value={field.value ?? []} onChange={field.onChange} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <Button type="submit" disabled={loading} className="mt-4">
-          {/*Ensures that the button is disabled while loading*/}
-          {loading ? 'Loading...' : 'Add deck'}
-        </Button>
-      </form>
-    </Form>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add new Deck</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={onSubmit} className="flex flex-col gap-4 py-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Deck title"
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="shared_emails"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Shared Emails</FormLabel>
+                  <FormControl>
+                    <EmailInput value={field.value ?? []} onChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button type="submit" disabled={loading} className="mt-4">
+              {/*Ensures that the button is disabled while loading*/}
+              {loading ? 'Loading...' : 'Add deck'}
+            </Button>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
