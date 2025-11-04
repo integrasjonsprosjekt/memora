@@ -13,8 +13,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { EmailInput } from './email-input';
 import { getApiEndpoint } from '@/config/api';
-import { withDefaults } from '@/lib/utils';
-import { Deck, deckDefaults } from '@/types/deck';
+import { Deck } from '@/types/deck';
 
 interface EditDeckMenuProps {
   open: boolean;
@@ -22,9 +21,21 @@ interface EditDeckMenuProps {
   deckId: string;
 }
 
+interface DeckApiResponse {
+  Title: string;
+  SharedEmails: string[];
+}
+
+function normalizeDeckData(apiData: DeckApiResponse): Partial<Deck> {
+  return {
+    title: apiData.Title ?? '',
+    shared_emails: apiData.SharedEmails ?? [],
+  };
+}
+
 export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) {
   const [loading, setLoading] = useState(false);
-  const [deck, setDeck] = useState<Deck | null>(null);
+  const [deck, setDeck] = useState<Partial<Deck> | null>(null);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof deckSchema>>({
@@ -33,13 +44,17 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
   });
 
   useEffect(() => {
+    if (!open) return;
     const fetchDeck = async () => {
       try {
         const res = await fetch(getApiEndpoint(`/v1/decks/${deckId}`), { cache: 'no-store' });
-        const data = await res.json();
-        const deckWithDefaults = withDefaults(data, deckDefaults);
-        setDeck(deckWithDefaults);
-        form.reset(deckWithDefaults);
+        const data: DeckApiResponse = await res.json();
+        const normalizedData = normalizeDeckData(data);
+        setDeck(normalizedData);
+        form.reset({
+          title: normalizedData.title ?? '',
+          shared_emails: normalizedData.shared_emails ?? [],
+        });
       } catch (error) {
         console.error('Error fetching deck:', error);
         setDeck(null);
@@ -47,7 +62,7 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
     };
 
     fetchDeck();
-  }, [deckId, form]);
+  }, [deckId, open, form]);
 
   const onSubmit = form.handleSubmit(async (values) => {
     setLoading(true);
@@ -121,7 +136,7 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
               />
               <Button type="submit" disabled={loading} className="mt-4">
                 {/*Ensures that the button is disabled while loading*/}
-                {loading ? 'Loading...' : 'Edit card'}
+                {loading ? 'Loading...' : 'Edit deck'}
               </Button>
             </form>
           </Form>
