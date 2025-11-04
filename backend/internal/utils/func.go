@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"memora/internal/errors"
 	"net/url"
+	"slices"
 	"strings"
 
 	"cloud.google.com/go/firestore"
@@ -38,6 +39,7 @@ func CheckIfUserCanAccessDeck(c *gin.Context, ownerID string, sharedEmails []str
 		return false
 	}
 	email, err := GetEmail(c)
+	
 	if err != nil {
 		return false
 	}

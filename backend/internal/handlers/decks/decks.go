@@ -61,15 +61,7 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		}
 
 		filter := c.DefaultQuery("filter", "title,owner_id,shared_emails")
-
-		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
-			c.Request.Context(),
-			deckID, uid, email,
-		)
-
-		uid := c.GetString("uid")
-		email := c.GetString("email")
-
+		
 		deck, err := deckRepo.GetOneDeck(c.Request.Context(), deckID, filter)
 		if errors.HandleError(c, err) {
 			return

@@ -24,13 +24,8 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
-		
+
 		filter := c.DefaultQuery("filter", "email,name")
-		id, err := utils.GetUID(c)
-		if err != nil {
-			c.Status(http.StatusUnauthorized)
-			return
-		}
 
 		user, err := userRepo.GetUser(c.Request.Context(), id, filter)
 		if errors.HandleError(c, err) {
