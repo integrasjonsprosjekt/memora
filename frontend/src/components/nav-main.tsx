@@ -4,7 +4,7 @@ import { FileBox, ChevronRight, Plus, Trash2, SquarePen, Share2 } from 'lucide-r
 import { Skeleton } from '@/components/ui/skeleton';
 import { use, useMemo, Suspense, useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -30,6 +30,7 @@ import { getApiEndpoint, USER_ID } from '@/config/api';
 import { Deck } from '@/types/deck';
 import { EditDeckMenu } from './edit-deck-menu';
 import { AddDeckMenu } from './add-deck-menu';
+import { deleteDeck } from '@/app/api';
 
 // Create a cache for deck promises
 let deckPromiseCache: Promise<Deck[]> | null = null;
@@ -142,6 +143,7 @@ function DeckItem({
   pathname: string | null;
   isDeckMainActive: (deckId: string) => boolean;
 }) {
+  const router = useRouter();
   const invalidateCache = useContext(DeckCacheContext);
   const shouldBeOpen = pathname?.startsWith(`/decks/${deck.id}`) || false;
   const [isOpen, setIsOpen] = useState(shouldBeOpen);
@@ -162,6 +164,23 @@ function DeckItem({
       invalidateCache();
     }
   };
+
+  async function handleDelete() {
+    if (confirm(`Are you sure you want to delete ${deck.title}?`) == false) {
+      return;
+    } else {
+      const res = await deleteDeck(deck.id);
+      if (res.success) {
+        if (shouldBeOpen) {
+          // Redirect to home
+          router.push('/');
+        }
+        invalidateCache();
+      } else {
+        alert('Failed to delete deck');
+      }
+    }
+  }
 
   const hoverAnimation = 'transition-all duration-200 hover:translate-x-0.5';
 
@@ -238,7 +257,7 @@ function DeckItem({
             Share
           </ContextMenuItem>
           <ContextMenuSeparator />
-          <ContextMenuItem variant="destructive">
+          <ContextMenuItem onClick={() => handleDelete()} variant="destructive">
             <Trash2 />
             Delete
           </ContextMenuItem>
