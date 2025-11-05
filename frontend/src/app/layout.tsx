@@ -7,6 +7,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { ModeToggle } from '@/components/theme-toggle';
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AuthProvider } from '@/context/auth';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -37,6 +38,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AuthProvider>
           <SidebarProvider defaultOpen={defaultOpen}>
             <AppSidebar />
             <SidebarInset className="border-border flex flex-col border-1 px-4">
@@ -53,6 +55,7 @@ export default async function RootLayout({
               {children}
             </SidebarInset>
           </SidebarProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
