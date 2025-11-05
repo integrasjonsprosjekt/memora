@@ -43,8 +43,7 @@ func Route(c *gin.Engine, services *services.Services) {
 			userRoute.POST("/", users.CreateUser(services.Users))
 			userRoute.PATCH("/", users.PatchUser(services.Users))
 			userRoute.DELETE("/", users.DeleteUser(services.Users))
-
-			userRoute.GET("/:id/decks", users.GetDecks(services.Users))
+			userRoute.GET("/decks", users.GetDecks(services.Users))
 		}
 
 		// Deck-related endpoints
