@@ -29,7 +29,7 @@ func GetCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		limit := c.DefaultQuery("limit", "20")
 		cursor := c.DefaultQuery("cursor", "")
 
-		cards, hasMore, err := deckRepo.GetCardsInDeck(c.Request.Context(), deckID, limit, cursor)
+		cards, hasMore, err := deckRepo.Cards.GetCardsInDeck(c.Request.Context(), deckID, limit, cursor)
 		if errors.HandleError(c, err) {
 			return
 		}

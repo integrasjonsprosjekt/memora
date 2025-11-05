@@ -73,8 +73,6 @@ func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var content models.CreateUser
-		uid := c.GetString("uid")
-
 		if err := c.ShouldBindBodyWithJSON(&content); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "invalid JSON",
@@ -83,6 +81,7 @@ func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 		}
 
 		content.Email = c.GetString("email")
+		uid := c.GetString("uid")
 
 		if err := userRepo.RegisterNewUser(c.Request.Context(), content, uid); err != nil {
 			errors.HandleError(c, err)
