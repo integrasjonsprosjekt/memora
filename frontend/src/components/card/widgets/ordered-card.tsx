@@ -1,9 +1,10 @@
 import { JSX } from 'react';
 import { OrderedCard as OrderedCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
+import { OrderedCardInteractive } from './ordered-card-interactive';
 
 export function OrderedCard({ card, className }: CardComponentProps<OrderedCardType>): JSX.Element {
-  return <div className={className}>{card.question}</div>;
+  return <OrderedCardInteractive card={card} className={className} />;
 }
 
 export function OrderedCardThumbnail({ card, className }: CardComponentProps<OrderedCardType>): JSX.Element {
