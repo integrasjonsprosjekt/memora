@@ -28,6 +28,8 @@ import {
 import { cn } from '@/lib/utils';
 import { getApiEndpoint, USER_ID } from '@/config/api';
 import { Deck } from '@/types/deck';
+import { fetchApi } from '@/lib/api/config';
+import { getCurrentUser } from '@/lib/firebase/auth';
 
 // Create a cache for deck promises
 const deckPromiseCache = new Map<string, Promise<Deck[]>>();
@@ -59,8 +61,8 @@ function fetchDecks(endpoint: string): Promise<Deck[]> {
 
 function DeckGroup({ title, endpoint, action }: { title: string; endpoint: string; action?: React.ReactNode }) {
   const pathname = usePathname();
-  const decksPromise = useMemo(() => fetchDecks(endpoint), [endpoint]);
-  const decks = use(decksPromise);
+  // const decksPromise = useMemo(() => fetchDecks(endpoint), [endpoint]);
+  // const decks = use(decksPromise);
 
   /**
    * Helper to check if main deck item should be active
@@ -93,9 +95,9 @@ function DeckGroup({ title, endpoint, action }: { title: string; endpoint: strin
         {action}
       </SidebarGroupLabel>
       <SidebarMenu>
-        {decks.map((deck) => {
+        {/* {decks.map((deck) => {
           return <DeckItem key={deck.id} deck={deck} pathname={pathname} isDeckMainActive={isDeckMainActive} />;
-        })}
+        })} */}
       </SidebarMenu>
     </SidebarGroup>
   );
@@ -211,6 +213,19 @@ function DeckGroupSuspense({ title, endpoint, action }: { title: string; endpoin
 }
 
 export function NavMain() {
+  const user = getCurrentUser();
+  console.log('Current User in NavMain:', user);
+  useEffect(() => {
+    if (!user) return;
+    user.getIdToken().then((token) => {
+      fetchApi('/users/decks', {headers: {
+        'Authorization': `Bearer ${token}`,
+      }}).then((data) => {
+        console.log('API Health Check:', data);
+      });
+    });
+    // Preload decks data on mount
+  }, [user]);
   return (
     <>
       <DeckGroupSuspense
