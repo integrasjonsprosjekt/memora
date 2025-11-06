@@ -14,7 +14,6 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get('sidebar_state')?.value !== 'false';
 
-
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />

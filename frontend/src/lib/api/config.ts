@@ -11,5 +11,3 @@ export function fetchApi(path: string, options?: RequestInit, version = 'v1'): P
     return res.json();
   });
 }
-
-

@@ -27,7 +27,7 @@ export function NavUser() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/signin");
+    router.push('/signin');
   };
 
   return (

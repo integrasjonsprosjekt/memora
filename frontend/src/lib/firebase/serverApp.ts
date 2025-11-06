@@ -1,13 +1,13 @@
-'server-only'
-import { cache } from "react"
-import { FirebaseApp, getApp, getApps, initializeApp, initializeServerApp } from "firebase/app";
-import { getAuth, User } from "firebase/auth";
-import { getCookie } from "cookies-next";
-import { firebaseConfig } from "./app";
-import { cookies } from "next/headers";
+'server-only';
+import { cache } from 'react';
+import { FirebaseApp, getApp, getApps, initializeApp, initializeServerApp } from 'firebase/app';
+import { getAuth, User } from 'firebase/auth';
+import { getCookie } from 'cookies-next';
+import { firebaseConfig } from './app';
+import { cookies } from 'next/headers';
 
 function getOrInitApp(): FirebaseApp {
-    const apps = getApps();
+  const apps = getApps();
   return apps.length ? getApp() : initializeApp(firebaseConfig);
 }
 
@@ -20,5 +20,5 @@ export const getUser = cache(async (): Promise<User | null> => {
   await auth.authStateReady();
 
   const u = auth.currentUser;
-  return u
+  return u;
 });
