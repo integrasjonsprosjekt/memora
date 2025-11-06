@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { fetchApi } from "@/lib/api/config";
 import { signIn as signInAuth } from "@/lib/firebase/auth";
 import { useRouter } from "next/navigation";
 import { MouseEvent } from "react";
@@ -12,7 +13,17 @@ export default function Page() {
   const router = useRouter();
   async function signIn(provider: Parameters<typeof signInAuth>[0], e: MouseEvent) {
     e.preventDefault();
-    await signInAuth(provider);
+    const user = await signInAuth(provider);
+    await fetchApi("/users", {
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${await user?.getIdToken()}`,
+      },
+      body: JSON.stringify({
+        email: user.email,
+        name: user.displayName,
+      }),
+    })
     router.push("/");
   }
   

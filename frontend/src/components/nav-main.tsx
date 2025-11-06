@@ -213,19 +213,6 @@ function DeckGroupSuspense({ title, endpoint, action }: { title: string; endpoin
 }
 
 export function NavMain() {
-  const user = getCurrentUser();
-  console.log('Current User in NavMain:', user);
-  useEffect(() => {
-    if (!user) return;
-    user.getIdToken().then((token) => {
-      fetchApi('/users/decks', {headers: {
-        'Authorization': `Bearer ${token}`,
-      }}).then((data) => {
-        console.log('API Health Check:', data);
-      });
-    });
-    // Preload decks data on mount
-  }, [user]);
   return (
     <>
       <DeckGroupSuspense
