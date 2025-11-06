@@ -70,7 +70,7 @@ export function CardThumbnail({
           </ContextMenuContent>
         </ContextMenu>
       </Card>
-      <EditCardMenu open={open} onOpenChange={setOpen} deckId={deckId ? deckId : ''} card={card} />
+      <EditCardMenu open={open} onOpenChange={setOpen} deckId={deckId} card={card} />
     </>
   );
 }
