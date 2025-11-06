@@ -71,11 +71,10 @@ func (s *CardService) GetCardInDeck(
 // Returns a list of cards or an error if the operation fails.
 func (s *CardService) GetCardsInDeck(
 	ctx context.Context,
-	deckID string,
-	limit int,
+	deckID, limit_str string,
 	cursor string,
 ) ([]models.Card, bool, error) {
-
+	limit := utils.ParseLimit(limit_str)
 	// Fetch raw card documents from the repository
 	docs, hasMore, err := s.repo.GetCardsInDeck(ctx, deckID, limit, cursor)
 	if err != nil {

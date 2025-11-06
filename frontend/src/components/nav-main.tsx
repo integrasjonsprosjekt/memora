@@ -1,4 +1,5 @@
 'use client';
+'use client';
 
 import { FileBox, ChevronRight, Plus, Trash2, SquarePen, Share2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -121,6 +122,10 @@ function DeckGroup({
 
   return (
     <SidebarGroup>
+      <SidebarGroupLabel className="flex items-center justify-between pr-1">
+        <span>{title}</span>
+        {action}
+      </SidebarGroupLabel>
       <SidebarGroupLabel className="flex items-center justify-between pr-1">
         <span>{title}</span>
         {action}

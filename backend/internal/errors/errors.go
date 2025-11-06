@@ -19,6 +19,7 @@ var (
 	ErrFailedUpdatingEmail    = errors.New("failed to update emails")
 	ErrFailedUpdatingCards    = errors.New("failed to update cards")
 	ErrAlreadyExists          = errors.New("resource already exists")
+	ErrUnauthorized           = errors.New("unauthorized")
 	ErrorMap                  = map[error]struct {
 		Status  int
 		Message string
@@ -51,6 +52,7 @@ var (
 			Status:  http.StatusConflict,
 			Message: "resource already exists",
 		},
+		ErrUnauthorized: {Status: http.StatusUnauthorized, Message: "unauthorized operation"},
 	}
 )
 

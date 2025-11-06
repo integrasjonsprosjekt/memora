@@ -9,7 +9,7 @@ import { withDefaults } from '@/lib/utils';
 export default async function DeckPage({ params }: { params: Promise<{ deckId: string }> }) {
   const { deckId } = await params;
 
-  const deck: Deck | null = await fetch(getApiEndpoint(`/v1/decks/${deckId}/cards/`), {
+  const deck: Deck | null = await fetch(getApiEndpoint(`/v1/decks/${deckId}`), {
     cache: 'no-store',
   })
     .then((res) => res.json())
@@ -28,7 +28,23 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
     );
   }
 
-  const cards: Card[] = deck.cards || [];
+  const cards: Card[] = await Promise.all(
+    deck.cards
+      .map((card: Card) => card.id)
+      .map((cardId: string) =>
+        fetch(getApiEndpoint(`/v1/decks/${deckId}/cards/${cardId}`))
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Failed to fetch card ${cardId}`);
+            }
+            return response.json();
+          })
+          .catch((error) => {
+            console.error(`Error fetching card ${cardId}:`, error);
+            return null;
+          })
+      )
+  );
 
   return (
     <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
@@ -40,7 +56,7 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
       </header>
 
       <DeckLayout>
-        <AddCardButton deckId={deckId} />
+        <AddCardButton />
         {cards.map((card) => (
           <RenderCardThumbnail key={card.id} card={card} deckId={deckId} />
         ))}

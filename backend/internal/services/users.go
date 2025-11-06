@@ -76,25 +76,21 @@ func (s *UserService) GetDecks(
 func (s *UserService) RegisterNewUser(
 	ctx context.Context,
 	user models.CreateUser,
-) (string, error) {
+	id string,
+) error {
 	// Validate the input struct
 	if err := s.validate.Struct(user); err != nil {
-		return "", errors.ErrInvalidUser
+		return errors.ErrInvalidUser
 	}
 
-	id, err := s.repo.AddUser(ctx, user)
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
+	return s.repo.AddUser(ctx, user, id)
 }
 
 // UpdateUser updates fields of an existing user.
 // Validates the input and returns an error if the operation fails.
 func (s *UserService) UpdateUser(
 	ctx context.Context,
-	updateStruct models.PatchUser,
+	updateStruct models.CreateUser,
 	id string,
 ) (models.User, error) {
 	// Validate the input struct

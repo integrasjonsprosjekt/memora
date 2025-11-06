@@ -3,7 +3,6 @@ package firebase
 import (
 	"context"
 	"memora/internal/config"
-	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/utils"
 
@@ -16,13 +15,14 @@ type UserRepository interface {
 	// AddUser adds a new user to Firestore.
 	// Error on failure or if the email is already present.
 	// Returns the new user's ID on success.
-	AddUser(ctx context.Context, u models.CreateUser) (string, error)
+	AddUser(ctx context.Context, u models.CreateUser, id string) error
 
 	// GetUser fetches a user from Firestore by ID.
 	// Error on failure or if the ID is invalid.
 	// Returns the user on success.
 	GetUser(ctx context.Context, id string, fields []string) (models.User, error)
 
+	// GetDecks fetches all decks for a user.
 	// GetDecks fetches all decks for a user.
 	// Error on failure or if the user ID is invalid.
 	// Returns the decks ID and title on success.
@@ -140,18 +140,11 @@ func (r *FirestoreUserRepo) GetDecks(
 func (r *FirestoreUserRepo) AddUser(
 	ctx context.Context,
 	user models.CreateUser,
-) (string, error) {
-	// Check if the email is already present.
-	exists, err := utils.UserExistsByEmail(r.client, ctx, user.Email)
-	if err != nil {
-		return "", err
-	}
-	if exists {
-		return "", errors.ErrInvalidEmailPresent
-	}
-
+	id string,
+) error {
 	// Email is unique, add the user to Firestore.
-	return utils.AddToDB(r.client, ctx, config.UsersCollection, user)
+	_, err := r.client.Collection(config.UsersCollection).Doc(id).Set(ctx, user)
+	return err
 }
 
 // UpdateUser updates fields of an existing user in Firestore.
