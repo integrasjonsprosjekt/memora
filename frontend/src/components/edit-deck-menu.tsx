@@ -84,8 +84,6 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
       if (res.success) {
         //form.reset({});
         onOpenChange(false);
-        alert('Deck updated successfully! values: ' + JSON.stringify(values));
-        alert(JSON.stringify(payload));
         router.refresh();
       } else {
         alert(`Failed to update deck: ${res.message}`);
