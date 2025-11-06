@@ -51,6 +51,7 @@ func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
+		filter := c.DefaultQuery("filter", "title")
 
 		decks, err := userRepo.GetDecks(c.Request.Context(), id, filter)
 		if errors.HandleError(c, err) {

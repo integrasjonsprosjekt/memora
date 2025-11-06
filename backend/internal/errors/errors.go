@@ -72,5 +72,6 @@ func HandleError(c *gin.Context, err error) bool {
 	// fallback for unexpected errors
 	log.Println("Got unexpected error: ", err)
 	c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+	log.Println("Unhandled error:", err)
 	return true
 }

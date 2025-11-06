@@ -16,12 +16,15 @@ type UserRepository interface {
 	// Error on failure or if the email is already present.
 	// Returns the new user's ID on success.
 	AddUser(ctx context.Context, u models.CreateUser, id string) error
+	AddUser(ctx context.Context, u models.CreateUser, id string) error
 
 	// GetUser fetches a user from Firestore by ID.
 	// Error on failure or if the ID is invalid.
 	// Returns the user on success.
 	GetUser(ctx context.Context, id string, fields []string) (models.User, error)
+	GetUser(ctx context.Context, id string, fields []string) (models.User, error)
 
+	// GetDecks fetches all decks for a user.
 	// GetDecks fetches all decks for a user.
 	// Error on failure or if the user ID is invalid.
 	// Returns the decks ID and title on success.
@@ -55,7 +58,9 @@ func (r *FirestoreUserRepo) GetUser(
 	ctx context.Context,
 	id string,
 	fields []string,
+	fields []string,
 ) (models.User, error) {
+	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id, fields)
 	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id, fields)
 	if err != nil {
 		return user, err
@@ -69,6 +74,7 @@ func (r *FirestoreUserRepo) GetUser(
 // GetUser fetches a user from Firestore by ID.
 // Error on failure or if the ID is invalid.
 // Returns the user on success.
+func (r *FirestoreUserRepo) GetDecks(
 func (r *FirestoreUserRepo) GetDecks(
 	ctx context.Context,
 	id string,
@@ -141,7 +147,11 @@ func (r *FirestoreUserRepo) AddUser(
 	user models.CreateUser,
 	id string,
 ) error {
+	id string,
+) error {
 	// Email is unique, add the user to Firestore.
+	_, err := r.client.Collection(config.UsersCollection).Doc(id).Set(ctx, user)
+	return err
 	_, err := r.client.Collection(config.UsersCollection).Doc(id).Set(ctx, user)
 	return err
 }
@@ -221,6 +231,37 @@ func (r *FirestoreUserRepo) DeleteUser(
 	bulkWriter.End()
 
 	return nil
+}
+
+// readDataFromIterator reads documents from a Firestore DocumentIterator
+// and converts them into a slice of DisplayDeck models.
+// Used to read decks owned or shared with a user
+func readDataFromIterator(iter *firestore.DocumentIterator) ([]models.DisplayDeck, error) {
+	var results []models.DisplayDeck
+
+	// Iterate through the documents and convert them to DisplayDeck models
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			// Break the loop if there are no more documents
+			if err == iterator.Done {
+				break
+			}
+			return nil, err
+		}
+
+		// Convert document data to DisplayDeck model
+		var item models.DisplayDeck
+		if err := doc.DataTo(&item); err != nil {
+			return nil, err
+		}
+
+		// Set the document ID and append to results
+		item.ID = doc.Ref.ID
+		results = append(results, item)
+	}
+
+	return results, nil
 }
 
 // readDataFromIterator reads documents from a Firestore DocumentIterator
