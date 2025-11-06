@@ -166,7 +166,7 @@ function DeckItem({
   };
 
   async function handleDelete() {
-    if (confirm(`Are you sure you want to delete ${deck.title}?`) == false) {
+    if (!confirm(`Are you sure you want to delete ${deck.title}?`)) {
       return;
     } else {
       const res = await deleteDeck(deck.id);
