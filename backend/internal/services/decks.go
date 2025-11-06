@@ -34,8 +34,13 @@ func NewDeckService(
 	}
 }
 
-// CheckIfUserCanAccessDeck checks if a user has access to a deck based on ownership or shared emails.
-// Returns true if the user can access the deck, false otherwise.
+func (s *DeckService) GetCardsInDeck(
+	ctx context.Context,
+	deckID, limit_str, cursor string,
+) ([]models.Card, bool, error) {
+	return s.Cards.GetCardsInDeck(ctx, deckID, limit_str, cursor)
+}
+
 func (s *DeckService) CheckIfUserCanAccessDeck(
 	ctx context.Context,
 	deckID, userID, userEmail string,
@@ -206,4 +211,28 @@ func (s *DeckService) DeleteCardInDeck(
 	deckID, cardID string,
 ) error {
 	return s.Cards.DeleteCard(ctx, deckID, cardID)
+}
+
+func (s *DeckService) GetCardProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+) (models.CardProgress, error) {
+	return s.Cards.GetCardProgress(ctx, deckID, cardID, userID)
+}
+
+func (s *DeckService) UpdateCardProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+	rating models.CardRating,
+) error {
+	return s.Cards.UpdateCardProgress(ctx, deckID, cardID, userID, rating)
+}
+
+func (s *DeckService) GetDueCardsInDeck(
+	ctx context.Context,
+	deckID, userID string,
+	limit int,
+	cursor string,
+) ([]models.Card, string, bool, error) {
+	return s.Cards.GetDueCardsInDeck(ctx, deckID, userID, limit, cursor)
 }

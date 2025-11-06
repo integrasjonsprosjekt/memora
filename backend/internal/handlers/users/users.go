@@ -45,16 +45,15 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 // Return the users' owned and shared decks based on an id
 func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		filter := c.DefaultQuery("filter", "title,owner_id")
 		id, err := utils.GetUID(c)
 		if err != nil {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
-		filter := c.DefaultQuery("filter", "title")
 
 		decks, err := userRepo.GetDecks(c.Request.Context(), id, filter)
-		if err != nil {
-			c.Status(http.StatusUnauthorized)
+		if errors.HandleError(c, err) {
 			return
 		}
 
@@ -107,11 +106,16 @@ func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var updates models.CreateUser
-		id := c.GetString("uid")
 		if err := c.ShouldBindBodyWithJSON(&updates); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "invalid JSON",
 			})
+			return
+		}
+
+		id, err := utils.GetUID(c)
+		if err != nil {
+			c.Status(http.StatusUnauthorized)
 			return
 		}
 
@@ -133,9 +137,13 @@ func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 // @Router /api/v1/users [delete]
 func DeleteUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.GetString("uid")
+		id, err := utils.GetUID(c)
+		if err != nil {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
 
-		err := userRepo.DeleteUser(c.Request.Context(), id)
+		err = userRepo.DeleteUser(c.Request.Context(), id)
 		if errors.HandleError(c, err) {
 			return
 		}

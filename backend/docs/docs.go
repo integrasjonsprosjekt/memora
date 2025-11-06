@@ -75,7 +75,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.DeckResponse"
+                            "$ref": "#/definitions/models.Deck"
                         }
                     }
                 }
@@ -134,7 +134,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.DeckResponse"
+                            "$ref": "#/definitions/models.Deck"
                         }
                     }
                 }
@@ -218,8 +218,59 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "type": "array",
-                            "items": {}
+                            "$ref": "#/definitions/models.AnyCard"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/decks/{deckID}/cards/progress/{userID}/due": {
+            "get": {
+                "description": "Retrieves due cards from a specified deck for a user in Firestore, prioritizing unstudied cards",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Get due cards in a deck for a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "deckID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "20",
+                        "description": "Number of cards to retrieve",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cursor for pagination",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AnyCardWithPaging"
                         }
                     }
                 }
@@ -304,8 +355,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {}
+                            "$ref": "#/definitions/models.AnyCard"
                         }
                     }
                 }
@@ -341,6 +391,102 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/decks/{deckID}/cards/{cardID}/progress/{userID}": {
+            "get": {
+                "description": "Retrieves progress information of a card for a user from Firestore",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Get progress of a card for a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "deckID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CardProgress"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates progress information of a card for a user in Firestore",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Decks"
+                ],
+                "summary": "Update progress of a card for a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deck ID",
+                        "name": "deckID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Progress info",
+                        "name": "progress",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CardRating"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
                     }
                 }
             }
@@ -550,6 +696,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.AnyCardWithPaging": {
+            "type": "object",
+            "properties": {
+                "cards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AnyCard"
+                    }
+                },
+                "cursor": {
+                    "type": "string"
+                },
+                "has_more": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.BlanksCard": {
             "type": "object",
             "required": [
@@ -572,6 +735,43 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "models.CardProgress": {
+            "type": "object",
+            "properties": {
+                "due": {
+                    "type": "string"
+                },
+                "ease_factor": {
+                    "type": "integer"
+                },
+                "interval": {
+                    "type": "number"
+                },
+                "lapses": {
+                    "type": "integer"
+                },
+                "last_reviewed_at": {
+                    "type": "string"
+                },
+                "reps": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.CardRating": {
+            "type": "object",
+            "properties": {
+                "rating": {
+                    "type": "string",
+                    "enum": [
+                        "again",
+                        "hard",
+                        "good",
+                        "easy"
+                    ]
                 }
             }
         },
@@ -619,6 +819,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Deck": {
+            "type": "object",
+            "properties": {
+                "ownerID": {
+                    "type": "string"
+                },
+                "sharedEmails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
                     "type": "string"
                 }
             }

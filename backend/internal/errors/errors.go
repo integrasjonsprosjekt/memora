@@ -18,6 +18,7 @@ var (
 	ErrInvalidId              = errors.New("invalid id")
 	ErrFailedUpdatingEmail    = errors.New("failed to update emails")
 	ErrFailedUpdatingCards    = errors.New("failed to update cards")
+	ErrAlreadyExists          = errors.New("resource already exists")
 	ErrUnauthorized           = errors.New("unauthorized")
 	ErrorMap                  = map[error]struct {
 		Status  int
@@ -47,6 +48,10 @@ var (
 			Status:  http.StatusBadRequest,
 			Message: "failed to update cards",
 		},
+		ErrAlreadyExists: {
+			Status:  http.StatusConflict,
+			Message: "resource already exists",
+		},
 		ErrUnauthorized: {Status: http.StatusUnauthorized, Message: "unauthorized operation"},
 	}
 )
@@ -67,6 +72,5 @@ func HandleError(c *gin.Context, err error) bool {
 	// fallback for unexpected errors
 	log.Println("Got unexpected error: ", err)
 	c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
-	log.Println("Unhandled error:", err)
 	return true
 }

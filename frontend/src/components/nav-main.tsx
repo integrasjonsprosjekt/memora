@@ -1,10 +1,11 @@
 'use client';
+'use client';
 
 import { FileBox, ChevronRight, Plus, Trash2, SquarePen, Share2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { use, useMemo, Suspense, useState, useEffect } from 'react';
+import { use, useMemo, Suspense, useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -28,20 +29,27 @@ import {
 import { cn } from '@/lib/utils';
 import { getApiEndpoint, USER_ID } from '@/config/api';
 import { Deck } from '@/types/deck';
-import { fetchApi } from '@/lib/api/config';
-import { getCurrentUser } from '@/lib/firebase/auth';
+import { EditDeckMenu } from './edit-deck-menu';
+import { AddDeckMenu } from './add-deck-menu';
+import { deleteDeck } from '@/app/api';
 
 // Create a cache for deck promises
-const deckPromiseCache = new Map<string, Promise<Deck[]>>();
+let deckPromiseCache: Promise<Deck[]> | null = null;
+let cacheInvalidationCounter = 0;
 
-function fetchDecks(endpoint: string): Promise<Deck[]> {
+function invalidateDeckCache() {
+  deckPromiseCache = null;
+  cacheInvalidationCounter++;
+}
+
+function fetchDecks(): Promise<Deck[]> {
   // Return cached promise if it exists
-  if (deckPromiseCache.has(endpoint)) {
-    return deckPromiseCache.get(endpoint)!;
+  if (deckPromiseCache) {
+    return deckPromiseCache;
   }
 
   // Create new promise and cache it
-  const promise = fetch(getApiEndpoint(`/v1/users/${USER_ID}/decks/${endpoint}`), {
+  const promise = fetch(getApiEndpoint(`/v1/users/${USER_ID}/decks`), {
     next: { revalidate: 300 }, // Cache for 5 minutes
   })
     .then((res) => {
@@ -49,17 +57,29 @@ function fetchDecks(endpoint: string): Promise<Deck[]> {
       return res.json();
     })
     .catch((error) => {
-      console.error(`Error fetching ${endpoint} decks:`, error);
+      console.error(`Error fetching decks:`, error);
       // Remove failed promise from cache
-      deckPromiseCache.delete(endpoint);
+      deckPromiseCache = null;
       throw error;
     });
 
-  deckPromiseCache.set(endpoint, promise);
+  deckPromiseCache = promise;
   return promise;
 }
 
-function DeckGroup({ title, endpoint, action }: { title: string; endpoint: string; action?: React.ReactNode }) {
+const DeckCacheContext = createContext<() => void>(() => {});
+
+function DeckGroup({
+  title,
+  filterType,
+  action,
+  cacheKey,
+}: {
+  title: string;
+  filterType: 'owned' | 'shared';
+  action?: React.ReactNode;
+  cacheKey: number;
+}) {
   const pathname = usePathname();
   // const decksPromise = useMemo(() => fetchDecks(endpoint), [endpoint]);
   // const decks = use(decksPromise);
@@ -94,6 +114,10 @@ function DeckGroup({ title, endpoint, action }: { title: string; endpoint: strin
         <span>{title}</span>
         {action}
       </SidebarGroupLabel>
+      <SidebarGroupLabel className="flex items-center justify-between pr-1">
+        <span>{title}</span>
+        {action}
+      </SidebarGroupLabel>
       <SidebarMenu>
         {/* {decks.map((deck) => {
           return <DeckItem key={deck.id} deck={deck} pathname={pathname} isDeckMainActive={isDeckMainActive} />;
@@ -112,89 +136,145 @@ function DeckItem({
   pathname: string | null;
   isDeckMainActive: (deckId: string) => boolean;
 }) {
+  const router = useRouter();
+  const invalidateCache = useContext(DeckCacheContext);
   const shouldBeOpen = pathname?.startsWith(`/decks/${deck.id}`) || false;
   const [isOpen, setIsOpen] = useState(shouldBeOpen);
+  const [isEditing, setIsEditing] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setIsOpen(shouldBeOpen);
   }, [shouldBeOpen]);
 
+  const handleEditClose = (open: boolean) => {
+    setIsEditing(open);
+    if (!open) {
+      invalidateCache();
+    }
+  };
+
+  async function handleDelete() {
+    if (!confirm(`Are you sure you want to delete ${deck.title}?`)) {
+      return;
+    } else {
+      const res = await deleteDeck(deck.id);
+      if (res.success) {
+        if (shouldBeOpen) {
+          // Redirect to home
+          router.push('/');
+        }
+        invalidateCache();
+      } else {
+        alert('Failed to delete deck');
+      }
+    }
+  }
+
   const hoverAnimation = 'transition-all duration-200 hover:translate-x-0.5';
 
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger>
-        <Collapsible asChild open={isOpen} onOpenChange={setIsOpen}>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              tooltip={deck.title}
-              className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-98')}
-              isActive={isDeckMainActive(deck.id)}
-            >
-              <Link href={`/decks/${deck.id}`}>
-                <FileBox />
-                <span>{deck.title}</span>
-              </Link>
-            </SidebarMenuButton>
-            <CollapsibleTrigger asChild>
-              <SidebarMenuAction className="transition-transform duration-200 ease-out data-[state=open]:rotate-90">
-                <ChevronRight />
-                <span className="sr-only">Toggle</span>
-              </SidebarMenuAction>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden transition-all duration-200 ease-out">
-              <SidebarMenuSub>
-                <SidebarMenuSubItem>
-                  <SidebarMenuSubButton
-                    asChild
-                    className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
-                    isActive={pathname === `/decks/${deck.id}/dashboard`}
-                  >
-                    <Link href={`/decks/${deck.id}/dashboard`}>
-                      <span>Dashboard</span>
-                    </Link>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-                <SidebarMenuSubItem>
-                  <SidebarMenuSubButton
-                    asChild
-                    className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
-                    isActive={pathname === `/decks/${deck.id}/today`}
-                  >
-                    <Link href={`/decks/${deck.id}/today`}>
-                      <span>Today</span>
-                    </Link>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              </SidebarMenuSub>
-            </CollapsibleContent>
-          </SidebarMenuItem>
-        </Collapsible>
-      </ContextMenuTrigger>
+  if (!mounted) {
+    return (
+      <SidebarMenuItem>
+        <div className="px-2 py-1.5">
+          <Skeleton className="h-5 w-full" />
+        </div>
+      </SidebarMenuItem>
+    );
+  }
 
-      <ContextMenuContent>
-        <ContextMenuItem>
-          <SquarePen />
-          Edit
-        </ContextMenuItem>
-        <ContextMenuItem>
-          <Share2 />
-          Share
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem variant="destructive">
-          <Trash2 />
-          Delete
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+  return (
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <Collapsible asChild open={isOpen} onOpenChange={setIsOpen}>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip={deck.title}
+                className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-98')}
+                isActive={isDeckMainActive(deck.id)}
+              >
+                <Link href={`/decks/${deck.id}`}>
+                  <FileBox />
+                  <span>{deck.title}</span>
+                </Link>
+              </SidebarMenuButton>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuAction className="transition-transform duration-200 ease-out data-[state=open]:rotate-90">
+                  <ChevronRight />
+                  <span className="sr-only">Toggle</span>
+                </SidebarMenuAction>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden transition-all duration-200 ease-out">
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      asChild
+                      className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
+                      isActive={pathname === `/decks/${deck.id}/dashboard`}
+                    >
+                      <Link href={`/decks/${deck.id}/dashboard`}>
+                        <span>Dashboard</span>
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      asChild
+                      className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
+                      isActive={pathname === `/decks/${deck.id}/today`}
+                    >
+                      <Link href={`/decks/${deck.id}/today`}>
+                        <span>Today</span>
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+        </ContextMenuTrigger>
+
+        <ContextMenuContent>
+          <ContextMenuItem onClick={() => setIsEditing(true)}>
+            <SquarePen />
+            Edit
+          </ContextMenuItem>
+          <ContextMenuItem>
+            <Share2 />
+            Share
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => handleDelete()} variant="destructive">
+            <Trash2 />
+            Delete
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+      <EditDeckMenu open={isEditing} onOpenChange={handleEditClose} deckId={deck.id} />
+    </>
   );
 }
 
-function DeckGroupSuspense({ title, endpoint, action }: { title: string; endpoint: string; action?: React.ReactNode }) {
+function DeckGroupSuspense({
+  title,
+  filterType,
+  action,
+  cacheKey,
+}: {
+  title: string;
+  filterType: 'owned' | 'shared';
+  action?: React.ReactNode;
+  cacheKey: number;
+}) {
   return (
     <Suspense
+      key={cacheKey}
       fallback={
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between pr-1">
@@ -207,24 +287,43 @@ function DeckGroupSuspense({ title, endpoint, action }: { title: string; endpoin
         </SidebarGroup>
       }
     >
-      <DeckGroup title={title} endpoint={endpoint} action={action} />
+      <DeckGroup title={title} filterType={filterType} action={action} cacheKey={cacheKey} />
     </Suspense>
   );
 }
 
 export function NavMain() {
+  const [cacheKey, setCacheKey] = useState(cacheInvalidationCounter);
+  const [isAddingDeck, setIsAddingDeck] = useState(false);
+
+  const handleInvalidateCache = () => {
+    invalidateDeckCache();
+    setCacheKey(cacheInvalidationCounter);
+  };
+
+  const handleAddDeckClose = (open: boolean) => {
+    setIsAddingDeck(open);
+    if (!open) {
+      handleInvalidateCache();
+    }
+  };
+
   return (
     <>
-      <DeckGroupSuspense
-        title="Decks"
-        endpoint="owned"
-        action={
-          <button onClick={() => alert('Adding new deck')} className="hover:bg-accent rounded p-0.5">
-            <Plus className="h-4 w-4" />
-          </button>
-        }
-      />
-      <DeckGroupSuspense title="Shared" endpoint="shared" />
+      <DeckCacheContext.Provider value={handleInvalidateCache}>
+        <DeckGroupSuspense
+          title="Decks"
+          filterType="owned"
+          cacheKey={cacheKey}
+          action={
+            <button onClick={() => setIsAddingDeck(true)} className="hover:bg-accent rounded p-0.5">
+              <Plus className="h-4 w-4" />
+            </button>
+          }
+        />
+        <DeckGroupSuspense title="Shared" filterType="shared" cacheKey={cacheKey} />
+      </DeckCacheContext.Provider>
+      <AddDeckMenu userId={USER_ID} open={isAddingDeck} onOpenChange={handleAddDeckClose} />
     </>
   );
 }

@@ -8,7 +8,7 @@ import (
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
-	"strconv"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -74,11 +74,7 @@ func (s *CardService) GetCardsInDeck(
 	deckID, limit_str string,
 	cursor string,
 ) ([]models.Card, bool, error) {
-	limit, err := strconv.Atoi(limit_str)
-	if err != nil {
-		limit = 20
-	}
-
+	limit := utils.ParseLimit(limit_str)
 	// Fetch raw card documents from the repository
 	docs, hasMore, err := s.repo.GetCardsInDeck(ctx, deckID, limit, cursor)
 	if err != nil {
@@ -203,4 +199,109 @@ func GetCardStruct(
 	}
 
 	return card, nil
+}
+
+func (s *CardService) GetCardProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+) (models.CardProgress, error) {
+	return s.repo.GetCardProgress(ctx, deckID, cardID, userID)
+}
+
+func (s *CardService) UpdateCardProgress(
+	ctx context.Context,
+	deckID, cardID, userID string,
+	rating models.CardRating,
+) error {
+	if err := s.validate.Struct(rating); err != nil {
+		return errors.ErrInvalidUser
+	}
+
+	progress, err := s.GetCardProgress(ctx, deckID, cardID, userID)
+	if err != nil {
+		if err == errors.ErrInvalidId {
+			progress = models.CardProgress{
+				EaseFactor:   2500,
+				Reps:         1,
+				Lapses:       0,
+				Interval:     0,
+				LastReviewed: time.Time{},
+				Due:          time.Time{},
+			}
+		} else {
+			return err
+		}
+	}
+
+	now := time.Now()
+	easeFactor := progress.EaseFactor
+	reps := progress.Reps
+	lapses := progress.Lapses
+	interval := float64(progress.Interval)
+
+	switch rating.Rating {
+	case "again":
+		easeFactor -= 200
+		lapses += 1
+		reps += 1
+		interval = 1.0
+	case "hard":
+		easeFactor -= 150
+		reps += 1
+		interval *= 1.2
+	case "good":
+		reps += 1
+		interval *= 1.5
+	case "easy":
+		easeFactor += 150
+		reps += 1
+		interval *= 2.0
+	}
+
+	if easeFactor < 1300 {
+		easeFactor = 1300
+	}
+
+	if easeFactor > 3000 {
+		easeFactor = 3000
+	}
+
+	progress.EaseFactor = easeFactor
+	progress.Reps = reps
+	progress.Lapses = lapses
+	progress.Interval = interval
+	progress.LastReviewed = now
+	progress.Due = now.Add(time.Duration(interval*24) * time.Hour)
+
+	return s.repo.UpdateProgress(ctx, deckID, cardID, userID, progress)
+}
+
+func (s *CardService) GetDueCardsInDeck(
+	ctx context.Context,
+	deckID, userID string,
+	limit int,
+	cursor string,
+) ([]models.Card, string, bool, error) {
+	docs, nextCursor, hasMore, err := s.repo.GetDueCardsInDeck(ctx, deckID, userID, limit, cursor)
+	if err != nil {
+		return nil, "", false, err
+	}
+
+	var cards []models.Card
+	for _, doc := range docs {
+		raw, err := json.Marshal(doc)
+		if err != nil {
+			return nil, "", false, err
+		}
+
+		card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
+		if err != nil {
+			return nil, "", false, err
+		}
+
+		card.SetID(doc["id"].(string))
+		cards = append(cards, card)
+	}
+
+	return cards, nextCursor, hasMore, nil
 }

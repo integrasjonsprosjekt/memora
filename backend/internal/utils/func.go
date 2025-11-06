@@ -5,16 +5,36 @@ import (
 	"memora/internal/errors"
 	"net/url"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/api/iterator"
 )
 
-// ReadDataFromIterator reads all documents from a Firestore DocumentIterator
-// and unmarshals them into a slice of the specified type T.
-// Returns the slice of T or an error if the operation fails.
+const defaultLimitSize = 20
 
+// ParseLimit parses a limit string and returns it as an integer.
+// Returns an error if the string is not a valid integer.
+func ParseLimit(limitStr string) int {
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		return defaultLimitSize
+	}
+
+	// If the limit is less than 1, default value of 20 used
+	if limit < 1 {
+		limit = defaultLimitSize
+	}
+
+	return limit
+}
+
+// ParseFilter parses the query based on URI encoding
+// and splits it into a slice of fields.
+// Returns the slice of fields or an error if parsing fails.
 func ParseFilter(filter string) ([]string, error) {
 	var result []string
 	decoded, err := url.QueryUnescape(filter)
@@ -31,8 +51,9 @@ func ParseFilter(filter string) ([]string, error) {
 	return result, nil
 }
 
-// GetUID retrieves the user ID from the Gin context.
-// Returns the user ID as a string or an error if not found.
+// CheckIfUserCanAccessDeck checks if the user making the request
+// is either the owner of the deck or has been granted access via shared emails.
+// Returns true if the user can access the deck, false otherwise.
 func CheckIfUserCanAccessDeck(c *gin.Context, ownerID string, sharedEmails []string) bool {
 	uid, err := GetUID(c)
 	if err != nil {
@@ -49,6 +70,8 @@ func CheckIfUserCanAccessDeck(c *gin.Context, ownerID string, sharedEmails []str
 	return true
 }
 
+// GetUID retrieves the user ID (UID) from the Gin context.
+// Returns the UID as a string or an error if not found.
 func GetUID(c *gin.Context) (string, error) {
 	uid, ok := c.Get("uid")
 	if !ok {
@@ -65,6 +88,32 @@ func GetEmail(c *gin.Context) (string, error) {
 		return "", errors.ErrUnauthorized
 	}
 	return email.(string), nil
+}
+
+// ReadDataFromIterator reads data from a Firestore DocumentIterator
+// and unmarshals it into a slice of the specified type T.
+// Returns the slice of T or an error if the operation fails.
+func ReadDataFromIterator[T any](iter *firestore.DocumentIterator) ([]T, error) {
+	var results []T
+
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			if err == iterator.Done {
+				break
+			}
+			return nil, err
+		}
+
+		var item T
+		if err := doc.DataTo(&item); err != nil {
+			return nil, err
+		}
+
+		results = append(results, item)
+	}
+
+	return results, nil
 }
 
 // StructToUpdate converts a struct to a slice of Firestore updates.
@@ -109,6 +158,8 @@ func validateValue(v any) bool {
 		return len(val) > 0
 	case bool:
 		return true
+	case time.Time:
+		return !val.IsZero()
 	default:
 		return v != nil
 	}

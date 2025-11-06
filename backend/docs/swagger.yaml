@@ -12,6 +12,17 @@ definitions:
       orderedCard:
         $ref: '#/definitions/models.OrderedCard'
     type: object
+  models.AnyCardWithPaging:
+    properties:
+      cards:
+        items:
+          $ref: '#/definitions/models.AnyCard'
+        type: array
+      cursor:
+        type: string
+      has_more:
+        type: boolean
+    type: object
   models.BlanksCard:
     properties:
       answers:
@@ -28,6 +39,31 @@ definitions:
     - answers
     - question
     - type
+    type: object
+  models.CardProgress:
+    properties:
+      due:
+        type: string
+      ease_factor:
+        type: integer
+      interval:
+        type: number
+      lapses:
+        type: integer
+      last_reviewed_at:
+        type: string
+      reps:
+        type: integer
+    type: object
+  models.CardRating:
+    properties:
+      rating:
+        enum:
+        - again
+        - hard
+        - good
+        - easy
+        type: string
     type: object
   models.CardsResponse:
     properties:
@@ -60,6 +96,17 @@ definitions:
     required:
     - email
     - name
+    type: object
+  models.Deck:
+    properties:
+      ownerID:
+        type: string
+      sharedEmails:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
     type: object
   models.DeckResponse:
     properties:
@@ -238,7 +285,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.DeckResponse'
+            $ref: '#/definitions/models.Deck'
       summary: Get a deck
       tags:
       - Decks
@@ -259,7 +306,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.DeckResponse'
+            $ref: '#/definitions/models.Deck'
       summary: Update a deck
       tags:
       - Decks
@@ -316,8 +363,7 @@ paths:
         "201":
           description: Created
           schema:
-            items: {}
-            type: array
+            $ref: '#/definitions/models.AnyCard'
       summary: Create a card in a deck
       tags:
       - Decks
@@ -397,9 +443,109 @@ paths:
         "200":
           description: OK
           schema:
-            items: {}
-            type: array
+            $ref: '#/definitions/models.AnyCard'
       summary: Update a card in a deck
+      tags:
+      - Decks
+  /api/v1/decks/{deckID}/cards/{cardID}/progress/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves progress information of a card for a user from Firestore
+      parameters:
+      - description: Deck ID
+        in: path
+        name: deckID
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CardProgress'
+      summary: Get progress of a card for a user
+      tags:
+      - Decks
+    put:
+      consumes:
+      - application/json
+      description: Updates progress information of a card for a user in Firestore
+      parameters:
+      - description: Deck ID
+        in: path
+        name: deckID
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Progress info
+        in: body
+        name: progress
+        required: true
+        schema:
+          $ref: '#/definitions/models.CardRating'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+      summary: Update progress of a card for a user
+      tags:
+      - Decks
+  /api/v1/decks/{deckID}/cards/progress/{userID}/due:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves due cards from a specified deck for a user in Firestore,
+        prioritizing unstudied cards
+      parameters:
+      - description: Deck ID
+        in: path
+        name: deckID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      - default: "20"
+        description: Number of cards to retrieve
+        in: query
+        name: limit
+        type: string
+      - description: Cursor for pagination
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AnyCardWithPaging'
+      summary: Get due cards in a deck for a user
       tags:
       - Decks
   /api/v1/decks/{deckID}/emails:

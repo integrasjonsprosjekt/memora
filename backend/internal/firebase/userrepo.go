@@ -23,9 +23,10 @@ type UserRepository interface {
 	GetUser(ctx context.Context, id string, fields []string) (models.User, error)
 
 	// GetDecks fetches all decks for a user.
+	// GetDecks fetches all decks for a user.
 	// Error on failure or if the user ID is invalid.
 	// Returns the decks ID and title on success.
-	GetDecks(ctx context.Context, id string, fields []string) ([]models.DisplayDeck, error)
+	GetDecks(ctx context.Context, id string, fields []string) (models.UserDecks, error)
 
 	// UpdateUser updates fields of an existing user in Firestore.
 	// Error on failure or if the ID is invalid.
@@ -73,35 +74,62 @@ func (r *FirestoreUserRepo) GetDecks(
 	ctx context.Context,
 	id string,
 	fields []string,
-) ([]models.DisplayDeck, error) {
+) (models.UserDecks, error) {
 
 	// Get the user by ID. After middleware is introduced, this can be omitted.
-	user, err := utils.FetchByID[models.User](r.client, ctx, config.UsersCollection, id, fields)
+	user, err := utils.FetchByID[models.User](
+		r.client,
+		ctx,
+		config.UsersCollection,
+		id,
+		[]string{"email"},
+	)
 	if err != nil {
-		return nil, err
+		return models.UserDecks{}, err
 	}
 
-	// Get all decks owned by the user.
-	iter := r.client.Collection(config.DecksCollection).
-		Where("owner_id", "==", id).
-		Select(fields...).
-		Documents(ctx)
-	decksOwned, err := readDataFromIterator(iter)
-	if err != nil {
-		return nil, err
+	// Channel to receive results from goroutines
+	type result struct {
+		decks []models.DisplayDeck
+		err   error
+	}
+	ownedChan := make(chan result, 1)
+	sharedChan := make(chan result, 1)
+
+	go func() {
+		// Get all decks owned by the user.
+		iter := r.client.Collection(config.DecksCollection).
+			Where("owner_id", "==", id).
+			Select(fields...).
+			Documents(ctx)
+		decksOwned, err := readDataFromIterator(iter)
+		ownedChan <- result{decks: decksOwned, err: err}
+	}()
+
+	go func() {
+		// Create iterator where shared_emails array contains the user's email.
+		iter := r.client.Collection(config.DecksCollection).
+			Where("shared_emails", "array-contains", user.Email).
+			Select(fields...).
+			Documents(ctx)
+		decksShared, err := readDataFromIterator(iter)
+		sharedChan <- result{decks: decksShared, err: err}
+	}()
+
+	ownedRes := <-ownedChan
+	if ownedRes.err != nil {
+		return models.UserDecks{}, ownedRes.err
 	}
 
-	// Create iterator where shared_emails array contains the user's email.
-	iter = r.client.Collection(config.DecksCollection).
-		Where("shared_emails", "array-contains", user.Email).
-		Select(fields...).
-		Documents(ctx)
-	decksShared, err := readDataFromIterator(iter)
-	if err != nil {
-		return nil, err
+	sharedRes := <-sharedChan
+	if sharedRes.err != nil {
+		return models.UserDecks{}, sharedRes.err
 	}
 
-	decks := append(decksOwned, decksShared...)
+	decks := models.UserDecks{
+		OwnedDecks:  ownedRes.decks,
+		SharedDecks: sharedRes.decks,
+	}
 
 	return decks, nil
 }

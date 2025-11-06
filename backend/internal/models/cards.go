@@ -1,6 +1,9 @@
 package models
 
-import "memora/internal/utils"
+import (
+	"memora/internal/utils"
+	"time"
+)
 
 // Card is an interface that all card types implement.
 type Card interface {
@@ -18,6 +21,12 @@ type AnyCard struct {
 	MultipleChoiceCard MultipleChoiceCard
 	OrderedCard        OrderedCard
 	BlanksCard         BlanksCard
+}
+
+type AnyCardWithPaging struct {
+	Cards   []AnyCard `json:"cards"`
+	HasMore bool      `json:"has_more"`
+	Cursor  string    `json:"cursor,omitempty"`
 }
 
 type MultipleChoiceCard struct {
@@ -67,4 +76,17 @@ type CardType struct {
 type CardsResponse struct {
 	Cards   []Card `json:"cards"`
 	HasMore bool   `json:"has_more"`
+}
+
+type CardRating struct {
+	Rating string `json:"rating" validate:"oneof=again hard good easy"`
+}
+
+type CardProgress struct {
+	EaseFactor   int       `firestore:"ease_factor" json:"ease_factor"`
+	Interval     float64   `firestore:"interval" json:"interval"`
+	Due          time.Time `firestore:"due" json:"due"`
+	Reps         int       `firestore:"reps" json:"reps"`
+	Lapses       int       `firestore:"lapses" json:"lapses"`
+	LastReviewed time.Time `firestore:"last_reviewed_at" json:"last_reviewed_at"`
 }
