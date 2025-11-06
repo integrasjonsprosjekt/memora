@@ -66,9 +66,9 @@ func CreateTestUser1(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	
+
 	defer func() { _ = resp.Body.Close() }()
-	
+
 	var result map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		t.Fatal(err)
@@ -95,7 +95,7 @@ func CreateTestUser2(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-defer func() { _ = resp.Body.Close() }()
+	defer func() { _ = resp.Body.Close() }()
 	var result map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		t.Fatal(err)
