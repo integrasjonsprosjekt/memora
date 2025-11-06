@@ -18,3 +18,8 @@ type PatchUser struct {
 	Email    string `json:"email" validate:"omitempty,email"`
 	Password string `json:"password" validate:"omitempty,min=12"`
 }
+
+type UserDecks struct{
+	OwnedDecks  []DisplayDeck `json:"owned_decks"`
+	SharedDecks []DisplayDeck `json:"shared_decks"`
+}
