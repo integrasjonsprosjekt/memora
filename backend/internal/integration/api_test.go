@@ -66,12 +66,13 @@ func CreateTestUser1(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
-
+	
+	defer func() { _ = resp.Body.Close() }()
+	
 	var result map[string]any
-	json.NewDecoder(resp.Body).Decode(&result)
-
-	log.Println(result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		t.Fatal(err)
+	}
 
 	idToken, ok := result["idToken"].(string)
 	if !ok || idToken == "" {
@@ -94,12 +95,11 @@ func CreateTestUser2(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
-
+defer func() { _ = resp.Body.Close() }()
 	var result map[string]any
-	json.NewDecoder(resp.Body).Decode(&result)
-
-	log.Println(result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		t.Fatal(err)
+	}
 
 	idToken, ok := result["idToken"].(string)
 	if !ok || idToken == "" {
