@@ -1,9 +1,10 @@
 import { JSX } from 'react';
 import { FillBlanksCard as FillBlanksCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
+import { FillBlanksCardInteractive } from './fill-blanks-card-interactive';
 
 export function FillBlanksCard({ card, className }: CardComponentProps<FillBlanksCardType>): JSX.Element {
-  return <div className={className}>{card.question}</div>;
+  return <FillBlanksCardInteractive card={card} className={className} />;
 }
 
 export function FillBlanksCardThumbnail({ card, className }: CardComponentProps<FillBlanksCardType>): JSX.Element {
