@@ -213,7 +213,13 @@ func TestHandlers(t *testing.T) {
 			"shared_emails": ["` + email + `"]
 		}`
 		// Now we can update the deck
-		w := PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body), token1)
+		w := PerformRequest(
+			r,
+			"PATCH",
+			"/api/v1/decks/"+deckID+"/emails",
+			strings.NewReader(body),
+			token1,
+		)
 		if w.Code != 200 {
 			t.Errorf("Expected status code 200, got %d", w.Code)
 		}
@@ -230,7 +236,13 @@ func TestHandlers(t *testing.T) {
 			"shared_emails": ["invalid-email"]
 		}`
 		// Now we can update the deck
-		w := PerformRequest(r, "PATCH", "/api/v1/decks/"+deckID+"/emails", strings.NewReader(body), token1)
+		w := PerformRequest(
+			r,
+			"PATCH",
+			"/api/v1/decks/"+deckID+"/emails",
+			strings.NewReader(body),
+			token1,
+		)
 		if w.Code != 400 {
 			t.Errorf("Expected status code 400, got %d", w.Code)
 		}
@@ -248,7 +260,13 @@ func TestHandlers(t *testing.T) {
 			"back": "Paris"
 		}`
 
-		w := PerformRequest(r, "POST", "/api/v1/decks/"+deckID+"/cards/", strings.NewReader(body), token1)
+		w := PerformRequest(
+			r,
+			"POST",
+			"/api/v1/decks/"+deckID+"/cards/",
+			strings.NewReader(body),
+			token1,
+		)
 		if w.Code != 201 {
 			t.Errorf("Expected status code 201, got %d", w.Code)
 		}
@@ -274,7 +292,13 @@ func TestHandlers(t *testing.T) {
 			"answer_index": 2
 		}`
 
-		w := PerformRequest(r, "POST", "/api/v1/decks/"+deckID+"/cards/", strings.NewReader(body), token2)
+		w := PerformRequest(
+			r,
+			"POST",
+			"/api/v1/decks/"+deckID+"/cards/",
+			strings.NewReader(body),
+			token2,
+		)
 		if w.Code != 201 {
 			t.Errorf("Expected status code 201, got %d", w.Code)
 		}

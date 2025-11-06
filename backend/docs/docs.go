@@ -51,7 +51,7 @@ const docTemplate = `{
         },
         "/api/v1/decks/{deckID}": {
             "get": {
-                "description": "Retrieves deck information from Firestore by its ID",
+                "description": "Retrieves deck information from Firestore",
                 "consumes": [
                     "application/json"
                 ],
@@ -549,6 +549,24 @@ const docTemplate = `{
             }
         },
         "/api/v1/users": {
+            "get": {
+                "description": "Return user information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "GET a user from firestore by their ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Creates a new user",
                 "consumes": [
@@ -576,27 +594,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/users/{id}": {
-            "get": {
-                "description": "Return user information",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "GET a user from firestore by their ID",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.ReturnID"
                         }
                     }
                 }
@@ -612,13 +610,15 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Deletes a user from firestore by their ID",
+                "summary": "Deletes a user from firestore",
                 "responses": {
                     "204": {
                         "description": "No Content"
                     }
                 }
-            },
+            }
+        },
+        "/api/v1/users/": {
             "patch": {
                 "description": "Return updated user information",
                 "consumes": [
@@ -630,22 +630,15 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Update a user in firestore by their ID",
+                "summary": "Update a user in firestore",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "User info to update",
                         "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.PatchUser"
+                            "$ref": "#/definitions/models.User"
                         }
                     }
                 ],
@@ -653,13 +646,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.CreateUser"
                         }
                     }
                 }
             }
         },
-        "/api/v1/users/{id}/decks": {
+        "/api/v1/users/decks": {
             "get": {
                 "description": "Return the user's owned and shared decks",
                 "produces": [
@@ -668,7 +661,7 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "GET a users' owned and shared decks from firestore by their ID",
+                "summary": "GET a users' owned and shared decks from firestore",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -810,17 +803,13 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "name",
-                "password"
+                "name"
             ],
             "properties": {
                 "email": {
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 }
             }
@@ -952,21 +941,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.PatchUser": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 12
-                }
-            }
-        },
         "models.ReturnID": {
             "type": "object",
             "properties": {
@@ -1015,9 +989,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 }
             }

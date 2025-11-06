@@ -14,7 +14,7 @@ import (
 )
 
 // New initializes a new Gin router with middleware.
-func New(auth *services.AuthService) *gin.Engine {
+func New() *gin.Engine {
 	router := gin.New()
 
 	logger := slog.Default()
@@ -22,7 +22,6 @@ func New(auth *services.AuthService) *gin.Engine {
 	router.Use(gin.Recovery())
 	router.Use(middleware.CORS())
 	router.Use(middleware.Logging(logger))
-	router.Use(middleware.FirebaseAuthMiddleware(auth))
 
 	return router
 }
@@ -39,37 +38,91 @@ func Route(c *gin.Engine, services *services.Services) {
 		// User-related endpoints
 		userRoute := v1.Group("/users")
 		{
-			userRoute.GET("/", users.GetUser(services.Users))
-			userRoute.POST("/", users.CreateUser(services.Users))
-			userRoute.PATCH("/", users.PatchUser(services.Users))
-			userRoute.DELETE("/", users.DeleteUser(services.Users))
-			userRoute.GET("/decks", users.GetDecks(services.Users))
+			userRoute.GET(
+				"/",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				users.GetUser(services.Users),
+			)
+			userRoute.POST(
+				"/",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				users.CreateUser(services.Users),
+			)
+			userRoute.PATCH(
+				"/",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				users.PatchUser(services.Users),
+			)
+			userRoute.DELETE(
+				"/",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				users.DeleteUser(services.Users),
+			)
+			userRoute.GET(
+				"/decks",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				users.GetDecks(services.Users),
+			)
 		}
 
 		// Deck-related endpoints
 		deckRoute := v1.Group("/decks")
 		{
-			deckRoute.GET("/:deckID", decks.GetDeck(services.Decks))
-			deckRoute.POST("/", decks.CreateDeck(services.Decks))
-			deckRoute.DELETE("/:deckID", decks.DeleteDeck(services.Decks))
+			deckRoute.GET(
+				"/:deckID",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				decks.GetDeck(services.Decks),
+			)
+			deckRoute.POST(
+				"/",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				decks.CreateDeck(services.Decks),
+			)
+			deckRoute.DELETE(
+				"/:deckID",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				decks.DeleteDeck(services.Decks),
+			)
 
 			// PATCH routes for updating specific fields of a deck
-			deckRoute.PATCH("/:deckID", decks.PatchDeck(services.Decks))
-			deckRoute.PATCH("/:deckID/emails", decks.UpdateEmails(services.Decks))
+			deckRoute.PATCH(
+				"/:deckID",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				decks.PatchDeck(services.Decks),
+			)
+			deckRoute.PATCH(
+				"/:deckID/emails",
+				middleware.FirebaseAuthMiddleware(services.Auth),
+				decks.UpdateEmails(services.Decks),
+			)
 
 			cardRoute := deckRoute.Group("/:deckID/cards")
 			{
-				cardRoute.GET("/", decks.GetCardsInDeck(services.Decks))
-				cardRoute.POST("/", decks.CreateCardInDeck(services.Decks))
-				cardRoute.GET("/:cardID", decks.GetCardInDeck(services.Decks))
-				cardRoute.PUT("/:cardID", decks.UpdateCard(services.Decks))
-				cardRoute.DELETE("/:cardID", decks.DeleteCardInDeck(services.Decks))
-				cardRoute.GET("/progress/:userID/due", decks.GetDueCardsInDeck(services.Decks))
-				progress := cardRoute.Group("/:cardID/progress/:userID")
-				{
-					progress.GET("/", decks.GetProgress(services.Decks))
-					progress.PUT("/", decks.UpdateProgress(services.Decks))
-				}
+				cardRoute.GET(
+					"/",
+					middleware.FirebaseAuthMiddleware(services.Auth),
+					decks.GetCardsInDeck(services.Decks),
+				)
+				cardRoute.POST(
+					"/",
+					middleware.FirebaseAuthMiddleware(services.Auth),
+					decks.CreateCardInDeck(services.Decks),
+				)
+				cardRoute.GET(
+					"/:cardID",
+					middleware.FirebaseAuthMiddleware(services.Auth),
+					decks.GetCardInDeck(services.Decks),
+				)
+				cardRoute.PUT(
+					"/:cardID",
+					middleware.FirebaseAuthMiddleware(services.Auth),
+					decks.UpdateCard(services.Decks),
+				)
+				cardRoute.DELETE(
+					"/:cardID",
+					middleware.FirebaseAuthMiddleware(services.Auth),
+					decks.DeleteCardInDeck(services.Decks),
+				)
 			}
 		}
 	}

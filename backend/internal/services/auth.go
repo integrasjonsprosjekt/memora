@@ -19,6 +19,9 @@ func NewAuthService(
 	}
 }
 
-func (s AuthService) VerifyIDToken(ctx context.Context, idToken string) (*firebaseauth.Token, error) {
+func (s AuthService) VerifyIDToken(
+	ctx context.Context,
+	idToken string,
+) (*firebaseauth.Token, error) {
 	return s.repo.VerifyIDToken(ctx, idToken)
 }
