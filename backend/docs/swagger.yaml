@@ -65,6 +65,14 @@ definitions:
         - easy
         type: string
     type: object
+  models.CardsResponse:
+    properties:
+      cards:
+        items: {}
+        type: array
+      has_more:
+        type: boolean
+    type: object
   models.CreateDeck:
     properties:
       owner_id:
@@ -119,8 +127,6 @@ definitions:
   models.DisplayDeck:
     properties:
       id:
-        type: string
-      owner_id:
         type: string
       owner_id:
         type: string
@@ -267,7 +273,6 @@ paths:
       consumes:
       - application/json
       description: Retrieves deck information from Firestore
-      description: Retrieves deck information from Firestore
       parameters:
       - description: Deck ID
         in: path
@@ -331,16 +336,13 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.AnyCard'
-            type: array
+            $ref: '#/definitions/models.CardsResponse'
       summary: Get cards in a deck
       tags:
       - Decks
     post:
       consumes:
       - application/json
-      description: Creates a new card in a specified deck and returns the cards
       description: Creates a new card in a specified deck and returns the cards
       parameters:
       - description: Deck ID
@@ -411,7 +413,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.AnyCard'
-      summary: Get a card in a deck
       summary: Get a card in a deck
       tags:
       - Decks
@@ -593,7 +594,6 @@ paths:
         "204":
           description: No Content
       summary: Deletes a user from firestore
-      summary: Deletes a user from firestore
       tags:
       - Users
     get:
@@ -609,19 +609,15 @@ paths:
       tags:
       - Users
     post:
-    post:
       consumes:
       - application/json
       description: Creates a new user
-      description: Creates a new user
       parameters:
-      - description: User info
       - description: User info
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.CreateUser'
           $ref: '#/definitions/models.CreateUser'
       produces:
       - application/json
@@ -631,22 +627,8 @@ paths:
           schema:
             $ref: '#/definitions/models.ReturnID'
       summary: Create a user and return their ID
-            $ref: '#/definitions/models.ReturnID'
-      summary: Create a user and return their ID
       tags:
       - Users
-  /api/v1/users/:
-    patch:
-      consumes:
-      - application/json
-      description: Return updated user information
-      parameters:
-      - description: User info to update
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/models.User'
   /api/v1/users/:
     patch:
       consumes:
@@ -667,14 +649,10 @@ paths:
           schema:
             $ref: '#/definitions/models.CreateUser'
       summary: Update a user in firestore
-            $ref: '#/definitions/models.CreateUser'
-      summary: Update a user in firestore
       tags:
       - Users
-  /api/v1/users/decks:
   /api/v1/users/decks:
     get:
-      description: Return the user's owned and shared decks
       description: Return the user's owned and shared decks
       produces:
       - application/json
@@ -685,7 +663,6 @@ paths:
             items:
               $ref: '#/definitions/models.DisplayDeck'
             type: array
-      summary: GET a users' owned and shared decks from firestore
       summary: GET a users' owned and shared decks from firestore
       tags:
       - Users

@@ -38,12 +38,7 @@ func (s *DeckService) GetCardsInDeck(
 	ctx context.Context,
 	deckID, limit_str, cursor string,
 ) ([]models.Card, bool, error) {
-	limit, err := utils.ParseLimit(limit_str)
-	if err != nil {
-		return nil, false, err
-	}
-
-	return s.Cards.GetCardsInDeck(ctx, deckID, limit, cursor)
+	return s.Cards.GetCardsInDeck(ctx, deckID, limit_str, cursor)
 }
 
 func (s *DeckService) CheckIfUserCanAccessDeck(

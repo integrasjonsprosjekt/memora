@@ -52,7 +52,6 @@ const docTemplate = `{
         "/api/v1/decks/{deckID}": {
             "get": {
                 "description": "Retrieves deck information from Firestore",
-                "description": "Retrieves deck information from Firestore",
                 "consumes": [
                     "application/json"
                 ],
@@ -180,16 +179,12 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.AnyCard"
-                            }
+                            "$ref": "#/definitions/models.CardsResponse"
                         }
                     }
                 }
             },
             "post": {
-                "description": "Creates a new card in a specified deck and returns the cards",
                 "description": "Creates a new card in a specified deck and returns the cards",
                 "consumes": [
                     "application/json"
@@ -293,7 +288,6 @@ const docTemplate = `{
                 "tags": [
                     "Decks"
                 ],
-                "summary": "Get a card in a deck",
                 "summary": "Get a card in a deck",
                 "parameters": [
                     {
@@ -570,24 +564,6 @@ const docTemplate = `{
                     }
                 }
             },
-            "get": {
-                "description": "Return user information",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "GET a user from firestore by their ID",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.User"
-                        }
-                    }
-                }
-            },
             "post": {
                 "description": "Creates a new user",
                 "consumes": [
@@ -616,7 +592,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.ReturnID"
-                            "$ref": "#/definitions/models.ReturnID"
                         }
                     }
                 }
@@ -633,15 +608,9 @@ const docTemplate = `{
                     "Users"
                 ],
                 "summary": "Deletes a user from firestore",
-                "summary": "Deletes a user from firestore",
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    }
-                }
-            }
-        },
-        "/api/v1/users/": {
                     }
                 }
             }
@@ -659,7 +628,6 @@ const docTemplate = `{
                     "Users"
                 ],
                 "summary": "Update a user in firestore",
-                "summary": "Update a user in firestore",
                 "parameters": [
                     {
                         "description": "User info to update",
@@ -667,7 +635,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateUser"
+                            "$ref": "#/definitions/models.User"
                         }
                     }
                 ],
@@ -807,6 +775,18 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CardsResponse": {
+            "type": "object",
+            "properties": {
+                "cards": {
+                    "type": "array",
+                    "items": {}
+                },
+                "has_more": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.CreateDeck": {
             "type": "object",
             "required": [
@@ -832,7 +812,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "name"
                 "name"
             ],
             "properties": {
@@ -889,9 +868,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "string"
-                },
-                "owner_id": {
                     "type": "string"
                 },
                 "owner_id": {

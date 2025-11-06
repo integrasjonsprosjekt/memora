@@ -18,10 +18,10 @@ const defaultLimitSize = 20
 
 // ParseLimit parses a limit string and returns it as an integer.
 // Returns an error if the string is not a valid integer.
-func ParseLimit(limitStr string) (int, error) {
+func ParseLimit(limitStr string) int {
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
-		return 0, err
+		return defaultLimitSize
 	}
 
 	// If the limit is less than 1, default value of 20 used
@@ -29,7 +29,7 @@ func ParseLimit(limitStr string) (int, error) {
 		limit = defaultLimitSize
 	}
 
-	return limit, nil
+	return limit
 }
 
 // ParseFilter parses the query based on URI encoding

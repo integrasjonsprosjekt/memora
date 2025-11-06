@@ -8,7 +8,6 @@ import (
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
-	"strconv"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -75,11 +74,7 @@ func (s *CardService) GetCardsInDeck(
 	deckID, limit_str string,
 	cursor string,
 ) ([]models.Card, bool, error) {
-	limit, err := strconv.Atoi(limit_str)
-	if err != nil {
-		limit = 20
-	}
-
+	limit := utils.ParseLimit(limit_str)
 	// Fetch raw card documents from the repository
 	docs, hasMore, err := s.repo.GetCardsInDeck(ctx, deckID, limit, cursor)
 	if err != nil {
