@@ -19,7 +19,6 @@ export default async function CardPage({ params }: { params: Promise<{ deckId: s
           className="[&>hr]:-mx-10 [&>hr]:w-auto"
         />
       </Card>
-      <div className="flex flex-row items-center justify-center"></div>
     </div>
   );
 }
