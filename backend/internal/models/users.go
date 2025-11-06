@@ -19,7 +19,7 @@ type PatchUser struct {
 	Password string `json:"password" validate:"omitempty,min=12"`
 }
 
-type UserDecks struct{
+type UserDecks struct {
 	OwnedDecks  []DisplayDeck `json:"owned_decks"`
 	SharedDecks []DisplayDeck `json:"shared_decks"`
 }
