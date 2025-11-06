@@ -15,7 +15,7 @@ import (
 // @Tags Users
 // @Produce json
 // @Success 200 {object} models.User
-// @Router /api/v1/users/{id} [get]
+// @Router /api/v1/users [get]
 // Return the user based on an id
 func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -36,12 +36,12 @@ func GetUser(userRepo *services.UserService) gin.HandlerFunc {
 	}
 }
 
-// @Summary GET a users' owned and shared decks from firestore by their ID
+// @Summary GET a users' owned and shared decks from firestore
 // @Description Return the user's owned and shared decks
 // @Tags Users
 // @Produce json
 // @Success 200 {object} []models.DisplayDeck
-// @Router /api/v1/users/{id}/decks [get]
+// @Router /api/v1/users/decks [get]
 // Return the users' owned and shared decks based on an id
 func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -53,14 +53,8 @@ func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 		filter := c.DefaultQuery("filter", "title")
 
 		decks, err := userRepo.GetDecks(c.Request.Context(), id, filter)
-		id, err = utils.GetUID(c)
 		if err != nil {
 			c.Status(http.StatusUnauthorized)
-			return
-		}
-
-		decks, err = userRepo.GetDecks(c.Request.Context(), id, filter)
-		if errors.HandleError(c, err) {
 			return
 		}
 
@@ -74,7 +68,7 @@ func GetDecks(userRepo *services.UserService) gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param user body models.CreateUser true "User info"
-// @Success 200 {object} models.User
+// @Success 200 {object} models.ReturnID
 // @Router /api/v1/users [post]
 // Creates a new user in firestore
 func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
@@ -101,15 +95,14 @@ func CreateUser(userRepo *services.UserService) gin.HandlerFunc {
 	}
 }
 
-// @Summary Update a user in firestore by their ID
+// @Summary Update a user in firestore
 // @Description Return updated user information
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param id path string true "User ID"
-// @Param user body models.PatchUser true "User info to update"
-// @Success 200 {object} models.User
-// @Router /api/v1/users/{id} [patch]
+// @Param user body models.User true "User info to update"
+// @Success 200 {object} models.CreateUser
+// @Router /api/v1/users/ [patch]
 // Updates a user based on an id and returns the updated user
 func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -131,13 +124,13 @@ func PatchUser(userRepo *services.UserService) gin.HandlerFunc {
 	}
 }
 
-// @Summary Deletes a user from firestore by their ID
+// @Summary Deletes a user from firestore
 // @Description Return card information
 // @Tags Users
 // @Accept json
 // @Produce json
 // @Success 204
-// @Router /api/v1/users/{id} [delete]
+// @Router /api/v1/users [delete]
 func DeleteUser(userRepo *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetString("uid")

@@ -31,13 +31,18 @@ func SetupRouter(t *testing.T) *gin.Engine {
 	repos := firebase.NewRepositories(client, auth)
 	svc := services.NewServices(repos, validate)
 
-	r := router.New(svc.Auth)
+	r := router.New()
 	router.Route(r, svc)
 
 	return r
 }
 
-func PerformRequest(r *gin.Engine, method, path string, body io.Reader, token string) *httptest.ResponseRecorder {
+func PerformRequest(
+	r *gin.Engine,
+	method, path string,
+	body io.Reader,
+	token string,
+) *httptest.ResponseRecorder {
 	req := httptest.NewRequest(method, path, body)
 	req.Header.Set("content-type", "application/json")
 	if token != "" {

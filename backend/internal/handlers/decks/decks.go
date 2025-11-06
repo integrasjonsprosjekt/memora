@@ -25,7 +25,12 @@ func GetCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		limit := c.DefaultQuery("limit", "20")
 		cursor := c.DefaultQuery("cursor", "")
 
-		cards, hasMore, err := deckRepo.Cards.GetCardsInDeck(c.Request.Context(), deckID, limit, cursor)
+		cards, hasMore, err := deckRepo.Cards.GetCardsInDeck(
+			c.Request.Context(),
+			deckID,
+			limit,
+			cursor,
+		)
 		if errors.HandleError(c, err) {
 			return
 		}
@@ -37,7 +42,7 @@ func GetCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 }
 
 // @Summary Get a deck
-// @Description Retrieves deck information from Firestore by its ID
+// @Description Retrieves deck information from Firestore
 // @Tags Decks
 // @Accept json
 // @Produce json
@@ -61,7 +66,7 @@ func GetDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 		}
 
 		filter := c.DefaultQuery("filter", "title,owner_id,shared_emails")
-		
+
 		deck, err := deckRepo.GetOneDeck(c.Request.Context(), deckID, filter)
 		if errors.HandleError(c, err) {
 			return

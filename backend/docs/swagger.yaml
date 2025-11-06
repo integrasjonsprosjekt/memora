@@ -57,12 +57,9 @@ definitions:
         type: string
       name:
         type: string
-      password:
-        type: string
     required:
     - email
     - name
-    - password
     type: object
   models.DeckResponse:
     properties:
@@ -138,16 +135,6 @@ definitions:
     - question
     - type
     type: object
-  models.PatchUser:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        minLength: 12
-        type: string
-    type: object
   models.ReturnID:
     properties:
       id:
@@ -180,8 +167,6 @@ definitions:
       id:
         type: string
       name:
-        type: string
-      password:
         type: string
     type: object
   status.Status:
@@ -240,7 +225,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves deck information from Firestore by its ID
+      description: Retrieves deck information from Firestore
       parameters:
       - description: Deck ID
         in: path
@@ -453,6 +438,30 @@ paths:
       tags:
       - Health
   /api/v1/users:
+    delete:
+      consumes:
+      - application/json
+      description: Return card information
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Deletes a user from firestore
+      tags:
+      - Users
+    get:
+      description: Return user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: GET a user from firestore by their ID
+      tags:
+      - Users
     post:
       consumes:
       - application/json
@@ -470,62 +479,33 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.ReturnID'
       summary: Create a user and return their ID
       tags:
       - Users
-  /api/v1/users/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Return card information
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-      summary: Deletes a user from firestore by their ID
-      tags:
-      - Users
-    get:
-      description: Return user information
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.User'
-      summary: GET a user from firestore by their ID
-      tags:
-      - Users
+  /api/v1/users/:
     patch:
       consumes:
       - application/json
       description: Return updated user information
       parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
       - description: User info to update
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.PatchUser'
+          $ref: '#/definitions/models.User'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.User'
-      summary: Update a user in firestore by their ID
+            $ref: '#/definitions/models.CreateUser'
+      summary: Update a user in firestore
       tags:
       - Users
-  /api/v1/users/{id}/decks:
+  /api/v1/users/decks:
     get:
       description: Return the user's owned and shared decks
       produces:
@@ -537,7 +517,7 @@ paths:
             items:
               $ref: '#/definitions/models.DisplayDeck'
             type: array
-      summary: GET a users' owned and shared decks from firestore by their ID
+      summary: GET a users' owned and shared decks from firestore
       tags:
       - Users
 swagger: "2.0"

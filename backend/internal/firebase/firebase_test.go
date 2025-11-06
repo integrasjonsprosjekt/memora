@@ -60,7 +60,7 @@ func TestInit(t *testing.T) {
 		testCredPath := "/tmp/test-credentials.json"
 		defer setTestCredentials(t, &testCredPath)()
 
-		client,_ , err := firebase.Init()
+		client, _, err := firebase.Init()
 
 		// We expect this to fail because the credentials file doesn't exist,
 		// but it should NOT fail with our specific "GOOGLE_APPLICATION_CREDENTIALS not set" error
@@ -92,7 +92,7 @@ func TestInitWithValidCredentials(t *testing.T) {
 
 	defer setTestCredentials(t, &credPath)()
 
-	client,_ ,err := firebase.Init()
+	client, _, err := firebase.Init()
 
 	if err != nil {
 		t.Fatalf("Expected successful initialization with valid credentials, got error: %v", err)
@@ -122,7 +122,7 @@ func BenchmarkInit(t *testing.B) {
 	t.ResetTimer()
 
 	for i := 0; i < t.N; i++ {
-		client,_ , err := firebase.Init()
+		client, _, err := firebase.Init()
 		if err != nil {
 			t.Fatalf("Benchmark failed: %v", err)
 		}
