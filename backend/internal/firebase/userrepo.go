@@ -3,7 +3,6 @@ package firebase
 import (
 	"context"
 	"memora/internal/config"
-	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/utils"
 
@@ -142,17 +141,8 @@ func (r *FirestoreUserRepo) AddUser(
 	user models.CreateUser,
 	id string,
 ) error {
-	// Check if the email is already present.
-	exists, err := utils.UserExistsByEmail(r.client, ctx, user.Email)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return errors.ErrInvalidEmailPresent
-	}
-
 	// Email is unique, add the user to Firestore.
-	_, err = r.client.Collection(config.UsersCollection).Doc(id).Set(ctx, user)
+	_, err := r.client.Collection(config.UsersCollection).Doc(id).Set(ctx, user)
 	return err
 }
 
