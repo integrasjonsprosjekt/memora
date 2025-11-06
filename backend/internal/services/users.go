@@ -56,23 +56,19 @@ func (s *UserService) GetDecks(
 	ctx context.Context,
 	id string,
 	filter string,
-) ([]models.DisplayDeck, error) {
+) (models.UserDecks, error) {
 	filterParsed, err := utils.ParseFilter(filter)
 	if err != nil {
-		return nil, err
+		return models.UserDecks{}, err
 	}
 
 	decks, err := s.repo.GetDecks(ctx, id, filterParsed)
 	if err != nil {
-		return nil, err
-	}
-
-	if decks == nil {
-		return []models.DisplayDeck{}, nil
+		return models.UserDecks{}, err
 	}
 
 	// Return the list of decks
-	return decks, err
+	return decks, nil
 }
 
 // RegisterNewUser creates a new user from the provided data.
