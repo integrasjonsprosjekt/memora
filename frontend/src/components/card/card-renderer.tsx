@@ -14,13 +14,20 @@ import { MultipleChoiceCard, MultipleChoiceCardThumbnail } from './widgets/multi
 import { OrderedCard, OrderedCardThumbnail } from './widgets/ordered-card';
 
 import { CardThumbnail } from './card-thumbnail';
+import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 /**
  * Renders an interactive card.
  */
 export function RenderCard({ card, className }: CardComponentProps<CardType>): JSX.Element {
   const cardComponent = match(card)
-    .with({ type: 'front_back' }, () => <FrontBackCard card={card as FrontBackCardType} className={className} />)
+    .with({ type: 'front_back' }, () => <FrontBackCard card={card as FrontBackCardType} className={cn(
+      className,
+      // Counteract padding for rulers
+      "[&>hr]:-mx-10 [&>hr]:w-auto"
+    )} />)
     .with({ type: 'blanks' }, () => <FillBlanksCard card={card as FillBlanksCardType} className={className} />)
     .with({ type: 'multiple_choice' }, () => (
       <MultipleChoiceCard card={card as MultipleChoiceCardType} className={className} />
@@ -28,9 +35,12 @@ export function RenderCard({ card, className }: CardComponentProps<CardType>): J
     .with({ type: 'ordered' }, () => <OrderedCard card={card as OrderedCardType} className={className} />)
     .exhaustive();
 
-  // TODO: Should the card boilerplate be moved from CardPage to here?
-  //       Or should the boilerplate be removed from RenderCardThumbnail and moved to DeckPage?
-  return cardComponent;
+  return <div className="flex flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+    <Card className="w-full max-w-sm -translate-y-30 transform px-10 py-5 text-xl sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
+      {cardComponent}
+
+    </Card>
+  </div>
 }
 
 /**
@@ -39,7 +49,11 @@ export function RenderCard({ card, className }: CardComponentProps<CardType>): J
 export function RenderCardThumbnail({ card, className, deckId }: CardRendererProps<CardType>): JSX.Element {
   const cardComponent = match(card)
     .with({ type: 'front_back' }, () => (
-      <FrontBackCardThumbnail card={card as FrontBackCardType} className={className} />
+      <FrontBackCardThumbnail card={card as FrontBackCardType} className={cn(
+          className,
+          // TODO: Counteract padding for rulers
+        )}
+      />
     ))
     .with({ type: 'blanks' }, () => <FillBlanksCardThumbnail card={card as FillBlanksCardType} className={className} />)
     .with({ type: 'multiple_choice' }, () => (
@@ -51,10 +65,8 @@ export function RenderCardThumbnail({ card, className, deckId }: CardRendererPro
   const tags = [card.type];
 
   return (
-    <>
-      <CardThumbnail card={card} deckId={deckId} tags={tags}>
-        {cardComponent}
-      </CardThumbnail>
-    </>
+    <CardThumbnail card={card} deckId={deckId} tags={tags}>
+      {cardComponent}
+    </CardThumbnail>
   );
 }
