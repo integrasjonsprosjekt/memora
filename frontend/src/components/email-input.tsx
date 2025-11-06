@@ -25,13 +25,13 @@ function EmailInput({ value = [], onChange }: EmailInputProps) {
     if (e.key === ' ' || e.key === 'Enter') {
       const trimmed = inputValue.trim();
       if (trimmed && isValidEmail(trimmed) && !value.includes(trimmed)) {
-        onChange?.([trimmed, ...value]);
+        onChange?.([...value, trimmed]);
         setInputValue('');
       }
       e.preventDefault();
     } else if (e.key === 'Backspace' && !inputValue && value.length) {
       // Remove last email if input is empty
-      onChange?.(value.slice(1));
+      onChange?.(value.slice(0, -1));
     }
   }
 
