@@ -13,7 +13,7 @@ function getOrInitApp(): FirebaseApp {
 export const getUser = cache(async (): Promise<User | null> => {
   const idToken = (await cookies()).get('__session')?.value;
   const baseApp = getOrInitApp();
-  const serverApp = initializeServerApp(baseApp, { authIdToken: idToken });
+  const serverApp = initializeServerApp(firebaseConfig, { authIdToken: idToken });
   const auth = getAuth(serverApp);
 
   await auth.authStateReady();
