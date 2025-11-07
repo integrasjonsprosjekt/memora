@@ -11,7 +11,7 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // A initial user could be supplied from the server but it would not be the same
-// because user is non-serializable and can't be transferd across the RSC boundary.
+// because user is non-serializable and can't be transferred across the RSC boundary.
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(auth.currentUser);
 
