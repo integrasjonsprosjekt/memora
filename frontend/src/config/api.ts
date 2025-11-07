@@ -41,4 +41,4 @@ const getUserId = (): string => {
   return user_id;
 };
 
-export const USER_ID = '1nhjfvpIl1ZTpxivPopOQLRbvrB3';
+export const USER_ID = getUserId();
