@@ -14,6 +14,7 @@ import { Input } from './ui/input';
 import { EmailInput } from './email-input';
 import { getApiEndpoint } from '@/config/api';
 import { Deck } from '@/types/deck';
+import { toast } from 'sonner';
 
 interface EditDeckMenuProps {
   open: boolean;
@@ -86,11 +87,12 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
         onOpenChange(false);
         router.refresh();
       } else {
-        alert(`Failed to update deck: ${res.message}`);
+        console.error(res.message);
+        toast.error('Failed to update deck');
       }
     } catch (err) {
       console.error(err);
-      alert('Something went wrong updating the deck');
+      toast.error('Failed to update deck');
     } finally {
       setLoading(false);
     }
