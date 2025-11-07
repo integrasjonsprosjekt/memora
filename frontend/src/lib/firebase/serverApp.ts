@@ -1,4 +1,3 @@
-'server-only';
 import { cache } from 'react';
 import { FirebaseApp, getApp, getApps, initializeApp, initializeServerApp } from 'firebase/app';
 import { getAuth, User } from 'firebase/auth';
