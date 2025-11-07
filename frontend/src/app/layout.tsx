@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 import { AuthProvider } from '@/context/auth';
-import { getUser } from '@/lib/firebase/serverApp';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
