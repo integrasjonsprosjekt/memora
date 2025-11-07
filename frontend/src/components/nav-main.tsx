@@ -223,17 +223,6 @@ function DeckItem({
                       </Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      asChild
-                      className={cn(hoverAnimation, 'transition-transform duration-100 active:scale-95')}
-                      isActive={pathname === `/decks/${deck.id}/today`}
-                    >
-                      <Link href={`/decks/${deck.id}/today`}>
-                        <span>Today</span>
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
                 </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>
@@ -244,10 +233,6 @@ function DeckItem({
           <ContextMenuItem onClick={() => setIsEditing(true)}>
             <SquarePen />
             Edit
-          </ContextMenuItem>
-          <ContextMenuItem>
-            <Share2 />
-            Share
           </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={() => handleDelete()} variant="destructive">
