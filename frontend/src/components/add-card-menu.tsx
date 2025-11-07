@@ -5,7 +5,7 @@ import { useForm, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form } from './ui/form';
+import { Form } from '@/components/ui/form';
 
 import CardTypeSelector from './card-type-selector';
 import { FrontBackField } from './front-back-field';
@@ -15,10 +15,11 @@ import { MultipleChoiceFields } from './multiple-choice-field';
 import { CardInput, cardInputSchemas, CardPayload, cardPayloadSchemas } from '@/lib/cardSchemas';
 import { CardType } from '@/types/card';
 import { createCard } from '@/app/api';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { OrderedFields } from './ordered-field';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 interface AddCardMenuProps {
   open: boolean;
@@ -96,7 +97,7 @@ export function AddCardMenu({ open, onOpenChange, deckId }: AddCardMenuProps) {
             {renderFields()}
             <Button type="submit" disabled={loading} className="mt-4">
               {/*Ensures that the button is disabled while loading*/}
-              {loading ? 'Loading...' : 'Add card'}
+              {loading ? <Spinner /> : 'Add card'}
             </Button>
           </form>
         </Form>

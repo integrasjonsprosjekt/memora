@@ -6,15 +6,16 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { updateDeck } from '@/app/api';
-import { Form, FormControl, FormField, FormItem, FormLabel } from './ui/form';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { EmailInput } from './email-input';
 import { getApiEndpoint } from '@/config/api';
 import { Deck } from '@/types/deck';
 import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 interface EditDeckMenuProps {
   open: boolean;
@@ -136,7 +137,7 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
               />
               <Button type="submit" disabled={loading} className="mt-4">
                 {/*Ensures that the button is disabled while loading*/}
-                {loading ? 'Loading...' : 'Edit deck'}
+                {loading ? <Spinner /> : 'Edit deck'}
               </Button>
             </form>
           </Form>

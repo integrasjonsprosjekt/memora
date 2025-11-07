@@ -1,7 +1,6 @@
 'use client';
 
 import { JSX, useState, useEffect } from 'react';
-import styles from '../card.module.css';
 import { FrontBackCard as FrontBackCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { ClientMarkdownRenderer } from '@/components/markdown/client-markdown-renderer';

@@ -327,7 +327,7 @@ export function NavMain() {
           filterType="owned"
           cacheKey={cacheKey}
           action={
-            <button onClick={() => setIsAddingDeck(true)} className="hover:bg-accent rounded p-0.5">
+            <button onClick={() => setIsAddingDeck(true)} className="hover:bg-sidebar-accent rounded p-0.5 cursor-pointer">
               <Plus className="h-4 w-4" />
             </button>
           }

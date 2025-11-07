@@ -1,18 +1,19 @@
 'use client';
 import { useForm } from 'react-hook-form';
-import { Form, FormControl, FormField, FormItem, FormLabel } from './ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { deckSchema } from '@/lib/deckSchema';
 import { z } from 'zod';
 import { useState } from 'react';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { createDeck } from '@/app/api';
 import { useRouter } from 'next/navigation';
 import { EmailInput } from './email-input';
-import { Dialog, DialogContent, DialogHeader } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 interface AddDeckMenuProps {
   userId: string;
@@ -90,7 +91,7 @@ export function AddDeckMenu({ userId, open, onOpenChange }: AddDeckMenuProps) {
             />
             <Button type="submit" disabled={loading} className="mt-4">
               {/*Ensures that the button is disabled while loading*/}
-              {loading ? 'Loading...' : 'Add deck'}
+              {loading ? <Spinner /> : 'Add deck'}
             </Button>
           </form>
         </Form>
