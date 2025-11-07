@@ -71,7 +71,7 @@ export default function Page() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" placeholder="Enter your password" />
             </div>
-            <Button disabled={isLoading}>Sign in</Button>
+            <Button disabled={isLoading}>{isLoading ? 'Signing in...' : 'Sign in'}</Button>
           </div>
           <div className="relative my-4 flex items-center justify-center overflow-hidden">
             <Separator />
