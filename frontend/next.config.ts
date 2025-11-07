@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       {
         source: '/((?!signin).*)',
         destination: '/signin',
-        permanent: true,
+        permanent: false,
         missing: [
           {
             type: 'cookie',
