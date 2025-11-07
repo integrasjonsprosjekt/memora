@@ -19,6 +19,7 @@ import { OrderedFields } from './ordered-field';
 import { useRouter } from 'next/navigation';
 import { match } from 'ts-pattern';
 import normalizeCardData from '@/lib/normalizeCardData';
+import { toast } from 'sonner';
 
 interface EditCardMenuProps {
   open: boolean;
@@ -55,14 +56,15 @@ export function EditCardMenu({ open, onOpenChange, card, deckId }: EditCardMenuP
       if (res.success) {
         form.reset({});
         onOpenChange(false);
-        alert('Card updated successfully!');
+        toast.success('Card updated');
         router.refresh();
       } else {
-        alert(`Failed to update card: ${res.message}`);
+        console.error(res.message);
+        toast.error('Failed to update card');
       }
     } catch (err) {
       console.error(err);
-      alert('Something went wrong updating the card');
+      toast.error('Failed to update card');
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,7 @@
 'use client';
 'use client';
 
-import { FileBox, ChevronRight, Plus, Trash2, SquarePen, Share2 } from 'lucide-react';
+import { FileBox, ChevronRight, Plus, Trash2, SquarePen } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { use, useMemo, Suspense, useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
@@ -26,12 +26,23 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { getApiEndpoint, USER_ID } from '@/config/api';
 import { Deck } from '@/types/deck';
 import { EditDeckMenu } from './edit-deck-menu';
 import { AddDeckMenu } from './add-deck-menu';
 import { deleteDeck } from '@/app/api';
+import { toast } from 'sonner';
 
 // Create a cache for deck promises
 let deckPromiseCache: Promise<Deck[]> | null = null;
@@ -141,6 +152,7 @@ function DeckItem({
   const shouldBeOpen = pathname?.startsWith(`/decks/${deck.id}`) || false;
   const [isOpen, setIsOpen] = useState(shouldBeOpen);
   const [isEditing, setIsEditing] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -159,20 +171,18 @@ function DeckItem({
   };
 
   async function handleDelete() {
-    if (!confirm(`Are you sure you want to delete ${deck.title}?`)) {
-      return;
-    } else {
-      const res = await deleteDeck(deck.id);
-      if (res.success) {
-        if (shouldBeOpen) {
-          // Redirect to home
-          router.push('/');
-        }
-        invalidateCache();
-      } else {
-        alert('Failed to delete deck');
+    const res = await deleteDeck(deck.id);
+    if (res.success) {
+      if (shouldBeOpen) {
+        // Redirect to home
+        router.push('/');
       }
+      invalidateCache();
+      toast.success('Deck deleted');
+    } else {
+      toast.error('Failed to delete deck');
     }
+    setDeleteDialogOpen(false);
   }
 
   const hoverAnimation = 'transition-all duration-200 hover:translate-x-0.5';
@@ -235,13 +245,29 @@ function DeckItem({
             Edit
           </ContextMenuItem>
           <ContextMenuSeparator />
-          <ContextMenuItem onClick={() => handleDelete()} variant="destructive">
+          <ContextMenuItem onClick={() => setDeleteDialogOpen(true)} variant="destructive">
             <Trash2 />
             Delete
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
       <EditDeckMenu open={isEditing} onOpenChange={handleEditClose} deckId={deck.id} />
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the deck &quot;{deck.title}&quot; and all its cards.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

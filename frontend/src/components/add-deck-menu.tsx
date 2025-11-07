@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { EmailInput } from './email-input';
 import { Dialog, DialogContent, DialogHeader } from './ui/dialog';
 import { DialogTitle } from '@radix-ui/react-dialog';
+import { toast } from 'sonner';
 
 interface AddDeckMenuProps {
   userId: string;
@@ -36,12 +37,16 @@ export function AddDeckMenu({ userId, open, onOpenChange }: AddDeckMenuProps) {
         form.reset();
         onOpenChange(false);
         router.push(`/decks/${res.data.id}`);
+        toast.success('Created deck', {
+          duration: 1500
+        });
       } else {
-        alert(res.message);
+        console.error(res.message);
+        toast.error('Failed to create deck');
       }
     } catch (err) {
       console.error(err);
-      alert('Something went wrong creating the deck');
+      toast.error('Failed to create deck');
     } finally {
       setLoading(false);
     }

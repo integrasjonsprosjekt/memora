@@ -18,6 +18,7 @@ import { createCard } from '@/app/api';
 import { Button } from './ui/button';
 import { OrderedFields } from './ordered-field';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface AddCardMenuProps {
   open: boolean;
@@ -52,14 +53,17 @@ export function AddCardMenu({ open, onOpenChange, deckId }: AddCardMenuProps) {
       if (res.success) {
         form.reset({ type: cardType } as CardInput);
         onOpenChange(false);
+        toast.success('Card created', {
+          duration: 1500
+        })
         router.refresh();
-        alert('Card created successfully!');
       } else {
-        alert(`Failed to create card: ${res.message}`);
+        console.error(res.message);
+        toast.error('Failed to create card');
       }
     } catch (err) {
       console.error(err);
-      alert('Something went wrong creating the card');
+      toast.error('Failed to create card');
     } finally {
       setLoading(false);
     }
