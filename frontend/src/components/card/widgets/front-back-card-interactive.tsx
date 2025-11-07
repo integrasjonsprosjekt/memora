@@ -1,13 +1,20 @@
 'use client';
 
-import { JSX, useState } from 'react';
+import { JSX, useState, useEffect } from 'react';
 import styles from '../card.module.css';
 import { FrontBackCard as FrontBackCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { ClientMarkdownRenderer } from '@/components/markdown/client-markdown-renderer';
 
-export function FrontBackCardInteractive({ card, className }: CardComponentProps<FrontBackCardType>): JSX.Element {
+export function FrontBackCardInteractive({ card, className, onAnswerChange }: CardComponentProps<FrontBackCardType>): JSX.Element {
   const [isFlipped, setIsFlipped] = useState(false);
+
+  useEffect(() => {
+    // Notify parent when card is flipped (considered "answered")
+    if (onAnswerChange) {
+      onAnswerChange(isFlipped);
+    }
+  }, [isFlipped, onAnswerChange]);
 
   return (
     <div
