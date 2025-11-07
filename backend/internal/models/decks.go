@@ -17,9 +17,9 @@ type DeckResponse struct {
 }
 
 type Deck struct {
-	OwnerID      string   `firestore:"owner_id"`
-	Title        string   `firestore:"title"`
-	SharedEmails []string `firestore:"shared_emails"`
+	OwnerID      string   `firestore:"owner_id" json:"owner_id"`
+	Title        string   `firestore:"title" json:"title"`
+	SharedEmails []string `firestore:"shared_emails" json:"shared_emails"`
 }
 
 type UpdateDeck struct {
