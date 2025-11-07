@@ -127,7 +127,9 @@ export default function Page() {
                 disabled={isLoading}
               />
             </div>
-            <Button type="submit" disabled={isLoading}>{isLoading ? 'Signing in...' : 'Sign in'}</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </Button>
           </div>
           <div className="relative my-4 flex items-center justify-center overflow-hidden">
             <Separator />
