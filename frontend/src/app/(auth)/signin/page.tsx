@@ -8,11 +8,15 @@ import { fetchApi } from '@/lib/api/config';
 import { signIn as signInAuth } from '@/lib/firebase/auth';
 import { useRouter } from 'next/navigation';
 import { MouseEvent, useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase/auth';
 
 export default function Page() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   async function signIn(provider: Parameters<typeof signInAuth>[0], e: MouseEvent) {
     e.preventDefault();
@@ -52,22 +56,78 @@ export default function Page() {
     }
   }
 
+  async function handleEmailPasswordSignIn(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      if (!email || !password) {
+        throw new Error('Please enter email and password.');
+      }
+
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+
+      if (!user?.email) {
+        throw new Error('Unable to retrieve email from your account. Please try again.');
+      }
+
+      const idToken = await user.getIdToken();
+
+      await fetchApi('/users', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.displayName || '',
+        }),
+      });
+
+      router.push('/');
+    } catch (err) {
+      console.error('Email/password sign in error:', err);
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <Card className="w-96">
       <CardHeader>
-        <CardTitle className="text-">Sign in</CardTitle>
+        <CardTitle className="text-2xl">Sign in</CardTitle>
       </CardHeader>
       <CardContent>
-        <form>
+        <form onSubmit={handleEmailPasswordSignIn}>
           {error && <div className="bg-destructive/10 text-destructive mb-4 rounded-md p-3 text-sm">{error}</div>}
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="Enter your email" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+              />
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="Enter your password" />
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+              />
             </div>
-            <Button disabled={isLoading}>{isLoading ? 'Signing in...' : 'Sign in'}</Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? 'Signing in...' : 'Sign in'}</Button>
           </div>
           <div className="relative my-4 flex items-center justify-center overflow-hidden">
             <Separator />
@@ -75,7 +135,7 @@ export default function Page() {
             <Separator />
           </div>
           <div className="grid w-full gap-2">
-            <Button variant="outline" onClick={(e) => signIn('google', e)} disabled={isLoading}>
+            <Button type="button" variant="outline" onClick={(e) => signIn('google', e)} disabled={isLoading}>
               <svg
                 stroke="currentColor"
                 fill="currentColor"
@@ -90,7 +150,7 @@ export default function Page() {
               </svg>
               {isLoading ? 'Signing in...' : 'Sign in with Google'}
             </Button>
-            <Button variant="outline" onClick={(e) => signIn('github', e)} disabled={isLoading}>
+            <Button type="button" variant="outline" onClick={(e) => signIn('github', e)} disabled={isLoading}>
               <svg viewBox="0 0 438.549 438.549" className="h-5 w-5">
                 <path
                   fill="currentColor"
