@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { CalendarClock, PieChart, CircleQuestionMark, BookText } from 'lucide-react';
+import { PieChart, CircleQuestionMark, BookText } from 'lucide-react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -31,11 +31,6 @@ const data = {
       name: 'Dashboard',
       url: '/dashboard',
       icon: PieChart,
-    },
-    {
-      name: 'Today',
-      url: '/today',
-      icon: CalendarClock,
     },
   ],
   footer: [
