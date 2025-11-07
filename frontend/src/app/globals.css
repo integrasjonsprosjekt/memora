@@ -199,3 +199,7 @@
     @apply text-foreground font-medium;
   }
 }
+
+input::placeholder {
+  opacity: 0.5;
+}

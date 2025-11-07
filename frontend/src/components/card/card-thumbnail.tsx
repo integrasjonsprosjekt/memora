@@ -21,7 +21,6 @@ import { SquarePen, Trash2 } from 'lucide-react';
 import { JSX, useState } from 'react';
 import { Card as CardType } from '@/types/card';
 import { CardRendererProps } from './types';
-import styles from './card.module.css';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -56,7 +55,7 @@ export function CardThumbnail({
   return (
     <>
       <Card
-        className={`${styles.card} flex h-fit max-h-[250px] min-h-[125px] w-full cursor-pointer flex-col gap-0 rounded-2xl p-2 ${className ?? ''}`}
+        className={`flex h-fit max-h-[250px] min-h-[125px] w-full cursor-pointer flex-col gap-0 rounded-2xl p-2 ${className ?? ''}`}
       >
         <ContextMenu>
           <ContextMenuTrigger asChild className="flex flex-1 flex-col">

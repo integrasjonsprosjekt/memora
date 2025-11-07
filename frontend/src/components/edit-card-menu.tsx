@@ -5,7 +5,7 @@ import { useForm, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form } from './ui/form';
+import { Form } from '@/components/ui/form';
 
 import { FrontBackField } from './front-back-field';
 import { BlankFields } from './blank-field';
@@ -14,12 +14,13 @@ import { MultipleChoiceFields } from './multiple-choice-field';
 import { CardInput, cardInputSchemas, CardPayload, cardPayloadSchemas } from '@/lib/cardSchemas';
 import { Card } from '@/types/card';
 import { updateCard } from '@/app/api';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { OrderedFields } from './ordered-field';
 import { useRouter } from 'next/navigation';
 import { match } from 'ts-pattern';
 import normalizeCardData from '@/lib/normalizeCardData';
 import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 interface EditCardMenuProps {
   open: boolean;
@@ -92,7 +93,7 @@ export function EditCardMenu({ open, onOpenChange, card, deckId }: EditCardMenuP
             {renderFields}
             <Button type="submit" disabled={loading} className="mt-4">
               {/*Ensures that the button is disabled while loading*/}
-              {loading ? 'Loading...' : 'Edit card'}
+              {loading ? <Spinner /> : 'Edit card'}
             </Button>
           </form>
         </Form>
