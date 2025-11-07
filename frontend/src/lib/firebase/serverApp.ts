@@ -2,7 +2,6 @@
 import { cache } from 'react';
 import { FirebaseApp, getApp, getApps, initializeApp, initializeServerApp } from 'firebase/app';
 import { getAuth, User } from 'firebase/auth';
-import { getCookie } from 'cookies-next';
 import { firebaseConfig } from './app';
 import { cookies } from 'next/headers';
 
