@@ -59,11 +59,7 @@ export default function Page() {
       </CardHeader>
       <CardContent>
         <form>
-          {error && (
-            <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
-          )}
+          {error && <div className="bg-destructive/10 text-destructive mb-4 rounded-md p-3 text-sm">{error}</div>}
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="email">Email</Label>
