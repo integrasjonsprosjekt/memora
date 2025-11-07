@@ -7,6 +7,21 @@ loadEnvConfig(projectDir);
 const nextConfig: NextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md'],
   output: 'standalone',
+  redirects: async () => {
+    return [
+      {
+        source: '/((?!signin).*)',
+        destination: '/signin',
+        permanent: false,
+        missing: [
+          {
+            type: 'cookie',
+            key: '__session',
+          }
+        ]
+      },
+    ];
+  }
 };
 
 export default nextConfig;

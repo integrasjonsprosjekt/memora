@@ -81,20 +81,8 @@ function DeckGroup({
   cacheKey: number;
 }) {
   const pathname = usePathname();
-  // Use cacheKey to force re-fetching when cache is invalidated
-  const decksPromise = useMemo(() => {
-    void cacheKey;
-    return fetchDecks();
-  }, [cacheKey]);
-  const allDecks = use(decksPromise);
-
-  const decks = useMemo(() => {
-    if (filterType === 'owned') {
-      return allDecks.filter((deck) => deck.owner_id === USER_ID);
-    } else {
-      return allDecks.filter((deck) => deck.owner_id !== USER_ID);
-    }
-  }, [allDecks, filterType]);
+  // const decksPromise = useMemo(() => fetchDecks(endpoint), [endpoint]);
+  // const decks = use(decksPromise);
 
   /**
    * Helper to check if main deck item should be active
@@ -131,9 +119,9 @@ function DeckGroup({
         {action}
       </SidebarGroupLabel>
       <SidebarMenu>
-        {decks.map((deck) => {
+        {/* {decks.map((deck) => {
           return <DeckItem key={deck.id} deck={deck} pathname={pathname} isDeckMainActive={isDeckMainActive} />;
-        })}
+        })} */}
       </SidebarMenu>
     </SidebarGroup>
   );
