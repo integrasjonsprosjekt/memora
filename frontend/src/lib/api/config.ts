@@ -1,6 +1,6 @@
 const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || '/api';
 
-export function fetchApi(path: string, options?: RequestInit, version = 'v1'): Promise<any> {
+export function fetchApi<T>(path: string, options?: RequestInit, version = 'v1'): Promise<T> {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const url = `${API_URL}/${version}${cleanPath}`;
 
