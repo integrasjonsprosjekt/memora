@@ -1,7 +1,6 @@
 'use client';
 import { createContext, useContext, useState } from 'react';
 import { User } from 'firebase/auth';
-import { setCookie, deleteCookie } from 'cookies-next';
 import { auth } from '@/lib/firebase/auth';
 
 interface AuthContextType {
