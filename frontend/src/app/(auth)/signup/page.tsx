@@ -50,16 +50,28 @@ export default function Page() {
 
       const idToken = await user.getIdToken();
 
-      await fetchApi('/users', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          email: user.email,
-          name: name,
-        }),
-      });
+      try {
+        await fetchApi('/users', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            email: user.email,
+            name: name,
+          }),
+        });
+      } catch (apiErr) {
+        // Backend user creation failed, but Firebase account was created
+        console.error('Backend user creation error:', apiErr);
+        setError(
+          apiErr instanceof Error
+            ? `Account created, but failed to create user profile: ${apiErr.message}`
+            : 'Account created, but failed to create user profile. Please contact support.'
+        );
+        setIsLoading(false);
+        return;
+      }
 
       router.push('/');
     } catch (err) {
