@@ -5,21 +5,36 @@ import { AddCardButton } from '@/components/add-card-button';
 import { DeckLayout } from '@/components/deck-layout';
 import { getApiEndpoint } from '@/config/api';
 import { withDefaults } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export default async function DeckPage({ params }: { params: Promise<{ deckId: string }> }) {
   const { deckId } = await params;
 
+  const deck: Deck | null = await fetch(getApiEndpoint(`/v1/decks/${deckId}`), {
   const deck: Deck | null = await fetch(getApiEndpoint(`/v1/decks/${deckId}`), {
     cache: 'no-store',
   })
     .then((res) => res.json())
     .then((data) => withDefaults(data, deckDefaults))
     .catch((error) => {
-      console.error(`Error fetching deck:`, error);
+      console.error(error);
+      toast.error('Failed loading deck');
       return null;
     });
 
-  if (!deck) {
+  const cards: Card[] | null = await fetch(getApiEndpoint(`/v1/decks/${deckId}/cards`), {
+    cache: 'no-store',
+  })
+    .then((res) => res.json())
+    .then((data) => data as Pick<Deck, 'cards'>)
+    .then((deck) => deck.cards)
+    .catch((error) => {
+      console.error(error);
+      toast.error('Failed getting cards from deck');
+      return null;
+    });
+
+  if (!deck || !cards) {
     return (
       <div className="p-8">
         <h1 className="text-3xl font-bold">Error loading deck</h1>
@@ -27,24 +42,6 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
       </div>
     );
   }
-
-  const cards: Card[] = await Promise.all(
-    deck.cards
-      .map((card: Card) => card.id)
-      .map((cardId: string) =>
-        fetch(getApiEndpoint(`/v1/decks/${deckId}/cards/${cardId}`))
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`Failed to fetch card ${cardId}`);
-            }
-            return response.json();
-          })
-          .catch((error) => {
-            console.error(`Error fetching card ${cardId}:`, error);
-            return null;
-          })
-      )
-  );
 
   return (
     <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
@@ -58,7 +55,7 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
       <DeckLayout>
         <AddCardButton />
         {cards.map((card) => (
-          <RenderCardThumbnail key={card.id} card={card} deckId={deckId} />
+          <RenderCardThumbnail key={card.id} card={card} deckId={deckId} className="max-h-[250px]" />
         ))}
       </DeckLayout>
     </div>
