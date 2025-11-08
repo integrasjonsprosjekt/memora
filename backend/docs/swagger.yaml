@@ -99,9 +99,9 @@ definitions:
     type: object
   models.Deck:
     properties:
-      ownerID:
+      owner_id:
         type: string
-      sharedEmails:
+      shared_emails:
         items:
           type: string
         type: array
@@ -215,6 +215,17 @@ definitions:
         type: string
       name:
         type: string
+    type: object
+  models.UserDecks:
+    properties:
+      owned_decks:
+        items:
+          $ref: '#/definitions/models.DisplayDeck'
+        type: array
+      shared_decks:
+        items:
+          $ref: '#/definitions/models.DisplayDeck'
+        type: array
     type: object
   status.Status:
     properties:
@@ -660,9 +671,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.DisplayDeck'
-            type: array
+            $ref: '#/definitions/models.UserDecks'
       summary: GET a users' owned and shared decks from firestore
       tags:
       - Users

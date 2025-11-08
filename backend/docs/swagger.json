@@ -652,10 +652,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.DisplayDeck"
-                            }
+                            "$ref": "#/definitions/models.UserDecks"
                         }
                     }
                 }
@@ -815,10 +812,10 @@
         "models.Deck": {
             "type": "object",
             "properties": {
-                "ownerID": {
+                "owner_id": {
                     "type": "string"
                 },
-                "sharedEmails": {
+                "shared_emails": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -988,6 +985,23 @@
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UserDecks": {
+            "type": "object",
+            "properties": {
+                "owned_decks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DisplayDeck"
+                    }
+                },
+                "shared_decks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DisplayDeck"
+                    }
                 }
             }
         },
