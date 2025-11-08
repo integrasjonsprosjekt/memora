@@ -55,8 +55,8 @@ export function AddCardMenu({ open, onOpenChange, deckId }: AddCardMenuProps) {
         form.reset({ type: cardType } as CardInput);
         onOpenChange(false);
         toast.success('Card created', {
-          duration: 1500
-        })
+          duration: 1500,
+        });
         router.refresh();
       } else {
         console.error(res.message);

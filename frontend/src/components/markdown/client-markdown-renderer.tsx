@@ -9,7 +9,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import rehypeHighlight from 'rehype-highlight';
 import styles from './markdown.module.css';
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 type ClientMarkdownRendererProps = {
@@ -46,13 +46,12 @@ export function ClientMarkdownRenderer({ children }: ClientMarkdownRendererProps
   }, [children]);
 
   if (isLoading) {
-    return <div className={cn(
-      styles.markdown,
-      "space-y-2"
-    )}>
-      <Skeleton className="h-4 w-[250px]" />
-      <Skeleton className="h-4 w-[200px]" />
-    </div>;
+    return (
+      <div className={cn(styles.markdown, 'space-y-2')}>
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-4 w-[200px]" />
+      </div>
+    );
   }
 
   return <div className={styles.markdown} dangerouslySetInnerHTML={{ __html: html }} />;

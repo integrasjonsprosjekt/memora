@@ -5,7 +5,11 @@ import { FillBlanksCard as FillBlanksCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { Input } from '@/components/ui/input';
 
-export function FillBlanksCardInteractive({ card, className, onAnswerChange }: CardComponentProps<FillBlanksCardType>): JSX.Element {
+export function FillBlanksCardInteractive({
+  card,
+  className,
+  onAnswerChange,
+}: CardComponentProps<FillBlanksCardType>): JSX.Element {
   const parts = card.question.split('{}');
   const [userAnswers, setUserAnswers] = useState<string[]>(new Array(card.answers.length).fill(''));
 
@@ -34,7 +38,7 @@ export function FillBlanksCardInteractive({ card, className, onAnswerChange }: C
               type="text"
               value={userAnswers[index]}
               onChange={(e) => handleInputChange(index, e.target.value)}
-              className="inline-block w-32 h-7 mx-1 px-2 text-sm"
+              className="mx-1 inline-block h-7 w-32 px-2 text-sm"
               placeholder="..."
             />
           )}
