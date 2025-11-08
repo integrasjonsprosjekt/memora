@@ -663,10 +663,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.DisplayDeck"
-                            }
+                            "$ref": "#/definitions/models.UserDecks"
                         }
                     }
                 }
@@ -826,10 +823,10 @@ const docTemplate = `{
         "models.Deck": {
             "type": "object",
             "properties": {
-                "ownerID": {
+                "owner_id": {
                     "type": "string"
                 },
-                "sharedEmails": {
+                "shared_emails": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -999,6 +996,23 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UserDecks": {
+            "type": "object",
+            "properties": {
+                "owned_decks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DisplayDeck"
+                    }
+                },
+                "shared_decks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DisplayDeck"
+                    }
                 }
             }
         },
