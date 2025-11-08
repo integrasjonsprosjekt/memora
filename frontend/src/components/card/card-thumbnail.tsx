@@ -28,6 +28,7 @@ import { EditCardMenu } from '@/components/edit-card-menu';
 import { deleteCard } from '@/app/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export function CardThumbnail({
   card,
@@ -35,7 +36,8 @@ export function CardThumbnail({
   deckId,
   tags,
   children,
-}: CardRendererProps<CardType> & { tags?: string[]; children: JSX.Element }): JSX.Element {
+  clickable = true,
+}: CardRendererProps<CardType> & { tags?: string[]; clickable?: boolean; children: JSX.Element }): JSX.Element {
   const [open, setOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const router = useRouter();
@@ -43,7 +45,7 @@ export function CardThumbnail({
   async function handleDelete() {
     const res = await deleteCard(deckId, card.id);
     if (res.success) {
-      toast.success('Card deleted');
+      toast.success('Card deleted', { icon: <Trash2 size={16} /> });
       router.refresh();
     } else {
       console.error(res.message);
@@ -52,23 +54,38 @@ export function CardThumbnail({
     setDeleteDialogOpen(false);
   }
 
+  const cardContent = (
+    <>
+      <div className="flex-1 overflow-y-auto">{children}</div>
+      <div className="mt-auto pt-2">
+        {tags?.map((tag, index) => (
+          <Badge key={index} variant="outline">
+            {tag}
+          </Badge>
+        ))}
+      </div>
+    </>
+  );
+  const cardContentClassName = 'flex flex-1 flex-col';
+
   return (
     <>
       <Card
-        className={`flex h-fit max-h-[250px] min-h-[125px] w-full cursor-pointer flex-col gap-0 rounded-2xl p-2 ${className ?? ''}`}
+        className={cn(
+          'flex h-fit min-h-[125px] w-full flex-col gap-0 rounded-2xl p-2',
+          clickable ? 'cursor-pointer' : '',
+          className
+        )}
       >
         <ContextMenu>
-          <ContextMenuTrigger asChild className="flex flex-1 flex-col">
-            <Link href={`/decks/${deckId}/cards/${card.id}`}>
-              <div className="flex-1 overflow-y-auto">{children}</div>
-              <div className="mt-auto pt-2">
-                {tags?.map((tag, index) => (
-                  <Badge key={index} variant="outline">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </Link>
+          <ContextMenuTrigger asChild>
+            {clickable ? (
+              <Link href={`/decks/${deckId}/cards/${card.id}`} className={cardContentClassName}>
+                {cardContent}
+              </Link>
+            ) : (
+              <div className={cardContentClassName}>{cardContent}</div>
+            )}
           </ContextMenuTrigger>
           <ContextMenuContent>
             <ContextMenuItem onClick={() => setOpen(true)}>
@@ -94,7 +111,10 @@ export function CardThumbnail({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

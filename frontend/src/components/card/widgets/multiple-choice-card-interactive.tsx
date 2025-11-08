@@ -22,14 +22,15 @@ export function MultipleChoiceCardInteractive({
   const [selectedRadio, setSelectedRadio] = useState<string>('');
 
   const handleCheckboxChange = (key: string, checked: boolean) => {
-    setSelectedOptions((prev) => {
-      const updated = { ...prev, [key]: checked };
-      if (onAnswerChange) {
-        onAnswerChange(updated);
-      }
-      return updated;
-    });
+    setSelectedOptions((prev) => ({ ...prev, [key]: checked }));
   };
+
+  useEffect(() => {
+    // Notify parent of checkbox selection changes
+    if (onAnswerChange && isMultipleChoice) {
+      onAnswerChange(selectedOptions);
+    }
+  }, [selectedOptions, onAnswerChange, isMultipleChoice]);
 
   useEffect(() => {
     // Notify parent of radio selection changes
