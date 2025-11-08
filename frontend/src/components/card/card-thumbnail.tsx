@@ -26,9 +26,9 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { EditCardMenu } from '@/components/edit-card-menu';
 import { deleteCard } from '@/app/api';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/auth';
 
 export function CardThumbnail({
   card,
@@ -37,16 +37,27 @@ export function CardThumbnail({
   tags,
   children,
   clickable = true,
-}: CardRendererProps<CardType> & { tags?: string[]; clickable?: boolean; children: JSX.Element }): JSX.Element {
+  onSuccess,
+}: CardRendererProps<CardType> & {
+  tags?: string[];
+  clickable?: boolean;
+  children: JSX.Element;
+  onSuccess?: () => void;
+}): JSX.Element {
   const [open, setOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const router = useRouter();
+  const { user } = useAuth();
 
   async function handleDelete() {
-    const res = await deleteCard(deckId, card.id);
+    if (!user) {
+      toast.error('You must be signed in to delete cards');
+      return;
+    }
+
+    const res = await deleteCard(user, deckId, card.id);
     if (res.success) {
       toast.success('Card deleted', { icon: <Trash2 size={16} /> });
-      router.refresh();
+      onSuccess?.();
     } else {
       console.error(res.message);
       toast.error('Failed to delete card');
@@ -100,7 +111,7 @@ export function CardThumbnail({
           </ContextMenuContent>
         </ContextMenu>
       </Card>
-      <EditCardMenu open={open} onOpenChange={setOpen} deckId={deckId} card={card} />
+      <EditCardMenu open={open} onOpenChange={setOpen} deckId={deckId} card={card} onSuccess={onSuccess} />
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

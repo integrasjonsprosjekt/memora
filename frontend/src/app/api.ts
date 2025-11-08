@@ -1,7 +1,6 @@
-'use server';
-
-import { getApiEndpoint } from '@/config/api';
+import { fetchApi } from '@/lib/api/config';
 import { CardType } from '@/types/card';
+import { User } from 'firebase/auth';
 
 interface UpdateDeckPayload {
   title?: string;
@@ -9,152 +8,132 @@ interface UpdateDeckPayload {
   removedEmails?: string[];
 }
 
-export async function createCard(id: string, type: CardType, data: Record<string, unknown>) {
-  const body = { type, ...data };
-
-  const response = await fetch(getApiEndpoint(`/v1/decks/${id}/cards`), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    return { success: false, message: result.error || 'Failed to create card' };
-  }
-
-  return { success: true, data: result };
-}
-
-export async function updateCard(deckId: string, cardId: string, data: Record<string, unknown>) {
-  const body = { ...data };
-
-  const response = await fetch(getApiEndpoint(`/v1/decks/${deckId}/cards/${cardId}`), {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    return { success: false, message: result.error || 'Failed to update card' };
-  }
-
-  return { success: true, data: result };
-}
-
-export async function deleteCard(deckId: string, cardId: string) {
-  const response = await fetch(getApiEndpoint(`/v1/decks/${deckId}/cards/${cardId}`), {
-    method: 'DELETE',
-  });
-
-  // 204 means "No Content" — don't try to parse JSON
-  if (response.status === 204) {
-    return { success: true };
-  }
-
-  let result;
+export async function createCard(user: User, id: string, type: CardType, data: Record<string, unknown>) {
   try {
-    result = await response.json();
-  } catch {
-    result = null;
-  }
+    const body = { type, ...data };
 
-  if (!response.ok) {
-    return { success: false, message: result?.error || 'Failed to delete card' };
-  }
+    const result = await fetchApi(`decks/${id}/cards`, {
+      user,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
-  return { success: true, data: result };
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to create card:', error);
+    return { success: false, message: 'Failed to create card' };
+  }
+}
+
+export async function updateCard(user: User, deckId: string, cardId: string, data: Record<string, unknown>) {
+  try {
+    const body = { ...data };
+
+    const result = await fetchApi(`decks/${deckId}/cards/${cardId}`, {
+      user,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to update card:', error);
+    return { success: false, message: 'Failed to update card' };
+  }
+}
+
+export async function deleteCard(user: User, deckId: string, cardId: string) {
+  try {
+    await fetchApi(`decks/${deckId}/cards/${cardId}`, {
+      user,
+      method: 'DELETE',
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to delete card:', error);
+    return { success: false, message: 'Failed to delete card' };
+  }
 }
 
 // ---------- Decks ----------
 
-export async function createDeck(owner_id: string, title: string, shared_emails?: string[]) {
-  const body = {
-    owner_id,
-    title,
-    shared_emails,
-  };
+export async function createDeck(user: User, owner_id: string, title: string, shared_emails?: string[]) {
+  try {
+    const body = {
+      owner_id,
+      title,
+      shared_emails,
+    };
 
-  const response = await fetch(getApiEndpoint('/v1/decks'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+    const result = await fetchApi('decks', {
+      user,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    return { success: false, message: result.error || 'Failed to create deck' };
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to create deck:', error);
+    return { success: false, message: 'Failed to create deck' };
   }
-
-  return { success: true, data: result };
 }
 
-export async function updateDeck(deckId: string, payload: UpdateDeckPayload) {
-  const responseTitle = await fetch(getApiEndpoint(`/v1/decks/${deckId}`), {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: payload.title }),
-  });
+export async function updateDeck(user: User, deckId: string, payload: UpdateDeckPayload) {
+  try {
+    // Update title
+    const resultTitle = await fetchApi(`decks/${deckId}`, {
+      user,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: payload.title }),
+    });
 
-  const resultTitle = await responseTitle.json();
-
-  if (!responseTitle.ok) {
-    return { success: false, message: resultTitle.error || 'Failed to update deck title' };
-  }
-
-  const addBody = {
-    opp: 'add',
-    shared_emails: payload.addedEmails,
-  };
-  const removeBody = {
-    opp: 'remove',
-    shared_emails: payload.removedEmails,
-  };
-
-  const emailResponses: Response[] = [];
-
-  if (payload.addedEmails?.length) {
-    emailResponses.push(
-      await fetch(getApiEndpoint(`/v1/decks/${deckId}/emails`), {
+    // Update emails if needed
+    if (payload.addedEmails?.length) {
+      await fetchApi(`decks/${deckId}/emails`, {
+        user,
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(addBody),
-      })
-    );
-  }
-  if (payload.removedEmails?.length) {
-    emailResponses.push(
-      await fetch(getApiEndpoint(`/v1/decks/${deckId}/emails`), {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(removeBody),
-      })
-    );
-  }
-
-  let resultEmails;
-  for (const res of emailResponses) {
-    resultEmails = await res.json().catch(() => []);
-    if (!res.ok) {
-      return { success: false, message: resultEmails.error || 'Failed to update deck emails' };
+        body: JSON.stringify({
+          opp: 'add',
+          shared_emails: payload.addedEmails,
+        }),
+      });
     }
-  }
 
-  return { success: true, data: resultTitle + resultEmails };
+    if (payload.removedEmails?.length) {
+      await fetchApi(`decks/${deckId}/emails`, {
+        user,
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          opp: 'remove',
+          shared_emails: payload.removedEmails,
+        }),
+      });
+    }
+
+    return { success: true, data: resultTitle };
+  } catch (error) {
+    console.error('Failed to update deck:', error);
+    return { success: false, message: 'Failed to update deck' };
+  }
 }
 
-export async function deleteDeck(deckId: string) {
-  const response = await fetch(getApiEndpoint(`/v1/decks/${deckId}`), {
-    method: 'DELETE',
-  });
+export async function deleteDeck(user: User, deckId: string) {
+  try {
+    await fetchApi(`decks/${deckId}`, {
+      user,
+      method: 'DELETE',
+    });
 
-  if (!response.ok) {
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to delete deck:', error);
     return { success: false, message: 'Failed to delete deck' };
   }
-
-  return { success: true };
 }

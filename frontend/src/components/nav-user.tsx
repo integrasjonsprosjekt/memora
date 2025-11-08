@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UserCog, Settings2, ChevronsUpDown, LogOut } from 'lucide-react';
+import { Settings2, ChevronsUpDown, LogOut } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -70,10 +70,10 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <UserCog />
-                Account
-              </DropdownMenuItem>
+              {/*<DropdownMenuItem>*/}
+              {/*<UserCog />*/}
+              {/*Account*/}
+              {/*</DropdownMenuItem>*/}
               <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
                 <Settings2 />
                 Settings

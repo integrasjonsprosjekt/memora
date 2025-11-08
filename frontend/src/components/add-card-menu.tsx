@@ -17,20 +17,21 @@ import { CardType } from '@/types/card';
 import { createCard } from '@/app/api';
 import { Button } from '@/components/ui/button';
 import { OrderedFields } from './ordered-field';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
+import { useAuth } from '@/context/auth';
 
 interface AddCardMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   deckId: string;
+  onSuccess?: () => void;
 }
 
-export function AddCardMenu({ open, onOpenChange, deckId }: AddCardMenuProps) {
+export function AddCardMenu({ open, onOpenChange, deckId, onSuccess }: AddCardMenuProps) {
   const [cardType, setCardType] = useState<CardType>('front_back');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { user } = useAuth();
 
   // Pick the schema for the current card type dynamically
   const inputSchema = useMemo(() => cardInputSchemas[cardType], [cardType]);
@@ -46,10 +47,12 @@ export function AddCardMenu({ open, onOpenChange, deckId }: AddCardMenuProps) {
   }, [cardType, form]);
 
   const onSubmit = form.handleSubmit(async (values) => {
+    if (!user) return;
+
     setLoading(true);
     try {
       const payload: CardPayload = payloadSchema.parse(values);
-      const res = await createCard(deckId, cardType, payload);
+      const res = await createCard(user, deckId, cardType, payload);
 
       if (res.success) {
         form.reset({ type: cardType } as CardInput);
@@ -57,7 +60,7 @@ export function AddCardMenu({ open, onOpenChange, deckId }: AddCardMenuProps) {
         toast.success('Card created', {
           duration: 1500,
         });
-        router.refresh();
+        onSuccess?.();
       } else {
         console.error(res.message);
         toast.error('Failed to create card');

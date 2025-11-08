@@ -187,7 +187,8 @@ export function RenderCardThumbnail({
   className,
   deckId,
   clickable = true,
-}: CardRendererProps<CardType> & { clickable?: boolean }): JSX.Element {
+  onSuccess,
+}: CardRendererProps<CardType> & { clickable?: boolean; onSuccess?: () => void }): JSX.Element {
   const cardComponent = match(card)
     .with({ type: 'front_back' }, () => (
       // TODO: Counteract padding for rulers
@@ -201,7 +202,14 @@ export function RenderCardThumbnail({
   const tags = [card.type];
 
   return (
-    <CardThumbnail card={card} deckId={deckId} tags={tags} className={className} clickable={clickable}>
+    <CardThumbnail
+      card={card}
+      deckId={deckId}
+      tags={tags}
+      className={className}
+      clickable={clickable}
+      onSuccess={onSuccess}
+    >
       {cardComponent}
     </CardThumbnail>
   );
