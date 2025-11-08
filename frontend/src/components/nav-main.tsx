@@ -43,6 +43,7 @@ import { EditDeckMenu } from './edit-deck-menu';
 import { AddDeckMenu } from './add-deck-menu';
 import { deleteDeck } from '@/app/api';
 import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Create a cache for deck promises
 let deckPromiseCache: Promise<Deck[]> | null = null;
@@ -178,7 +179,7 @@ function DeckItem({
         router.push('/');
       }
       invalidateCache();
-      toast.success('Deck deleted');
+      toast.success('Deck deleted', { icon: <Trash2 size={16} /> });
     } else {
       toast.error('Failed to delete deck');
     }
@@ -211,7 +212,14 @@ function DeckItem({
               >
                 <Link href={`/decks/${deck.id}`}>
                   <FileBox />
-                  <span>{deck.title}</span>
+                  <Tooltip delayDuration={800}>
+                    <TooltipTrigger asChild>
+                      <span>{deck.title}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{deck.title}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </Link>
               </SidebarMenuButton>
               <CollapsibleTrigger asChild>
@@ -257,12 +265,16 @@ function DeckItem({
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the deck &quot;{deck.title}&quot; and all its cards.
+              This action cannot be undone. This will permanently delete the deck &quot;{deck.title}&quot; and all its
+              cards.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -327,7 +339,10 @@ export function NavMain() {
           filterType="owned"
           cacheKey={cacheKey}
           action={
-            <button onClick={() => setIsAddingDeck(true)} className="hover:bg-sidebar-accent rounded p-0.5 cursor-pointer">
+            <button
+              onClick={() => setIsAddingDeck(true)}
+              className="hover:bg-sidebar-accent cursor-pointer rounded p-0.5"
+            >
               <Plus className="h-4 w-4" />
             </button>
           }
