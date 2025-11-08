@@ -4,9 +4,13 @@ import { JSX, useState, useEffect, useRef } from 'react';
 import { OrderedCard as OrderedCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { GripVertical } from 'lucide-react';
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from '@/components/ui/skeleton';
 
-export function OrderedCardInteractive({ card, className, onAnswerChange }: CardComponentProps<OrderedCardType>): JSX.Element {
+export function OrderedCardInteractive({
+  card,
+  className,
+  onAnswerChange,
+}: CardComponentProps<OrderedCardType>): JSX.Element {
   const [items, setItems] = useState<string[] | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const hasShuffled = useRef(false);
@@ -72,11 +76,13 @@ export function OrderedCardInteractive({ card, className, onAnswerChange }: Card
   };
 
   if (!items) {
-    return <div className="space-y-2">
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[120px]" />
-            <Skeleton className="h-4 w-[150px]" />
-          </div>
+    return (
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-4 w-[120px]" />
+        <Skeleton className="h-4 w-[150px]" />
+      </div>
+    );
   }
 
   return (
@@ -86,14 +92,12 @@ export function OrderedCardInteractive({ card, className, onAnswerChange }: Card
         {items.map((item, index) => (
           <div key={`container-${index}`} className="relative flex items-center gap-3">
             {/* Static number outside */}
-            <div className="w-4 text-sm font-semibold text-muted-foreground">
-              {index + 1}
-            </div>
+            <div className="text-muted-foreground w-4 text-sm font-semibold">{index + 1}</div>
 
             {/* Container with background */}
             <div className="relative flex-1">
               {/* Static background */}
-              <div className="absolute inset-0 rounded-xl border-dashed border-green border-1 bg-accent/40 pointer-events-none"></div>
+              <div className="border-green bg-accent/40 pointer-events-none absolute inset-0 rounded-xl border-1 border-dashed"></div>
 
               {/* Draggable item */}
               <div
@@ -101,7 +105,7 @@ export function OrderedCardInteractive({ card, className, onAnswerChange }: Card
                 onDragStart={() => handleDragStart(item)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDragEnd={handleDragEnd}
-                className={`cursor-move p-2 rounded transition-colors flex items-center gap-2 hover:bg-muted/50 select-none relative ${
+                className={`hover:bg-muted/50 relative flex cursor-move items-center gap-2 rounded p-2 transition-colors select-none ${
                   draggedItem === item ? 'opacity-50' : ''
                 }`}
               >

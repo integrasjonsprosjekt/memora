@@ -5,7 +5,7 @@ import { ReactNode } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const spinner = (
-  <div className="flex flex-row space-x-3 space-y-3">
+  <div className="flex flex-row space-y-3 space-x-3">
     <Skeleton className="h-[145px] w-[250px] rounded-xl" />
     <Skeleton className="h-[125px] w-[250px] rounded-xl" />
     <Skeleton className="h-[130px] w-[250px] rounded-xl" />
