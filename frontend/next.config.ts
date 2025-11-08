@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   redirects: async () => {
     return [
       {
-        source: '/((?!signin).*)',
+        source: '/((?!signin|signup).*)',
         destination: '/signin',
         permanent: false,
         missing: [
