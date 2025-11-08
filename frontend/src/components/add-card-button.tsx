@@ -6,9 +6,10 @@ import { AddCardMenu } from '@/components/add-card-menu';
 
 interface AddCardButtonProps {
   deckId: string;
+  onSuccess?: () => void;
 }
 
-export function AddCardButton({ deckId }: AddCardButtonProps) {
+export function AddCardButton({ deckId, onSuccess }: AddCardButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -19,7 +20,7 @@ export function AddCardButton({ deckId }: AddCardButtonProps) {
       >
         Add card
       </Button>
-      <AddCardMenu open={open} onOpenChange={setOpen} deckId={deckId} />
+      <AddCardMenu open={open} onOpenChange={setOpen} deckId={deckId} onSuccess={onSuccess} />
     </>
   );
 }

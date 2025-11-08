@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -5,26 +7,45 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { getApiEndpoint } from '@/config/api';
 import { Deck } from '@/types/deck';
 import { DeckBreadcrumb } from './deck-breadcrumb';
+import { useAuth } from '@/context/auth';
+import { fetchApi } from '@/lib/api/config';
+import { useEffect, useState, use } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default async function Layout({
+export default function Layout({
   children,
   params,
 }: Readonly<{
   children: React.ReactNode;
   params: Promise<{ deckId: string }>;
 }>) {
-  const { deckId } = await params;
+  const { deckId } = use(params);
+  const { user } = useAuth();
+  const [deckTitle, setDeckTitle] = useState<string>(deckId);
+  const [loading, setLoading] = useState(true);
 
-  const deck: Deck = await fetch(getApiEndpoint(`/v1/decks/${deckId}`), {
-    cache: 'no-store',
-  })
-    .then((res) => res.json())
-    .catch(() => null);
+  useEffect(() => {
+    async function fetchDeck() {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-  const deckTitle = deck?.title || deckId;
+      try {
+        const deck = await fetchApi<Deck>(`decks/${deckId}`, { user });
+        setDeckTitle(deck.title || deckId);
+      } catch (error) {
+        console.error('Failed to fetch deck for breadcrumb:', error);
+        setDeckTitle(deckId);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDeck();
+  }, [user, deckId]);
 
   return (
     <Breadcrumb>
@@ -33,7 +54,13 @@ export default async function Layout({
           <BreadcrumbPage>Decks</BreadcrumbPage>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
-        <DeckBreadcrumb deckId={deckId} deckTitle={deckTitle} />
+        {loading ? (
+          <BreadcrumbItem>
+            <Skeleton className="h-4 w-24" />
+          </BreadcrumbItem>
+        ) : (
+          <DeckBreadcrumb deckId={deckId} deckTitle={deckTitle} />
+        )}
         {children}
       </BreadcrumbList>
     </Breadcrumb>

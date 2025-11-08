@@ -1,12 +1,12 @@
 'use client';
-'use client';
 
-import { FileBox, ChevronRight, Plus, Trash2, SquarePen } from 'lucide-react';
+import { FileBox, ChevronRight, Plus, Trash2, SquarePen, Share2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { use, useMemo, Suspense, useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-
+import { useAuth } from '@/context/auth';
+import { fetchApi } from '@/lib/api/config';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   SidebarGroup,
@@ -37,16 +37,21 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
-import { getApiEndpoint, USER_ID } from '@/config/api';
 import { Deck } from '@/types/deck';
 import { EditDeckMenu } from './edit-deck-menu';
 import { AddDeckMenu } from './add-deck-menu';
 import { deleteDeck } from '@/app/api';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { User } from 'firebase/auth';
+
+interface DecksResponse {
+  owned_decks: Deck[];
+  shared_decks: Deck[];
+}
 
 // Create a cache for deck promises
-let deckPromiseCache: Promise<Deck[]> | null = null;
+let deckPromiseCache: Promise<DecksResponse> | null = null;
 let cacheInvalidationCounter = 0;
 
 function invalidateDeckCache() {
@@ -54,26 +59,23 @@ function invalidateDeckCache() {
   cacheInvalidationCounter++;
 }
 
-function fetchDecks(): Promise<Deck[]> {
+async function fetchDecks(user: User): Promise<DecksResponse> {
   // Return cached promise if it exists
   if (deckPromiseCache) {
     return deckPromiseCache;
   }
 
   // Create new promise and cache it
-  const promise = fetch(getApiEndpoint(`/v1/users/${USER_ID}/decks`), {
-    next: { revalidate: 300 }, // Cache for 5 minutes
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error('Failed to fetch decks');
-      return res.json();
-    })
-    .catch((error) => {
+  const promise = (async () => {
+    try {
+      return await fetchApi<DecksResponse>('users/decks', { user });
+    } catch (error) {
       console.error(`Error fetching decks:`, error);
       // Remove failed promise from cache
       deckPromiseCache = null;
       throw error;
-    });
+    }
+  })();
 
   deckPromiseCache = promise;
   return promise;
@@ -93,8 +95,15 @@ function DeckGroup({
   cacheKey: number;
 }) {
   const pathname = usePathname();
-  // const decksPromise = useMemo(() => fetchDecks(endpoint), [endpoint]);
-  // const decks = use(decksPromise);
+  const { user } = useAuth();
+
+  const decksPromise = useMemo(() => {
+    if (!user) return Promise.resolve({ owned_decks: [], shared_decks: [] });
+    return fetchDecks(user);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, cacheKey]);
+
+  const decksResponse = use(decksPromise);
 
   /**
    * Helper to check if main deck item should be active
@@ -120,25 +129,29 @@ function DeckGroup({
     return remainingPath.includes('/');
   };
 
+  const filteredDecks = filterType === 'owned' ? decksResponse.owned_decks || [] : decksResponse.shared_decks || [];
+
+  // Don't render the group if there are no decks
+  if (filteredDecks.length === 0) {
+    return null;
+  }
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="flex items-center justify-between pr-1">
         <span>{title}</span>
         {action}
       </SidebarGroupLabel>
-      <SidebarGroupLabel className="flex items-center justify-between pr-1">
-        <span>{title}</span>
-        {action}
-      </SidebarGroupLabel>
       <SidebarMenu>
-        {/* {decks.map((deck) => {
+        {filteredDecks.map((deck) => {
           return <DeckItem key={deck.id} deck={deck} pathname={pathname} isDeckMainActive={isDeckMainActive} />;
-        })} */}
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );
 }
 
+// TODO: Why isn't this used?
 function DeckItem({
   deck,
   pathname,
@@ -149,6 +162,7 @@ function DeckItem({
   isDeckMainActive: (deckId: string) => boolean;
 }) {
   const router = useRouter();
+  const { user } = useAuth();
   const invalidateCache = useContext(DeckCacheContext);
   const shouldBeOpen = pathname?.startsWith(`/decks/${deck.id}`) || false;
   const [isOpen, setIsOpen] = useState(shouldBeOpen);
@@ -172,7 +186,9 @@ function DeckItem({
   };
 
   async function handleDelete() {
-    const res = await deleteDeck(deck.id);
+    if (!user) return;
+
+    const res = await deleteDeck(user, deck.id);
     if (res.success) {
       if (shouldBeOpen) {
         // Redirect to home
@@ -184,6 +200,17 @@ function DeckItem({
       toast.error('Failed to delete deck');
     }
     setDeleteDialogOpen(false);
+  }
+
+  async function handleShare() {
+    const url = `${window.location.origin}/decks/${deck.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Link copied to clipboard', { icon: <Share2 size={16} /> });
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      toast.error('Failed to copy link');
+    }
   }
 
   const hoverAnimation = 'transition-all duration-200 hover:translate-x-0.5';
@@ -252,6 +279,10 @@ function DeckItem({
             <SquarePen />
             Edit
           </ContextMenuItem>
+          <ContextMenuItem onClick={handleShare}>
+            <Share2 />
+            Share
+          </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={() => setDeleteDialogOpen(true)} variant="destructive">
             <Trash2 />
@@ -318,6 +349,7 @@ function DeckGroupSuspense({
 export function NavMain() {
   const [cacheKey, setCacheKey] = useState(cacheInvalidationCounter);
   const [isAddingDeck, setIsAddingDeck] = useState(false);
+  const { user } = useAuth();
 
   const handleInvalidateCache = () => {
     invalidateDeckCache();
@@ -330,6 +362,10 @@ export function NavMain() {
       handleInvalidateCache();
     }
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <>
@@ -349,7 +385,7 @@ export function NavMain() {
         />
         <DeckGroupSuspense title="Shared" filterType="shared" cacheKey={cacheKey} />
       </DeckCacheContext.Provider>
-      <AddDeckMenu userId={USER_ID} open={isAddingDeck} onOpenChange={handleAddDeckClose} />
+      <AddDeckMenu open={isAddingDeck} onOpenChange={handleAddDeckClose} />
     </>
   );
 }

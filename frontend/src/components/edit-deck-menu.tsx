@@ -12,10 +12,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmailInput } from './email-input';
-import { getApiEndpoint } from '@/config/api';
 import { Deck } from '@/types/deck';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
+import { useAuth } from '@/context/auth';
+import { fetchApi } from '@/lib/api/config';
 
 interface EditDeckMenuProps {
   open: boolean;
@@ -24,14 +25,14 @@ interface EditDeckMenuProps {
 }
 
 interface DeckApiResponse {
-  Title: string;
-  SharedEmails: string[];
+  title: string;
+  shared_emails: string[];
 }
 
 function normalizeDeckData(apiData: DeckApiResponse): Partial<Deck> {
   return {
-    title: apiData.Title ?? '',
-    shared_emails: apiData.SharedEmails ?? [],
+    title: apiData.title ?? '',
+    shared_emails: apiData.shared_emails ?? [],
   };
 }
 
@@ -39,6 +40,7 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
   const [loading, setLoading] = useState(false);
   const [deck, setDeck] = useState<Partial<Deck> | null>(null);
   const router = useRouter();
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof deckSchema>>({
     resolver: zodResolver(deckSchema),
@@ -46,11 +48,10 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
   });
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !user) return;
     const fetchDeck = async () => {
       try {
-        const res = await fetch(getApiEndpoint(`/v1/decks/${deckId}`), { cache: 'no-store' });
-        const data: DeckApiResponse = await res.json();
+        const data = await fetchApi<DeckApiResponse>(`decks/${deckId}`, { user });
         const normalizedData = normalizeDeckData(data);
         setDeck(normalizedData);
         form.reset({
@@ -64,9 +65,11 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
     };
 
     fetchDeck();
-  }, [deckId, open, form]);
+  }, [deckId, open, form, user]);
 
   const onSubmit = form.handleSubmit(async (values) => {
+    if (!user) return;
+
     setLoading(true);
     try {
       const prevEmails = (deck?.shared_emails ?? []) as string[];
@@ -81,7 +84,7 @@ export function EditDeckMenu({ open, onOpenChange, deckId }: EditDeckMenuProps) 
         removedEmails,
       };
 
-      const res = await updateDeck(deckId, payload);
+      const res = await updateDeck(user, deckId, payload);
 
       if (res.success) {
         //form.reset({});

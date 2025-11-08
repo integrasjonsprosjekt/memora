@@ -16,22 +16,23 @@ import { Card } from '@/types/card';
 import { updateCard } from '@/app/api';
 import { Button } from '@/components/ui/button';
 import { OrderedFields } from './ordered-field';
-import { useRouter } from 'next/navigation';
 import { match } from 'ts-pattern';
 import normalizeCardData from '@/lib/normalizeCardData';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
+import { useAuth } from '@/context/auth';
 
 interface EditCardMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   card: Card;
   deckId: string;
+  onSuccess?: () => void;
 }
 
-export function EditCardMenu({ open, onOpenChange, card, deckId }: EditCardMenuProps) {
+export function EditCardMenu({ open, onOpenChange, deckId, card, onSuccess }: EditCardMenuProps) {
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { user } = useAuth();
 
   const inputSchema = cardInputSchemas[card.type];
   const payloadSchema = cardPayloadSchemas[card.type];
@@ -48,17 +49,19 @@ export function EditCardMenu({ open, onOpenChange, card, deckId }: EditCardMenuP
   }, [card, form]);
 
   const onSubmit = form.handleSubmit(async (values) => {
+    if (!user) return;
+
     setLoading(true);
     try {
       const payload: CardPayload = payloadSchema.parse(values);
 
-      const res = await updateCard(deckId, card.id, payload);
+      const res = await updateCard(user, deckId, card.id, payload);
 
       if (res.success) {
         form.reset({});
         onOpenChange(false);
         toast.success('Card updated');
-        router.refresh();
+        onSuccess?.();
       } else {
         console.error(res.message);
         toast.error('Failed to update card');

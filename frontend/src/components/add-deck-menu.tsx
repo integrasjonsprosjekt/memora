@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createDeck } from '@/app/api';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/auth';
 import { EmailInput } from './email-input';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { DialogTitle } from '@radix-ui/react-dialog';
@@ -16,13 +17,13 @@ import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 
 interface AddDeckMenuProps {
-  userId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function AddDeckMenu({ userId, open, onOpenChange }: AddDeckMenuProps) {
+export function AddDeckMenu({ open, onOpenChange }: AddDeckMenuProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof deckSchema>>({
@@ -31,13 +32,15 @@ export function AddDeckMenu({ userId, open, onOpenChange }: AddDeckMenuProps) {
   });
 
   const onSubmit = form.handleSubmit(async (values) => {
+    if (!user) return;
+
     setLoading(true);
     try {
-      const res = await createDeck(userId, values.title, values.shared_emails ?? []);
+      const res = await createDeck(user, user.uid, values.title, values.shared_emails ?? []);
       if (res.success) {
         form.reset();
         onOpenChange(false);
-        router.push(`/decks/${res.data.id}`);
+        router.push(`/decks/${(res.data as { id: string }).id}`);
         toast.success('Deck created', {
           duration: 1500,
         });

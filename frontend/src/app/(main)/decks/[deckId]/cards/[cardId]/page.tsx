@@ -1,10 +1,10 @@
 'use client';
 
 import { RenderCardThumbnail } from '@/components/card';
-import { getApiEndpoint } from '@/config/api';
 import { Button } from '@/components/ui/button';
 import { SquarePen, Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { use } from 'react';
 import { EditCardMenu } from '@/components/edit-card-menu';
 import {
   AlertDialog,
@@ -20,30 +20,55 @@ import { deleteCard } from '@/app/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Card as CardType } from '@/types/card';
+import { useAuth } from '@/context/auth';
+import { fetchApi } from '@/lib/api/config';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CardPage({ params }: { params: Promise<{ deckId: string; cardId: string }> }) {
-  const [deckId, setDeckId] = useState<string>('');
-  const [cardId, setCardId] = useState<string>('');
+  const { deckId, cardId } = use(params);
+  const { user } = useAuth();
   const [card, setCard] = useState<CardType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const router = useRouter();
 
-  useEffect(() => {
-    params.then(({ deckId, cardId }) => {
-      setDeckId(deckId);
-      setCardId(cardId);
+  const fetchCard = useCallback(
+    async (showLoading = false) => {
+      if (!user) return;
 
-      fetch(getApiEndpoint(`/v1/decks/${deckId}/cards/${cardId}`), {
-        cache: 'no-store',
-      })
-        .then((res) => res.json())
-        .then((data) => setCard(data));
-    });
-  }, [params]);
+      try {
+        if (showLoading) {
+          setLoading(true);
+        }
+        setError(null);
+
+        const cardData = await fetchApi<CardType>(`decks/${deckId}/cards/${cardId}`, { user });
+        setCard(cardData);
+        setRefreshKey((prev) => prev + 1);
+      } catch (error) {
+        console.error(error);
+        setError('Failed to load card');
+        toast.error('Failed to load card');
+      } finally {
+        if (showLoading) {
+          setLoading(false);
+        }
+      }
+    },
+    [user, deckId, cardId]
+  );
+
+  useEffect(() => {
+    fetchCard(true);
+  }, [fetchCard]);
 
   async function handleDelete() {
-    const res = await deleteCard(deckId, cardId);
+    if (!user) return;
+
+    const res = await deleteCard(user, deckId, cardId);
     if (res.success) {
       toast.success('Card deleted', { icon: <Trash2 size={16} /> });
       router.push(`/decks/${deckId}`);
@@ -54,8 +79,36 @@ export default function CardPage({ params }: { params: Promise<{ deckId: string;
     setDeleteDialogOpen(false);
   }
 
-  if (!card) {
-    return null;
+  if (loading) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-between px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="flex w-full flex-1 items-center justify-center">
+          <Skeleton className="h-[400px] w-full max-w-sm -translate-y-30 rounded-2xl sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-20 rounded-md" />
+          <Skeleton className="h-10 w-24 rounded-md" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="p-8">
+        <h1 className="text-3xl font-bold">Authentication Required</h1>
+        <p className="mt-4 text-[var(--muted-foreground)]">Please sign in to view this card.</p>
+      </div>
+    );
+  }
+
+  if (error || !card) {
+    return (
+      <div className="p-8">
+        <h1 className="text-3xl font-bold">Error loading card</h1>
+        <p className="mt-4 text-[var(--muted-foreground)]">{error || 'There was a problem loading this card.'}</p>
+      </div>
+    );
   }
 
   return (
@@ -63,7 +116,7 @@ export default function CardPage({ params }: { params: Promise<{ deckId: string;
       <div className="flex flex-1 flex-col items-center justify-between px-4 pb-8 sm:px-6 lg:px-8">
         <div className="flex w-full flex-1 items-center justify-center">
           <RenderCardThumbnail
-            key={card.id}
+            key={`${card.id}-${refreshKey}`}
             card={card}
             deckId={deckId}
             clickable={false}
@@ -81,7 +134,7 @@ export default function CardPage({ params }: { params: Promise<{ deckId: string;
           </Button>
         </div>
       </div>
-      <EditCardMenu open={editOpen} onOpenChange={setEditOpen} deckId={deckId} card={card} />
+      <EditCardMenu open={editOpen} onOpenChange={setEditOpen} deckId={deckId} card={card} onSuccess={fetchCard} />
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
