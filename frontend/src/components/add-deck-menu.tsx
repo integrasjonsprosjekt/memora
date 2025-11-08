@@ -38,8 +38,8 @@ export function AddDeckMenu({ userId, open, onOpenChange }: AddDeckMenuProps) {
         form.reset();
         onOpenChange(false);
         router.push(`/decks/${res.data.id}`);
-        toast.success('Created deck', {
-          duration: 1500
+        toast.success('Deck created', {
+          duration: 1500,
         });
       } else {
         console.error(res.message);
