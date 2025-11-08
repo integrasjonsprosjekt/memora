@@ -129,9 +129,9 @@ export default function Page() {
               {isLoading ? 'Creating account...' : 'Sign up'}
             </Button>
           </div>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
+          <div className="text-muted-foreground mt-4 text-center text-sm">
             Already have an account?{' '}
-            <Link href="/signin" className="underline underline-offset-4 hover:text-primary">
+            <Link href="/signin" className="hover:text-primary underline underline-offset-4">
               Sign in
             </Link>
           </div>

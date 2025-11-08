@@ -163,9 +163,9 @@ export default function Page() {
               {isLoading ? 'Signing in...' : 'Sign in with Github'}
             </Button>
           </div>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
-            <Link href="/signup" className="underline underline-offset-4 hover:text-primary">
+          <div className="text-muted-foreground mt-4 text-center text-sm">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="hover:text-primary underline underline-offset-4">
               Sign up
             </Link>
           </div>
