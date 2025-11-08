@@ -34,6 +34,14 @@ x-frontend: &frontend
     - path: ./frontend/.env
       required: false
 
+x-nginx: &nginx
+  build: ./nginx
+  hostname: nginx
+  container_name: nginx
+  ports:
+    - 80:80
+    - 443:443
+
 services:
   backend-dev:
     <<: [*dev, *backend]
@@ -67,17 +75,20 @@ services:
     <<: [*prod, *frontend]
     build: ./frontend
 
-  nginx:
-    <<: [*prod]
-    build: ./nginx
-    hostname: nginx
-    container_name: nginx
+  nginx-dev:
+    <<: [*dev, *nginx]
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend-dev
+      - frontend-dev
+
+  nginx-prod:
+    <<: [*prod, *nginx]
     depends_on:
       - backend-prod
       - frontend-prod
-    ports:
-      - 80:80
-      - 443:443
 
 networks:
   app:
