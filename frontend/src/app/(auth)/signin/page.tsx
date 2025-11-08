@@ -9,6 +9,7 @@ import { signIn as signInAuth } from '@/lib/firebase/auth';
 import { useRouter } from 'next/navigation';
 import { MouseEvent, useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import Link from 'next/link';
 import { auth } from '@/lib/firebase/auth';
 
 export default function Page() {
@@ -161,6 +162,12 @@ export default function Page() {
               </svg>
               {isLoading ? 'Signing in...' : 'Sign in with Github'}
             </Button>
+          </div>
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <Link href="/signup" className="underline underline-offset-4 hover:text-primary">
+              Sign up
+            </Link>
           </div>
         </form>
       </CardContent>
