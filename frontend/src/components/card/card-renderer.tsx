@@ -50,9 +50,7 @@ export function RenderCard({ card, className }: CardComponentProps<CardType>): J
         const multipleChoiceCard = card as MultipleChoiceCardType;
         if (!userAnswer) return false;
 
-        const correctAnswers = Object.keys(multipleChoiceCard.options).filter(
-          (key) => multipleChoiceCard.options[key]
-        );
+        const correctAnswers = Object.keys(multipleChoiceCard.options).filter((key) => multipleChoiceCard.options[key]);
 
         // Check if it's single or multiple choice
         if (correctAnswers.length === 1) {
@@ -130,57 +128,40 @@ export function RenderCard({ card, className }: CardComponentProps<CardType>): J
       <FrontBackCard
         card={card as FrontBackCardType}
         className={cn(
-          className,
           // Counteract padding for rulers
-          "[&>hr]:-mx-10 [&>hr]:w-auto"
+          '[&>hr]:-mx-10 [&>hr]:w-auto'
         )}
         onAnswerChange={setUserAnswer}
       />
     ))
-    .with({ type: 'blanks' }, () => (
-      <FillBlanksCard
-        card={card as FillBlanksCardType}
-        className={className}
-        onAnswerChange={setUserAnswer}
-      />
-    ))
+    .with({ type: 'blanks' }, () => <FillBlanksCard card={card as FillBlanksCardType} onAnswerChange={setUserAnswer} />)
     .with({ type: 'multiple_choice' }, () => (
-      <MultipleChoiceCard
-        card={card as MultipleChoiceCardType}
-        className={className}
-        onAnswerChange={setUserAnswer}
-      />
+      <MultipleChoiceCard card={card as MultipleChoiceCardType} onAnswerChange={setUserAnswer} />
     ))
-    .with({ type: 'ordered' }, () => (
-      <OrderedCard
-        card={card as OrderedCardType}
-        className={className}
-        onAnswerChange={setUserAnswer}
-      />
-    ))
+    .with({ type: 'ordered' }, () => <OrderedCard card={card as OrderedCardType} onAnswerChange={setUserAnswer} />)
     .exhaustive();
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-between px-4 sm:px-6 lg:px-8 pb-8">
-      <div className="flex flex-1 items-center justify-center w-full">
+    <div className={cn('flex flex-1 flex-col items-center justify-between px-4 pb-8 sm:px-6 lg:px-8', className)}>
+      <div className="flex w-full flex-1 items-center justify-center">
         <Card className="w-full max-w-sm -translate-y-30 transform px-10 py-5 text-xl sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
           {cardComponent}
         </Card>
       </div>
 
-      <div className="flex justify-center w-full">
+      <div className="flex w-full justify-center">
         <Button
           onClick={handleButtonClick}
           className={cn(
-            "min-w-[120px] transition-all duration-300",
-            feedbackState === 'correct' && "!bg-green-500/20 !border-green-500 !border-1 !text-green-500",
-            feedbackState === 'incorrect' && "!bg-red-500/20 !border-red-500 !border-1 !text-red-500"
+            'min-w-[120px] transition-all duration-300',
+            feedbackState === 'correct' && '!border-1 !border-green-500 !bg-green-500/20 !text-green-500',
+            feedbackState === 'incorrect' && '!border-1 !border-red-500 !bg-red-500/20 !text-red-500'
           )}
-          variant={isVerified ? "default" : "outline"}
+          variant={isVerified ? 'default' : 'outline'}
         >
           <span
             key={`${feedbackState}-${isVerified}`}
-            className="inline-flex items-center justify-center animate-in fade-in duration-200"
+            className="animate-in fade-in inline-flex items-center justify-center duration-200"
           >
             {feedbackState === 'correct' ? (
               <Check size={5} />
@@ -201,26 +182,26 @@ export function RenderCard({ card, className }: CardComponentProps<CardType>): J
 /**
  * Renders a non-interactive card thumbnail.
  */
-export function RenderCardThumbnail({ card, className, deckId }: CardRendererProps<CardType>): JSX.Element {
+export function RenderCardThumbnail({
+  card,
+  className,
+  deckId,
+  clickable = true,
+}: CardRendererProps<CardType> & { clickable?: boolean }): JSX.Element {
   const cardComponent = match(card)
     .with({ type: 'front_back' }, () => (
-      <FrontBackCardThumbnail card={card as FrontBackCardType} className={cn(
-          className,
-          // TODO: Counteract padding for rulers
-        )}
-      />
+      // TODO: Counteract padding for rulers
+      <FrontBackCardThumbnail card={card as FrontBackCardType} />
     ))
-    .with({ type: 'blanks' }, () => <FillBlanksCardThumbnail card={card as FillBlanksCardType} className={className} />)
-    .with({ type: 'multiple_choice' }, () => (
-      <MultipleChoiceCardThumbnail card={card as MultipleChoiceCardType} className={className} />
-    ))
-    .with({ type: 'ordered' }, () => <OrderedCardThumbnail card={card as OrderedCardType} className={className} />)
+    .with({ type: 'blanks' }, () => <FillBlanksCardThumbnail card={card as FillBlanksCardType} />)
+    .with({ type: 'multiple_choice' }, () => <MultipleChoiceCardThumbnail card={card as MultipleChoiceCardType} />)
+    .with({ type: 'ordered' }, () => <OrderedCardThumbnail card={card as OrderedCardType} />)
     .exhaustive();
 
   const tags = [card.type];
 
   return (
-    <CardThumbnail card={card} deckId={deckId} tags={tags}>
+    <CardThumbnail card={card} deckId={deckId} tags={tags} className={className} clickable={clickable}>
       {cardComponent}
     </CardThumbnail>
   );
