@@ -99,6 +99,11 @@ func Route(c *gin.Engine, services *services.Services) {
 			cardRoute := deckRoute.Group("/:deckID/cards")
 			{
 				cardRoute.GET(
+					"/due",
+					middleware.FirebaseAuthMiddleware(services.Auth),
+					decks.GetDueCardsInDeck(services.Decks),
+				)
+				cardRoute.GET(
 					"/",
 					middleware.FirebaseAuthMiddleware(services.Auth),
 					decks.GetCardsInDeck(services.Decks),

@@ -6,8 +6,8 @@ import (
 	"memora/internal/errors"
 	"memora/internal/models"
 	"memora/internal/services"
+	"memora/internal/utils"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -395,11 +395,10 @@ func DeleteCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 func GetDueCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
-		userID := c.Param("userID")
 		limit := c.DefaultQuery("limit", "20")
 		cursor := c.DefaultQuery("cursor", "")
 
-		limitInt, err := strconv.Atoi(limit)
+		userID, err := utils.GetUID(c)
 		if errors.HandleError(c, err) {
 			return
 		}
@@ -408,7 +407,7 @@ func GetDueCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			c.Request.Context(),
 			deckID,
 			userID,
-			limitInt,
+			limit,
 			cursor,
 		)
 		if errors.HandleError(c, err) {

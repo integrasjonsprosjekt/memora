@@ -8,6 +8,7 @@ import (
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
+	"strconv"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -279,10 +280,14 @@ func (s *CardService) UpdateCardProgress(
 func (s *CardService) GetDueCardsInDeck(
 	ctx context.Context,
 	deckID, userID string,
-	limit int,
-	cursor string,
+	limit, cursor string,
 ) ([]models.Card, string, bool, error) {
-	docs, nextCursor, hasMore, err := s.repo.GetDueCardsInDeck(ctx, deckID, userID, limit, cursor)
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		return nil, "", false, err
+	}
+
+	docs, nextCursor, hasMore, err := s.repo.GetDueCardsInDeck(ctx, deckID, userID, limitInt, cursor)
 	if err != nil {
 		return nil, "", false, err
 	}
