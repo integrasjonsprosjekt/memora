@@ -1,31 +1,13 @@
 'use client';
 
-import { JSX, useState, useEffect, useRef } from 'react';
+import { JSX, useState } from 'react';
 import { FillBlanksCard as FillBlanksCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { Input } from '@/components/ui/input';
 
-export function FillBlanksCardInteractive({
-  card,
-  className,
-  onAnswerChange,
-}: CardComponentProps<FillBlanksCardType>): JSX.Element {
+export function FillBlanksCardInteractive({ card, className }: CardComponentProps<FillBlanksCardType>): JSX.Element {
   const parts = card.question.split('{}');
   const [userAnswers, setUserAnswers] = useState<string[]>(new Array(card.answers.length).fill(''));
-
-  // Store the latest callback in a ref to avoid it being a dependency
-  const onAnswerChangeRef = useRef(onAnswerChange);
-
-  useEffect(() => {
-    onAnswerChangeRef.current = onAnswerChange;
-  }, [onAnswerChange]);
-
-  useEffect(() => {
-    // Notify parent of answer changes
-    if (onAnswerChangeRef.current) {
-      onAnswerChangeRef.current(userAnswers);
-    }
-  }, [userAnswers]);
 
   const handleInputChange = (index: number, value: string) => {
     const newAnswers = [...userAnswers];

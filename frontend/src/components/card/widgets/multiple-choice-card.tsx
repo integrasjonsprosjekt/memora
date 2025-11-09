@@ -6,12 +6,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { MultipleChoiceCardInteractive } from './multiple-choice-card-interactive';
 
-export function MultipleChoiceCard({
-  card,
-  className,
-  onAnswerChange,
-}: CardComponentProps<MultipleChoiceCardType>): JSX.Element {
-  return <MultipleChoiceCardInteractive card={card} className={className} onAnswerChange={onAnswerChange} />;
+export function MultipleChoiceCard({ card, className }: CardComponentProps<MultipleChoiceCardType>): JSX.Element {
+  return <MultipleChoiceCardInteractive card={card} className={className} />;
 }
 
 export function MultipleChoiceCardThumbnail({

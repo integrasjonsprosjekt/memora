@@ -15,7 +15,7 @@ export function AddCardButton({ deckId, onSuccess }: AddCardButtonProps) {
   return (
     <>
       <Button
-        className="text-foreground h-[125px] w-full rounded-2xl border border-dashed border-[var(--border)] bg-transparent"
+        className="text-foreground h-[125px] w-full cursor-pointer rounded-2xl border border-dashed border-[var(--border)] bg-transparent"
         onClick={() => setOpen(true)}
       >
         Add card

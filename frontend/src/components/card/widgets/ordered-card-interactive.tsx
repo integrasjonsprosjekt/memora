@@ -6,21 +6,10 @@ import { CardComponentProps } from '../types';
 import { GripVertical } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function OrderedCardInteractive({
-  card,
-  className,
-  onAnswerChange,
-}: CardComponentProps<OrderedCardType>): JSX.Element {
+export function OrderedCardInteractive({ card, className }: CardComponentProps<OrderedCardType>): JSX.Element {
   const [items, setItems] = useState<string[] | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const hasShuffled = useRef(false);
-
-  // Store the latest callback in a ref to avoid it being a dependency
-  const onAnswerChangeRef = useRef(onAnswerChange);
-
-  useEffect(() => {
-    onAnswerChangeRef.current = onAnswerChange;
-  }, [onAnswerChange]);
 
   useEffect(() => {
     // Shuffle on mount to avoid hydration mismatch
@@ -65,13 +54,6 @@ export function OrderedCardInteractive({
 
     setItems(newItems);
   };
-
-  useEffect(() => {
-    // Notify parent of item order changes
-    if (onAnswerChangeRef.current && items) {
-      onAnswerChangeRef.current(items);
-    }
-  }, [items]);
 
   const handleDragEnd = () => {
     setDraggedItem(null);
