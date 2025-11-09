@@ -124,6 +124,7 @@ func GetCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Router /api/v1/decks [post]
 func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var err error
 		var content models.CreateDeck
 		content.SharedEmails = []string{}
 
@@ -134,9 +135,17 @@ func CreateDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
-		content.OwnerID = c.GetString("uid")
+		content.OwnerID, err = utils.GetUID(c)
+		if errors.HandleError(c, err) {
+			return
+		}
 
-		id, err := deckRepo.RegisterNewDeck(c.Request.Context(), content)
+		ownerEmail, err := utils.GetEmail(c)
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		id, err := deckRepo.RegisterNewDeck(c.Request.Context(), content, ownerEmail)
 		if errors.HandleError(c, err) {
 			return
 		}
@@ -325,12 +334,14 @@ func UpdateCard(deckRepo *services.DeckService) gin.HandlerFunc {
 func DeleteDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
-		uid := c.GetString("uid")
-		email := c.GetString("email")
+		uid, err := utils.GetUID(c)
+		if errors.HandleError(c, err) {
+			return
+		}
 
-		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+		canAccess, err := deckRepo.UserOwnsDeck(
 			c.Request.Context(),
-			deckID, uid, email,
+			deckID, uid,
 		)
 
 		if !canAccess || err != nil {
@@ -338,7 +349,9 @@ func DeleteDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
-		err = deckRepo.DeleteDeck(c.Request.Context(), deckID)
+		ownerEmail, err := utils.GetEmail(c)
+
+		err = deckRepo.DeleteDeck(c.Request.Context(), deckID, ownerEmail)
 		if errors.HandleError(c, err) {
 			return
 		}

@@ -56,5 +56,9 @@ func DeckKey(deckID string) string {
 }
 
 func DeckCardKey(deckID, cardID string) string {
-    return DeckKeyPrefix + ":" + deckID + ":" + CardKeyPrefix + ":" + cardID
+	return DeckKeyPrefix + ":" + deckID + ":" + CardKeyPrefix + ":" + cardID
+}
+
+func UserEmailDecksKey(email string) string {
+	return "user:email:" + email + ":decks"
 }
