@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -48,6 +49,18 @@ func (s *CardService) GetCardInDeck(
 	ctx context.Context,
 	deckID, cardID string,
 ) (models.Card, error) {
+	// Check if the card is cached
+	cacheKey := utils.DeckCardKey(deckID, cardID)
+	cachedCard, err := utils.GetDataFromRedis[json.RawMessage](cacheKey, s.rdb, ctx)
+	if err == nil {
+		card, err := GetCardStruct(cachedCard, fmt.Errorf("internal server error"))
+		if err != nil {
+			return nil, err
+		}
+
+		return card, nil
+	}
+
 	doc, err := s.repo.GetCardInDeck(ctx, deckID, cardID)
 	if err != nil {
 		return nil, err
@@ -67,6 +80,15 @@ func (s *CardService) GetCardInDeck(
 
 	card.SetID(cardID)
 
+	// Cache the card for future requests
+	go func() {
+		// Create new context with timeout for the background operation
+		cacheCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		utils.SetDataToRedis(cacheKey, card, s.rdb, cacheCtx, 10*time.Minute)
+	}()
+
 	return card, nil
 }
 
@@ -85,11 +107,8 @@ func (s *CardService) GetCardsInDeck(
 		cacheKey = fmt.Sprintf("%s:cursor:%s", cacheKey, cursor)
 	}
 
-	log.Println("Cache key ", cacheKey)
-
 	cached, err := utils.GetDataFromRedis[models.CacheResult](cacheKey, s.rdb, ctx)
 	if err == nil {
-		log.Println("cache hit for cards in deck")
 		var cards []models.Card
 		for _, raw := range cached.CardsJSON {
 			card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
@@ -129,13 +148,20 @@ func (s *CardService) GetCardsInDeck(
 		cards = append(cards, card)
 	}
 
-	utils.SetDataToRedis(
-		cacheKey,
-		models.CacheResult{CardsJSON: cardsJSON, HasMore: hasMore},
-		s.rdb,
-		ctx,
-		10*time.Minute,
-	)
+	go func() {
+		// Create new context with timeout for the background operation
+		cacheCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		utils.SetDataToRedis(
+			cacheKey,
+			models.CacheResult{CardsJSON: cardsJSON, HasMore: hasMore},
+			s.rdb,
+			cacheCtx,
+			10*time.Minute,
+		)
+	}()
+
 	return cards, hasMore, nil
 }
 
@@ -156,12 +182,12 @@ func (s *CardService) CreateCard(
 		return "", errors.ErrInvalidCard
 	}
 
-	id ,err :=  s.repo.CreateCard(ctx, card, deckID)
+	id, err := s.repo.CreateCard(ctx, card, deckID)
 	if err != nil {
 		return "", err
 	}
 
-	
+	s.invalidateDeckCardsCache(deckID, "")
 
 	return id, nil
 }
@@ -204,7 +230,14 @@ func (s CardService) UpdateCard(
 	}
 
 	// Perform the update in the repository
-	return s.repo.UpdateCard(ctx, update, deckID, cardID)
+	err = s.repo.UpdateCard(ctx, update, deckID, cardID)
+	if err != nil {
+		return err
+	}
+
+	s.invalidateDeckCardsCache(deckID, cardID)
+
+	return nil
 }
 
 // DeleteCard deletes a card by its ID.
@@ -213,7 +246,14 @@ func (s *CardService) DeleteCard(
 	ctx context.Context,
 	deckID, cardID string,
 ) error {
-	return s.repo.DeleteCard(ctx, deckID, cardID)
+	err := s.repo.DeleteCard(ctx, deckID, cardID)
+	if err != nil {
+		return err
+	}
+
+	s.invalidateDeckCardsCache(deckID, cardID)
+
+	return nil
 }
 
 // GetCardStruct takes a byte array and an error to return if the type is not found.
@@ -358,4 +398,37 @@ func (s *CardService) GetDueCardsInDeck(
 	}
 
 	return cards, nextCursor, hasMore, nil
+}
+
+func (s *CardService) invalidateDeckCardsCache(
+	deckID string,
+	cardID string,
+) {
+	var wg sync.WaitGroup
+
+	bgCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		pattern := fmt.Sprintf("%s:cards:*", utils.DeckKey(deckID))
+		iter := s.rdb.Scan(bgCtx, 0, pattern, 0).Iterator()
+		for iter.Next(bgCtx) {
+			utils.DeleteDataFromRedis(iter.Val(), s.rdb, bgCtx)
+		}
+		if err := iter.Err(); err != nil {
+			slog.Error("Error invalidating deck cards cache: ", slog.Any("error", err))
+		}
+	}()
+
+	if cardID != "" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			pattern := utils.DeckCardKey(deckID, cardID)
+			utils.DeleteDataFromRedis(pattern, s.rdb, bgCtx)
+		}()
+	}
+	wg.Wait()
 }
