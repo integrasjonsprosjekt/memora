@@ -1,6 +1,6 @@
 'use client';
 
-import { JSX, useState, useEffect } from 'react';
+import { JSX, useState, useEffect, useRef } from 'react';
 import { MultipleChoiceCard as MultipleChoiceCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,23 +21,30 @@ export function MultipleChoiceCardInteractive({
   );
   const [selectedRadio, setSelectedRadio] = useState<string>('');
 
+  // Store the latest callback in a ref to avoid it being a dependency
+  const onAnswerChangeRef = useRef(onAnswerChange);
+
+  useEffect(() => {
+    onAnswerChangeRef.current = onAnswerChange;
+  }, [onAnswerChange]);
+
   const handleCheckboxChange = (key: string, checked: boolean) => {
     setSelectedOptions((prev) => ({ ...prev, [key]: checked }));
   };
 
   useEffect(() => {
     // Notify parent of checkbox selection changes
-    if (onAnswerChange && isMultipleChoice) {
-      onAnswerChange(selectedOptions);
+    if (onAnswerChangeRef.current && isMultipleChoice) {
+      onAnswerChangeRef.current(selectedOptions);
     }
-  }, [selectedOptions, onAnswerChange, isMultipleChoice]);
+  }, [selectedOptions, isMultipleChoice]);
 
   useEffect(() => {
     // Notify parent of radio selection changes
-    if (onAnswerChange && selectedRadio) {
-      onAnswerChange(selectedRadio);
+    if (onAnswerChangeRef.current && selectedRadio) {
+      onAnswerChangeRef.current(selectedRadio);
     }
-  }, [selectedRadio, onAnswerChange]);
+  }, [selectedRadio]);
 
   return (
     <div className={className}>

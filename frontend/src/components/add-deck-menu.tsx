@@ -40,7 +40,7 @@ export function AddDeckMenu({ open, onOpenChange }: AddDeckMenuProps) {
       if (res.success) {
         form.reset();
         onOpenChange(false);
-        router.push(`/decks/${(res.data as { id: string }).id}`);
+        router.push(`/decks/${res.data.id}`);
         toast.success('Deck created', {
           duration: 1500,
         });
