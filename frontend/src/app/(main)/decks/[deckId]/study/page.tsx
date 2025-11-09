@@ -290,7 +290,7 @@ export default function Page({ params }: { params: Promise<{ deckId: string }> }
                     isCorrect === false && 'text-red-500'
                   )}
                 >
-                  {currentCard.type != 'front_back' ? (isCorrect ? 'Correct!' : 'Incorrect') : ''}
+                  {currentCard.type !== 'front_back' ? (isCorrect ? 'Correct!' : 'Incorrect') : ''}
                 </p>
                 <div className="flex gap-2">
                   <Button
