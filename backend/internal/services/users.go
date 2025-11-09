@@ -72,18 +72,30 @@ func (s *UserService) GetUser(
 // Returns a list of decks or an error if the operation fails.
 func (s *UserService) GetDecks(
 	ctx context.Context,
-	id string,
-	filter string,
+	id, filter, email string,
 ) (models.UserDecks, error) {
 	filterParsed, err := utils.ParseFilter(filter)
 	if err != nil {
 		return models.UserDecks{}, err
 	}
 
+	cacheKey := utils.UserEmailDecksKey(email)
+	cachedDecks, err := utils.GetDataFromRedis[models.UserDecks](cacheKey, s.rdb, ctx)
+	if err == nil {
+		log.Println("cache hit")
+		return cachedDecks, nil
+	}
+
 	decks, err := s.repo.GetDecks(ctx, id, filterParsed)
 	if err != nil {
 		return models.UserDecks{}, err
 	}
+
+	go func() {
+		bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		utils.SetDataToRedis(cacheKey, decks, s.rdb, bgCtx, 5*time.Minute)
+	}()
 
 	// Return the list of decks
 	return decks, nil

@@ -2,11 +2,13 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -59,11 +61,28 @@ func (s *DeckService) CheckIfUserCanAccessDeck(
 	return false, nil
 }
 
+func (s *DeckService) UserOwnsDeck(
+	ctx context.Context,
+	deckID, userID string,
+) (bool, error) {
+	deck, err := s.repo.GetOneDeck(ctx, deckID, []string{"owner_id"})
+	if err != nil {
+		return false, err
+	}
+
+	if deck.OwnerID == userID {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 // RegisterNewDeck creates a new deck from the provided data.
 // Validates the deck and returns its ID or an error if the operation fails.
 func (s *DeckService) RegisterNewDeck(
 	ctx context.Context,
 	deck models.CreateDeck,
+	ownerEmail string,
 ) (string, error) {
 	if err := s.validate.Struct(deck); err != nil {
 		return "", errors.ErrInvalidDeck
@@ -73,6 +92,8 @@ func (s *DeckService) RegisterNewDeck(
 	if err != nil {
 		return "", err
 	}
+
+	s.invalidateUserDecksCacheByEmail(ownerEmail)
 
 	return id, nil
 }
@@ -206,19 +227,44 @@ func (s *DeckService) UpdateEmailsInDeck(
 		return models.Deck{}, err
 	}
 
-	utils.DeleteDataFromRedis(utils.DeckKey(deckID), s.rdb, ctx)
+	s.invalidateUserDecksCacheByEmails(emails.Emails)
 
 	// Fetch and return the updated deck
 	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
 }
 
-// DeleteDeck deletes a deck by its ID.
-// Returns an error if the operation fails or the deck is not found.
 func (s *DeckService) DeleteDeck(
 	ctx context.Context,
-	id string,
+	id, ownerEmail string,
 ) error {
-	return s.repo.DeleteDeck(ctx, id)
+	deck := make(chan models.Deck, 1)
+
+	// Get deck to know owner and shared users
+	go func() {
+		defer close(deck)
+		d, err := s.repo.GetOneDeck(ctx, id, []string{"owner_id", "shared_emails"})
+		if err != nil {
+			return
+		}
+		deck <- d
+	}()
+
+	err := s.repo.DeleteDeck(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	d := <-deck
+
+	// Invalidate for owner
+	s.invalidateUserDecksCacheByEmail(ownerEmail)
+
+	// Invalidate for all shared users
+	s.invalidateUserDecksCacheByEmails(d.SharedEmails)
+
+	utils.DeleteDataFromRedis(utils.DeckKey(id), s.rdb, ctx)
+
+	return nil
 }
 
 // DeleteCardInDeck deletes a card from a deck by their IDs.
@@ -251,4 +297,27 @@ func (s *DeckService) GetDueCardsInDeck(
 	limit, cursor string,
 ) ([]models.Card, string, bool, error) {
 	return s.Cards.GetDueCardsInDeck(ctx, deckID, userID, limit, cursor)
+}
+
+func (s *DeckService) invalidateUserDecksCacheByEmail(email string) {
+	bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	pattern := fmt.Sprintf("user:email:%s:decks:*", email)
+	iter := s.rdb.Scan(bgCtx, 0, pattern, 0).Iterator()
+	for iter.Next(bgCtx) {
+		utils.DeleteDataFromRedis(iter.Val(), s.rdb, bgCtx)
+	}
+}
+
+func (s *DeckService) invalidateUserDecksCacheByEmails(emails []string) {
+	var wg sync.WaitGroup
+	for _, email := range emails {
+		wg.Add(1)
+		go func(e string) {
+			defer wg.Done()
+			s.invalidateUserDecksCacheByEmail(e)
+		}(email)
+	}
+	wg.Wait()
 }
