@@ -6,9 +6,9 @@ type CreateUser struct {
 }
 
 type User struct {
-	ID    string `json:"id"`
-	Name  string `json:"name" firestore:"name"`
-	Email string `json:"email" firestore:"email"`
+	ID    string `json:"id" redis:"id"`
+	Name  string `json:"name" firestore:"name" redis:"name"`
+	Email string `json:"email" firestore:"email" redis:"email"`
 }
 
 type PatchUser struct {

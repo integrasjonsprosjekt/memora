@@ -2,12 +2,15 @@ package services
 
 import (
 	"context"
+	"log"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
+	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/redis/go-redis/v9"
 )
 
 // Default filter for all fields, used when updating a user
@@ -16,17 +19,18 @@ var defaultFilterUsers = "email,name"
 // UserService provides methods for managing users.
 type UserService struct {
 	repo     firebase.UserRepository
+	rdb      *redis.Client
 	validate *validator.Validate
 }
 
 // NewUserService creates a new instance of UserService.
 func NewUserService(
-	repo firebase.UserRepository,
-	validate *validator.Validate,
+	deps *ServiceDeps,
 ) *UserService {
 	return &UserService{
-		repo:     repo,
-		validate: validate,
+		repo:     deps.UserRepo,
+		rdb:      deps.Redis,
+		validate: deps.Validate,
 	}
 }
 
@@ -37,15 +41,30 @@ func (s *UserService) GetUser(
 	ctx context.Context,
 	id, filter string,
 ) (models.User, error) {
+
+	// Check the cache first
+	cacheKey := utils.UserKey(id)
+
 	filterParsed, err := utils.ParseFilter(filter)
 	if err != nil {
 		return models.User{}, err
+	}
+
+	// Try to get the user from the cache
+	cachedUser, err := utils.GetDataFromRedis[models.User](cacheKey, s.rdb, ctx)
+	if err == nil {
+		log.Println("returning cahced data")
+		return cachedUser, nil
 	}
 
 	user, err := s.repo.GetUser(ctx, id, filterParsed)
 	if err != nil {
 		return models.User{}, err
 	}
+
+	// Store the user in the cache for future requests
+	utils.SetDataToRedis(cacheKey, user, s.rdb, ctx, 5*time.Minute)
+
 	return user, nil
 }
 

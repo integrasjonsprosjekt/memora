@@ -12,10 +12,10 @@ type AuthService struct {
 }
 
 func NewAuthService(
-	repo firebase.FirebaseAuth,
+	deps *ServiceDeps,
 ) *AuthService {
 	return &AuthService{
-		repo: repo,
+		repo: deps.AuthRepo,
 	}
 }
 

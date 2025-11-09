@@ -23,7 +23,6 @@ type UserRepository interface {
 	GetUser(ctx context.Context, id string, fields []string) (models.User, error)
 
 	// GetDecks fetches all decks for a user.
-	// GetDecks fetches all decks for a user.
 	// Error on failure or if the user ID is invalid.
 	// Returns the decks ID and title on success.
 	GetDecks(ctx context.Context, id string, fields []string) (models.UserDecks, error)
