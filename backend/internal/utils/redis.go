@@ -55,6 +55,6 @@ func DeckKey(deckID string) string {
 	return DeckKeyPrefix + ":" + deckID
 }
 
-func CardKey(cardID string) string {
-	return CardKeyPrefix + ":" + cardID
+func DeckCardKey(deckID, cardID string) string {
+    return DeckKeyPrefix + ":" + deckID + ":" + CardKeyPrefix + ":" + cardID
 }
