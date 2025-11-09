@@ -26,14 +26,16 @@ export function MultipleChoiceCardInteractive({
   };
 
   useEffect(() => {
-    if (onAnswerChange) {
-      if (isMultipleChoice) {
-        onAnswerChange(selectedOptions);
-      } else {
-        onAnswerChange(selectedRadio);
-      }
+    if (onAnswerChange && isMultipleChoice) {
+      onAnswerChange(selectedOptions);
     }
-  }, [selectedOptions, selectedRadio, isMultipleChoice, onAnswerChange]);
+  }, [selectedOptions, isMultipleChoice, onAnswerChange]);
+
+  useEffect(() => {
+    if (onAnswerChange && !isMultipleChoice) {
+      onAnswerChange(selectedRadio);
+    }
+  }, [selectedRadio, isMultipleChoice, onAnswerChange]);
 
   return (
     <div className={className}>
