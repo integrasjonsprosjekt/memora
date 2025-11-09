@@ -2,24 +2,15 @@
 
 import dynamic from 'next/dynamic';
 import { ReactNode } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const spinner = (
-  <div className="flex flex-row space-y-3 space-x-3">
-    <Skeleton className="h-[145px] w-[250px] rounded-xl" />
-    <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-    <Skeleton className="h-[130px] w-[250px] rounded-xl" />
-  </div>
-);
 
 // We have to dynamically import react-responsive-masonry to avoid hydration errors,
 // This will emit a loading indicator while the component is being loaded.
 const ResponsiveMasonry = dynamic(() => import('react-responsive-masonry').then((mod) => mod.ResponsiveMasonry), {
-  loading: () => spinner,
+  loading: () => <></>,
   ssr: false,
 });
 const Masonry = dynamic(() => import('react-responsive-masonry').then((mod) => mod.default), {
-  loading: () => spinner,
+  loading: () => <></>,
   ssr: false,
 });
 
