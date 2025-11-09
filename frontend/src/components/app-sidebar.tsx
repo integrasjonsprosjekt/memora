@@ -57,7 +57,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Link href="/">
                 <OiiaiTrigger targetId="logo">
                   <div id="logo" className="flex cursor-pointer flex-row">
-                    <div className="bg-sidebar-accent border-border text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg border-1 text-xs wrap-anywhere">
+                    <div className="bg-sidebar-accent border-border text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg border text-xs wrap-anywhere">
                       <Image src="/logo.svg" width={250} height={250} alt="Memora" />
                     </div>
                     <div className="grid flex-1 pl-2 text-left text-sm leading-tight">

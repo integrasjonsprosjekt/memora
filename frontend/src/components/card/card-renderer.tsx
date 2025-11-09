@@ -154,8 +154,8 @@ export function RenderCard({ card, className }: CardComponentProps<CardType>): J
           onClick={handleButtonClick}
           className={cn(
             'min-w-[120px] transition-all duration-300',
-            feedbackState === 'correct' && '!border-1 !border-green-500 !bg-green-500/20 !text-green-500',
-            feedbackState === 'incorrect' && '!border-1 !border-red-500 !bg-red-500/20 !text-red-500'
+            feedbackState === 'correct' && '!border !border-green-500 !bg-green-500/20 !text-green-500',
+            feedbackState === 'incorrect' && '!border !border-red-500 !bg-red-500/20 !text-red-500'
           )}
           variant={isVerified ? 'default' : 'outline'}
         >
