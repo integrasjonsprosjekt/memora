@@ -230,7 +230,7 @@ func (s *DeckService) UpdateCardProgress(
 
 func (s *DeckService) GetDueCardsInDeck(
 	ctx context.Context,
-	deckID, userID string, 
+	deckID, userID string,
 	limit, cursor string,
 ) ([]models.Card, string, bool, error) {
 	return s.Cards.GetDueCardsInDeck(ctx, deckID, userID, limit, cursor)
