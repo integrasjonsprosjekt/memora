@@ -97,7 +97,7 @@ export function OrderedCardInteractive({
             {/* Container with background */}
             <div className="relative flex-1">
               {/* Static background */}
-              <div className="border-green bg-accent/40 pointer-events-none absolute inset-0 rounded-xl border-1 border-dashed"></div>
+              <div className="border-green bg-accent/40 pointer-events-none absolute inset-0 rounded-xl border border-dashed"></div>
 
               {/* Draggable item */}
               <div

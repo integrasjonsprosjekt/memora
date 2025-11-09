@@ -17,7 +17,7 @@ export default async function RootLayout({
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />
-      <SidebarInset className="border-border flex flex-col border-1 px-4">
+      <SidebarInset className="border-border flex flex-col border px-4">
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
