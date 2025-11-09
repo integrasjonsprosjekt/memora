@@ -22,7 +22,12 @@ import { Card } from '@/components/ui/card';
 /**
  * Renders an interactive card.
  */
-export function RenderCard({ card, className }: CardComponentProps<CardType>): JSX.Element {
+export function RenderCard({
+  card,
+  className,
+  onAnswerChange,
+  flipTrigger,
+}: CardComponentProps<CardType> & { flipTrigger?: number }): JSX.Element {
   const cardComponent = match(card)
     .with({ type: 'front_back' }, () => (
       <FrontBackCard
@@ -31,11 +36,17 @@ export function RenderCard({ card, className }: CardComponentProps<CardType>): J
           // Counteract padding for rulers
           '[&>hr]:-mx-10 [&>hr]:w-auto'
         )}
+        onAnswerChange={onAnswerChange}
+        flipTrigger={flipTrigger}
       />
     ))
-    .with({ type: 'blanks' }, () => <FillBlanksCard card={card as FillBlanksCardType} />)
-    .with({ type: 'multiple_choice' }, () => <MultipleChoiceCard card={card as MultipleChoiceCardType} />)
-    .with({ type: 'ordered' }, () => <OrderedCard card={card as OrderedCardType} />)
+    .with({ type: 'blanks' }, () => (
+      <FillBlanksCard card={card as FillBlanksCardType} onAnswerChange={onAnswerChange} />
+    ))
+    .with({ type: 'multiple_choice' }, () => (
+      <MultipleChoiceCard card={card as MultipleChoiceCardType} onAnswerChange={onAnswerChange} />
+    ))
+    .with({ type: 'ordered' }, () => <OrderedCard card={card as OrderedCardType} onAnswerChange={onAnswerChange} />)
     .exhaustive();
 
   return <Card className={cn('w-full px-10 py-5', className)}>{cardComponent}</Card>;

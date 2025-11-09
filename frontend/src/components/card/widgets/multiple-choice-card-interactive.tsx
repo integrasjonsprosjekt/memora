@@ -1,6 +1,6 @@
 'use client';
 
-import { JSX, useState } from 'react';
+import { JSX, useState, useEffect } from 'react';
 import { MultipleChoiceCard as MultipleChoiceCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 export function MultipleChoiceCardInteractive({
   card,
   className,
+  onAnswerChange,
 }: CardComponentProps<MultipleChoiceCardType>): JSX.Element {
   const keys = Object.keys(card.options);
   const correctAnswers = keys.filter((key) => card.options[key]);
@@ -23,6 +24,16 @@ export function MultipleChoiceCardInteractive({
   const handleCheckboxChange = (key: string, checked: boolean) => {
     setSelectedOptions((prev) => ({ ...prev, [key]: checked }));
   };
+
+  useEffect(() => {
+    if (onAnswerChange) {
+      if (isMultipleChoice) {
+        onAnswerChange(selectedOptions);
+      } else {
+        onAnswerChange(selectedRadio);
+      }
+    }
+  }, [selectedOptions, selectedRadio, isMultipleChoice, onAnswerChange]);
 
   return (
     <div className={className}>
