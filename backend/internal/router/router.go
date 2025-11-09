@@ -128,6 +128,19 @@ func Route(c *gin.Engine, services *services.Services) {
 					middleware.FirebaseAuthMiddleware(services.Auth),
 					decks.DeleteCardInDeck(services.Decks),
 				)
+				progress := cardRoute.Group("/:cardID/progress")
+				{
+					progress.GET(
+						"/",
+						middleware.FirebaseAuthMiddleware(services.Auth),
+						decks.GetProgress(services.Decks),
+					)
+					progress.PUT(
+						"/",
+						middleware.FirebaseAuthMiddleware(services.Auth),
+						decks.UpdateProgress(services.Decks),
+					)
+				}
 			}
 		}
 	}

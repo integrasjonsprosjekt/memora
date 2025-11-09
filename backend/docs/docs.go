@@ -122,7 +122,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Deck info",
-                        "name": "user",
+                        "name": "deck",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -224,7 +224,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/decks/{deckID}/cards/progress/{userID}/due": {
+        "/api/v1/decks/{deckID}/cards/due": {
             "get": {
                 "description": "Retrieves due cards from a specified deck for a user in Firestore, prioritizing unstudied cards",
                 "consumes": [
@@ -242,13 +242,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Deck ID",
                         "name": "deckID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "userID",
                         "in": "path",
                         "required": true
                     },
@@ -395,7 +388,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/decks/{deckID}/cards/{cardID}/progress/{userID}": {
+        "/api/v1/decks/{deckID}/cards/{cardID}/progress": {
             "get": {
                 "description": "Retrieves progress information of a card for a user from Firestore",
                 "consumes": [
@@ -420,13 +413,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Card ID",
                         "name": "cardID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "userID",
                         "in": "path",
                         "required": true
                     }
@@ -468,13 +454,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "userID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
                         "description": "Progress info",
                         "name": "progress",
                         "in": "body",
@@ -507,7 +486,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Deck info",
-                        "name": "user",
+                        "name": "deck",
                         "in": "body",
                         "required": true,
                         "schema": {
