@@ -5,6 +5,7 @@ import { Card } from '@/types/card';
 import { Deck, deckDefaults } from '@/types/deck';
 import { AddCardButton } from '@/components/add-card-button';
 import { DeckLayout } from '@/components/deck-layout';
+import { BookDashed } from 'lucide-react';
 import { withDefaults } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth';
@@ -12,6 +13,8 @@ import { fetchApi } from '@/lib/api/config';
 import { useEffect, useState, useCallback } from 'react';
 import { use } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 export default function DeckPage({ params }: { params: Promise<{ deckId: string }> }) {
   const { deckId } = use(params);
@@ -20,6 +23,7 @@ export default function DeckPage({ params }: { params: Promise<{ deckId: string 
   const [cards, setCards] = useState<Card[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const router = useRouter();
 
   const fetchDeck = useCallback(
     async (showLoading = false) => {
@@ -93,11 +97,17 @@ export default function DeckPage({ params }: { params: Promise<{ deckId: string 
 
   return (
     <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
-      <header className="mb-8 lg:mb-12">
-        <h1 className="text-2xl font-bold sm:text-3xl">{deck.title}</h1>
-        <p className="mt-1 text-lg text-[var(--muted-foreground)]">
-          {cardsList.length} card{cardsList.length !== 1 ? 's' : ''}
-        </p>
+      <header className="mb-8 flex items-end justify-between lg:mb-12">
+        <div>
+          <h1 className="text-2xl font-bold sm:text-3xl">{deck.title}</h1>
+          <p className="mt-1 text-lg text-[var(--muted-foreground)]">
+            {cardsList.length} card{cardsList.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <Button variant="outline" className="cursor-pointer" onClick={() => router.push(`/decks/${deckId}/study`)}>
+          <BookDashed />
+          Study
+        </Button>
       </header>
 
       <DeckLayout>
