@@ -284,7 +284,7 @@ func (s *CardService) GetDueCardsInDeck(
 ) ([]models.Card, string, bool, error) {
 	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
-		return nil, "", false, err
+		return nil, "", false, errors.ErrInvalidUser
 	}
 
 	docs, nextCursor, hasMore, err := s.repo.GetDueCardsInDeck(
