@@ -190,7 +190,7 @@ func CreateCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Tags Decks
 // @Accept json
 // @Produce json
-// @Param user body models.UpdateDeck true "Deck info"
+// @Param deck body models.UpdateDeck true "Deck info"
 // @Success 200 {object} models.Deck
 // @Router /api/v1/decks/{deckID} [patch]
 func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
@@ -231,7 +231,7 @@ func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Tags Decks
 // @Accept json
 // @Produce json
-// @Param user body models.UpdateDeckEmails true "Deck info"
+// @Param deck body models.UpdateDeckEmails true "Deck info"
 // @Success 200 {object} models.DeckResponse
 // @Router /api/v1/decks/{deckID}/emails [patch]
 func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
@@ -387,11 +387,10 @@ func DeleteCardInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param deckID path string true "Deck ID"
-// @Param userID path string true "User ID"
 // @Param limit query string false "Number of cards to retrieve" default(20)
 // @Param cursor query string false "Cursor for pagination"
 // @Success 200 {object} models.AnyCardWithPaging
-// @Router /api/v1/decks/{deckID}/cards/progress/{userID}/due [get]
+// @Router /api/v1/decks/{deckID}/cards/due [get]
 func GetDueCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
@@ -428,15 +427,17 @@ func GetDueCardsInDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Produce json
 // @Param deckID path string true "Deck ID"
 // @Param cardID path string true "Card ID"
-// @Param userID path string true "User ID"
 // @Success 200 {object} models.CardProgress
-// @Router /api/v1/decks/{deckID}/cards/{cardID}/progress/{userID} [get]
+// @Router /api/v1/decks/{deckID}/cards/{cardID}/progress [get]
 func GetProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
 		cardID := c.Param("cardID")
-		userID := c.Param("userID")
-
+		
+		userID, err := utils.GetUID(c)
+		if errors.HandleError(c, err) {
+			return
+		}
 		progress, err := deckRepo.GetCardProgress(c.Request.Context(), deckID, cardID, userID)
 		if errors.HandleError(c, err) {
 			return
@@ -453,15 +454,18 @@ func GetProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 // @Produce json
 // @Param deckID path string true "Deck ID"
 // @Param cardID path string true "Card ID"
-// @Param userID path string true "User ID"
 // @Param progress body models.CardRating true "Progress info"
 // @Success 202
-// @Router /api/v1/decks/{deckID}/cards/{cardID}/progress/{userID} [put]
+// @Router /api/v1/decks/{deckID}/cards/{cardID}/progress [put]
 func UpdateProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
 		cardID := c.Param("cardID")
-		userID := c.Param("userID")
+
+		userID, err := utils.GetUID(c)
+		if errors.HandleError(c, err) {
+			return
+		}
 
 		var body models.CardRating
 
