@@ -20,7 +20,7 @@ func init() {
 // Main entry point of the application
 func main() {
 	// Initialize Firebase client
-	client, app, err := firebase.Init()
+	client, app, rbd, err := firebase.Init()
 	if err != nil {
 		log.Panic(err)
 	}
@@ -34,7 +34,7 @@ func main() {
 	validate := validator.New()
 
 	// Initialize repositories and services
-	repos := firebase.NewRepositories(client, auth)
+	repos := firebase.NewRepositories(client, auth, rbd)
 	services := services.NewServices(repos, validate)
 
 	// Set up and run the router

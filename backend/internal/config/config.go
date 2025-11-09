@@ -2,7 +2,6 @@ package config
 
 import (
 	"log"
-	"memora/internal/redis"
 	"os"
 	"time"
 
