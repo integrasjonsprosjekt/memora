@@ -7,8 +7,10 @@ import (
 	"memora/internal/models"
 	"memora/internal/utils"
 	"slices"
+	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/redis/go-redis/v9"
 )
 
 // Default filter for all fields, used when updating a deck
@@ -18,7 +20,7 @@ const defaultFilterDecks = "title,owner_id,shared_emails"
 type DeckService struct {
 	repo     firebase.DeckRepository
 	validate *validator.Validate
-	
+	rdb      *redis.Client
 	Cards    *CardService
 }
 
@@ -29,6 +31,7 @@ func NewDeckService(
 	return &DeckService{
 		repo:     deps.DeckRepo,
 		validate: deps.Validate,
+		rdb:      deps.Redis,
 		Cards:    NewCardService(deps),
 	}
 }
@@ -87,11 +90,20 @@ func (s *DeckService) GetOneDeck(
 		return models.Deck{}, err
 	}
 
+	cacheKey := utils.DeckKey(id)
+	cachedDeck, err := utils.GetDataFromRedis[models.Deck](cacheKey, s.rdb, ctx)
+	if err == nil {
+		return cachedDeck, nil
+	}
+
 	// Fetch the deck data from the repository
 	deck, err := s.repo.GetOneDeck(ctx, id, filterParsed)
 	if err != nil {
 		return models.Deck{}, err
 	}
+
+	// Store the deck in the cache for future requests
+	utils.SetDataToRedis(cacheKey, deck, s.rdb, ctx, 5*time.Minute)
 
 	return deck, nil
 }
@@ -140,6 +152,8 @@ func (s *DeckService) UpdateDeck(
 		return models.Deck{}, err
 	}
 
+	utils.DeleteDataFromRedis(utils.DeckKey(deckID), s.rdb, ctx)
+
 	// Perform the update in the repository
 	if err := s.repo.UpdateDeck(ctx, updateMap, deckID); err != nil {
 		return models.Deck{}, err
@@ -159,6 +173,8 @@ func (s *DeckService) UpdateCardInDeck(
 	if err != nil {
 		return nil, err
 	}
+
+	utils.DeleteDataFromRedis(utils.DeckKey(deckID), s.rdb, ctx)
 
 	return s.GetCardInDeck(ctx, deckID, cardID)
 }
@@ -189,6 +205,8 @@ func (s *DeckService) UpdateEmailsInDeck(
 	if err != nil {
 		return models.Deck{}, err
 	}
+
+	utils.DeleteDataFromRedis(utils.DeckKey(deckID), s.rdb, ctx)
 
 	// Fetch and return the updated deck
 	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
