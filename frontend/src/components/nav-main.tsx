@@ -144,7 +144,15 @@ function DeckGroup({
       </SidebarGroupLabel>
       <SidebarMenu>
         {filteredDecks.map((deck) => {
-          return <DeckItem key={deck.id} deck={deck} pathname={pathname} isDeckMainActive={isDeckMainActive} />;
+          return (
+            <DeckItem
+              key={deck.id}
+              deck={deck}
+              pathname={pathname}
+              isDeckMainActive={isDeckMainActive}
+              isShared={filterType === 'shared'}
+            />
+          );
         })}
       </SidebarMenu>
     </SidebarGroup>
@@ -156,10 +164,12 @@ function DeckItem({
   deck,
   pathname,
   isDeckMainActive,
+  isShared = false,
 }: {
   deck: Pick<Deck, 'id' | 'title'>;
   pathname: string | null;
   isDeckMainActive: (deckId: string) => boolean;
+  isShared?: boolean;
 }) {
   const router = useRouter();
   const { user } = useAuth();
@@ -283,11 +293,15 @@ function DeckItem({
             <Share2 />
             Share
           </ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem onClick={() => setDeleteDialogOpen(true)} variant="destructive">
-            <Trash2 />
-            Delete
-          </ContextMenuItem>
+          {!isShared && (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuItem onClick={() => setDeleteDialogOpen(true)} variant="destructive">
+                <Trash2 />
+                Delete
+              </ContextMenuItem>
+            </>
+          )}
         </ContextMenuContent>
       </ContextMenu>
       <EditDeckMenu open={isEditing} onOpenChange={handleEditClose} deckId={deck.id} />
