@@ -433,7 +433,7 @@ func GetProgress(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		deckID := c.Param("deckID")
 		cardID := c.Param("cardID")
-		
+
 		userID, err := utils.GetUID(c)
 		if errors.HandleError(c, err) {
 			return

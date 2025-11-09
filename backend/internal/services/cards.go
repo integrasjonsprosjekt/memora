@@ -287,7 +287,13 @@ func (s *CardService) GetDueCardsInDeck(
 		return nil, "", false, err
 	}
 
-	docs, nextCursor, hasMore, err := s.repo.GetDueCardsInDeck(ctx, deckID, userID, limitInt, cursor)
+	docs, nextCursor, hasMore, err := s.repo.GetDueCardsInDeck(
+		ctx,
+		deckID,
+		userID,
+		limitInt,
+		cursor,
+	)
 	if err != nil {
 		return nil, "", false, err
 	}
