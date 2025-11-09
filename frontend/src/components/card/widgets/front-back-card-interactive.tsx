@@ -1,16 +1,33 @@
 'use client';
 
-import { JSX, useState } from 'react';
+import { JSX, useState, useEffect } from 'react';
 import { FrontBackCard as FrontBackCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { ClientMarkdownRenderer } from '@/components/markdown/client-markdown-renderer';
 import { cn } from '@/lib/utils';
 
-export function FrontBackCardInteractive({ card, className }: CardComponentProps<FrontBackCardType>): JSX.Element {
+export function FrontBackCardInteractive({
+  card,
+  className,
+  onAnswerChange,
+  flipTrigger,
+}: CardComponentProps<FrontBackCardType> & { flipTrigger?: number }): JSX.Element {
   const [isFlipped, setIsFlipped] = useState(false);
 
+  useEffect(() => {
+    if (flipTrigger && flipTrigger > 0) {
+      setIsFlipped(true);
+    }
+  }, [flipTrigger]);
+
+  useEffect(() => {
+    if (onAnswerChange) {
+      onAnswerChange(isFlipped);
+    }
+  }, [isFlipped, onAnswerChange]);
+
   return (
-    <div className={cn(className, 'cursor-pointer py-5')} onClick={() => setIsFlipped(!isFlipped)}>
+    <div className={cn(className, 'cursor-pointer py-5')} onClick={() => setIsFlipped(true)}>
       <div>
         <ClientMarkdownRenderer>{card.front}</ClientMarkdownRenderer>
       </div>

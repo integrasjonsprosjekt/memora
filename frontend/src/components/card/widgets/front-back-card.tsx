@@ -3,8 +3,20 @@ import { FrontBackCard as FrontBackCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { FrontBackCardInteractive } from './front-back-card-interactive';
 
-export function FrontBackCard({ card, className }: CardComponentProps<FrontBackCardType>): JSX.Element {
-  return <FrontBackCardInteractive card={card} className={className} />;
+export function FrontBackCard({
+  card,
+  className,
+  onAnswerChange,
+  flipTrigger,
+}: CardComponentProps<FrontBackCardType> & { flipTrigger?: number }): JSX.Element {
+  return (
+    <FrontBackCardInteractive
+      card={card}
+      className={className}
+      onAnswerChange={onAnswerChange}
+      flipTrigger={flipTrigger}
+    />
+  );
 }
 
 export function FrontBackCardThumbnail({ card, className }: CardComponentProps<FrontBackCardType>): JSX.Element {
