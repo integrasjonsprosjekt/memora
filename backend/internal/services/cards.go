@@ -30,12 +30,11 @@ type CardService struct {
 
 // NewCardService creates a new instance of CardService.
 func NewCardService(
-	repo firebase.CardRepository,
-	validate *validator.Validate,
+	deps *ServiceDeps,
 ) *CardService {
 	return &CardService{
-		repo:     repo,
-		validate: validate,
+		repo:     deps.CardRepo,
+		validate: deps.Validate,
 	}
 }
 

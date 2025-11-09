@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -19,8 +20,11 @@ func GetDataFromRedis[T any](key string, rdb *redis.Client, ctx context.Context)
 	return result, err
 }
 
-func SetDataToRedis[T any](key string, data T, rdb *redis.Client, ctx context.Context, ttl time.Duration) error {
-	return rdb.Set(ctx, key, data, ttl).Err()
+func SetDataToRedis[T any](key string, data T, rdb *redis.Client, ctx context.Context, ttl time.Duration) {
+	err := rdb.Set(ctx, key, data, ttl).Err()
+	if err != nil {
+		slog.Error("Error setting data to Redis", slog.Any("err", err))
+	}
 }
 
 func DeleteDataFromRedis(key string, rdb *redis.Client, ctx context.Context) error {

@@ -18,19 +18,18 @@ const defaultFilterDecks = "title,owner_id,shared_emails"
 type DeckService struct {
 	repo     firebase.DeckRepository
 	validate *validator.Validate
+	
 	Cards    *CardService
 }
 
 // NewDeckService creates a new instance of DeckService.
 func NewDeckService(
-	repo firebase.DeckRepository,
-	validate *validator.Validate,
-	cards *CardService,
+	deps *ServiceDeps,
 ) *DeckService {
 	return &DeckService{
-		repo:     repo,
-		validate: validate,
-		Cards:    cards,
+		repo:     deps.DeckRepo,
+		validate: deps.Validate,
+		Cards:    NewCardService(deps),
 	}
 }
 

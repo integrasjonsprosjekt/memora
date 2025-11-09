@@ -4,7 +4,17 @@ import (
 	"memora/internal/firebase"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/redis/go-redis/v9"
 )
+
+type ServiceDeps struct {
+	UserRepo firebase.UserRepository
+	CardRepo firebase.CardRepository
+	DeckRepo firebase.DeckRepository
+	AuthRepo firebase.FirebaseAuth
+	Redis    *redis.Client
+	Validate *validator.Validate
+}
 
 // Services groups all service instances.
 type Services struct {
@@ -14,23 +24,19 @@ type Services struct {
 }
 
 // NewServices creates a new Services struct with the provided repositories and validator.
-func NewServices(
-	repos *firebase.Repositories,
-	validate *validator.Validate,
-) *Services {
+func NewServices(repos *firebase.Repositories, validate *validator.Validate) *Services {
+	deps := &ServiceDeps{
+		UserRepo: repos.User,
+		CardRepo: repos.Card,
+		DeckRepo: repos.Deck,
+		AuthRepo: repos.Auth,
+		Redis:    repos.Redis,
+		Validate: validate,
+	}
 
 	return &Services{
-		Users: NewUserService(
-			repos.User,
-			validate,
-		),
-		Decks: NewDeckService(
-			repos.Deck,
-			validate,
-			NewCardService(repos.Card, validate),
-		),
-		Auth: NewAuthService(
-			repos.Auth,
-		),
+		Users: NewUserService(deps),
+		Decks: NewDeckService(deps),
+		Auth:  NewAuthService(deps),
 	}
 }
