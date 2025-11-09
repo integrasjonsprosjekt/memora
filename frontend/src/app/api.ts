@@ -8,7 +8,29 @@ interface UpdateDeckPayload {
   removedEmails?: string[];
 }
 
-export async function createCard(user: User, id: string, type: CardType, data: Record<string, unknown>) {
+// API Response Types
+interface CreateDeckResponse {
+  id: string;
+}
+
+interface ApiSuccessResponse<T> {
+  success: true;
+  data: T;
+}
+
+interface ApiErrorResponse {
+  success: false;
+  message: string;
+}
+
+type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+export async function createCard(
+  user: User,
+  id: string,
+  type: CardType,
+  data: Record<string, unknown>
+): Promise<ApiResponse<unknown>> {
   try {
     const body = { type, ...data };
 
@@ -26,7 +48,12 @@ export async function createCard(user: User, id: string, type: CardType, data: R
   }
 }
 
-export async function updateCard(user: User, deckId: string, cardId: string, data: Record<string, unknown>) {
+export async function updateCard(
+  user: User,
+  deckId: string,
+  cardId: string,
+  data: Record<string, unknown>
+): Promise<ApiResponse<unknown>> {
   try {
     const body = { ...data };
 
@@ -44,7 +71,11 @@ export async function updateCard(user: User, deckId: string, cardId: string, dat
   }
 }
 
-export async function deleteCard(user: User, deckId: string, cardId: string) {
+export async function deleteCard(
+  user: User,
+  deckId: string,
+  cardId: string
+): Promise<{ success: true } | ApiErrorResponse> {
   try {
     await fetchApi(`decks/${deckId}/cards/${cardId}`, {
       user,
@@ -60,7 +91,12 @@ export async function deleteCard(user: User, deckId: string, cardId: string) {
 
 // ---------- Decks ----------
 
-export async function createDeck(user: User, owner_id: string, title: string, shared_emails?: string[]) {
+export async function createDeck(
+  user: User,
+  owner_id: string,
+  title: string,
+  shared_emails?: string[]
+): Promise<ApiResponse<CreateDeckResponse>> {
   try {
     const body = {
       owner_id,
@@ -75,14 +111,18 @@ export async function createDeck(user: User, owner_id: string, title: string, sh
       body: JSON.stringify(body),
     });
 
-    return { success: true, data: result };
+    return { success: true, data: result as CreateDeckResponse };
   } catch (error) {
     console.error('Failed to create deck:', error);
     return { success: false, message: 'Failed to create deck' };
   }
 }
 
-export async function updateDeck(user: User, deckId: string, payload: UpdateDeckPayload) {
+export async function updateDeck(
+  user: User,
+  deckId: string,
+  payload: UpdateDeckPayload
+): Promise<ApiResponse<unknown>> {
   try {
     // Update title
     const resultTitle = await fetchApi(`decks/${deckId}`, {
@@ -124,7 +164,7 @@ export async function updateDeck(user: User, deckId: string, payload: UpdateDeck
   }
 }
 
-export async function deleteDeck(user: User, deckId: string) {
+export async function deleteDeck(user: User, deckId: string): Promise<{ success: true } | ApiErrorResponse> {
   try {
     await fetchApi(`decks/${deckId}`, {
       user,

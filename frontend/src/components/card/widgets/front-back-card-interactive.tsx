@@ -1,6 +1,6 @@
 'use client';
 
-import { JSX, useState, useEffect } from 'react';
+import { JSX, useState, useEffect, useRef } from 'react';
 import { FrontBackCard as FrontBackCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { ClientMarkdownRenderer } from '@/components/markdown/client-markdown-renderer';
@@ -13,12 +13,19 @@ export function FrontBackCardInteractive({
 }: CardComponentProps<FrontBackCardType>): JSX.Element {
   const [isFlipped, setIsFlipped] = useState(false);
 
+  // Store the latest callback in a ref to avoid it being a dependency
+  const onAnswerChangeRef = useRef(onAnswerChange);
+
+  useEffect(() => {
+    onAnswerChangeRef.current = onAnswerChange;
+  }, [onAnswerChange]);
+
   useEffect(() => {
     // Notify parent when card is flipped (considered "answered")
-    if (onAnswerChange) {
-      onAnswerChange(isFlipped);
+    if (onAnswerChangeRef.current) {
+      onAnswerChangeRef.current(isFlipped);
     }
-  }, [isFlipped, onAnswerChange]);
+  }, [isFlipped]);
 
   return (
     <div className={cn(className, 'cursor-pointer py-5')} onClick={() => setIsFlipped(!isFlipped)}>

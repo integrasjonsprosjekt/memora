@@ -15,6 +15,13 @@ export function OrderedCardInteractive({
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const hasShuffled = useRef(false);
 
+  // Store the latest callback in a ref to avoid it being a dependency
+  const onAnswerChangeRef = useRef(onAnswerChange);
+
+  useEffect(() => {
+    onAnswerChangeRef.current = onAnswerChange;
+  }, [onAnswerChange]);
+
   useEffect(() => {
     // Shuffle on mount to avoid hydration mismatch
     if (!hasShuffled.current) {
@@ -61,10 +68,10 @@ export function OrderedCardInteractive({
 
   useEffect(() => {
     // Notify parent of item order changes
-    if (onAnswerChange && items) {
-      onAnswerChange(items);
+    if (onAnswerChangeRef.current && items) {
+      onAnswerChangeRef.current(items);
     }
-  }, [items, onAnswerChange]);
+  }, [items]);
 
   const handleDragEnd = () => {
     setDraggedItem(null);
