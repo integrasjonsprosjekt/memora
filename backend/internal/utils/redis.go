@@ -16,15 +16,15 @@ const (
 )
 
 func GetDataFromRedis[T any](key string, rdb *redis.Client, ctx context.Context) (T, error) {
-    var result T
+	var result T
 
-    data, err := rdb.Get(ctx, key).Result()
-    if err != nil {
-        return result, err
-    }
+	data, err := rdb.Get(ctx, key).Result()
+	if err != nil {
+		return result, err
+	}
 
-    err = json.Unmarshal([]byte(data), &result)
-    return result, err
+	err = json.Unmarshal([]byte(data), &result)
+	return result, err
 }
 
 func SetDataToRedis[T any](key string, data T, rdb *redis.Client, ctx context.Context, ttl time.Duration) {
@@ -40,8 +40,11 @@ func SetDataToRedis[T any](key string, data T, rdb *redis.Client, ctx context.Co
 	}
 }
 
-func DeleteDataFromRedis(key string, rdb *redis.Client, ctx context.Context) error {
-	return rdb.Del(ctx, key).Err()
+func DeleteDataFromRedis(key string, rdb *redis.Client, ctx context.Context) {
+	err := rdb.Del(ctx, key).Err()
+	if err != nil {
+		slog.Error("Error deleting data from Redis", slog.Any("err", err))
+	}
 }
 
 func UserKey(userID string) string {

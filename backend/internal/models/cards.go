@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"memora/internal/utils"
 	"time"
 )
@@ -89,4 +90,9 @@ type CardProgress struct {
 	Reps         int       `firestore:"reps" json:"reps"`
 	Lapses       int       `firestore:"lapses" json:"lapses"`
 	LastReviewed time.Time `firestore:"last_reviewed_at" json:"last_reviewed_at"`
+}
+
+type CacheResult struct {
+	CardsJSON []json.RawMessage `json:"cards"`
+	HasMore   bool              `json:"has_more"`
 }

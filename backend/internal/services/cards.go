@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/redis/go-redis/v9"
 )
 
 // Used to get the type of card based on request
@@ -25,6 +27,7 @@ var cardRegistry = map[string]func() models.Card{
 // CardService provides methods for managing cards.
 type CardService struct {
 	repo     firebase.CardRepository
+	rdb      *redis.Client
 	validate *validator.Validate
 }
 
@@ -34,6 +37,7 @@ func NewCardService(
 ) *CardService {
 	return &CardService{
 		repo:     deps.CardRepo,
+		rdb:      deps.Redis,
 		validate: deps.Validate,
 	}
 }
@@ -75,6 +79,29 @@ func (s *CardService) GetCardsInDeck(
 	cursor string,
 ) ([]models.Card, bool, error) {
 	limit := utils.ParseLimit(limit_str)
+
+	cacheKey := fmt.Sprintf("%s:cards:limit%d:cursor%s", utils.DeckKey(deckID), limit, cursor)
+	if cursor != "" {
+		cacheKey = fmt.Sprintf("%s:cursor:%s", cacheKey, cursor)
+	}
+
+	log.Println("Cache key ", cacheKey)
+
+	cached, err := utils.GetDataFromRedis[models.CacheResult](cacheKey, s.rdb, ctx)
+	if err == nil {
+		log.Println("cache hit for cards in deck")
+		var cards []models.Card
+		for _, raw := range cached.CardsJSON {
+			card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
+			if err != nil {
+				return nil, false, err
+			}
+			cards = append(cards, card)
+		}
+
+		return cards, cached.HasMore, nil
+	}
+
 	// Fetch raw card documents from the repository
 	docs, hasMore, err := s.repo.GetCardsInDeck(ctx, deckID, limit, cursor)
 	if err != nil {
@@ -84,11 +111,14 @@ func (s *CardService) GetCardsInDeck(
 	// Convert each document to the appropriate card struct
 	// based on its type
 	var cards []models.Card
+	var cardsJSON []json.RawMessage
 	for _, doc := range docs {
 		raw, err := json.Marshal(doc)
 		if err != nil {
 			return nil, false, err
 		}
+
+		cardsJSON = append(cardsJSON, raw)
 
 		card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
 		if err != nil {
@@ -99,6 +129,13 @@ func (s *CardService) GetCardsInDeck(
 		cards = append(cards, card)
 	}
 
+	utils.SetDataToRedis(
+		cacheKey,
+		models.CacheResult{CardsJSON: cardsJSON, HasMore: hasMore},
+		s.rdb,
+		ctx,
+		10*time.Minute,
+	)
 	return cards, hasMore, nil
 }
 
@@ -119,7 +156,14 @@ func (s *CardService) CreateCard(
 		return "", errors.ErrInvalidCard
 	}
 
-	return s.repo.CreateCard(ctx, card, deckID)
+	id ,err :=  s.repo.CreateCard(ctx, card, deckID)
+	if err != nil {
+		return "", err
+	}
+
+	
+
+	return id, nil
 }
 
 // UpdateCard updates an existing card identified by its ID with the provided raw JSON data.

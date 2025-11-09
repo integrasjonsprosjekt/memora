@@ -42,18 +42,17 @@ func (s *UserService) GetUser(
 	id, filter string,
 ) (models.User, error) {
 
-	// Check the cache first
-	cacheKey := utils.UserKey(id)
-
 	filterParsed, err := utils.ParseFilter(filter)
 	if err != nil {
 		return models.User{}, err
 	}
 
+	cacheKey := utils.UserKey(id)
+
 	// Try to get the user from the cache
 	cachedUser, err := utils.GetDataFromRedis[models.User](cacheKey, s.rdb, ctx)
 	if err == nil {
-		log.Println("returning cahced data")
+		log.Println("cache hit")
 		return cachedUser, nil
 	}
 
@@ -109,7 +108,7 @@ func (s *UserService) RegisterNewUser(
 // Validates the input and returns an error if the operation fails.
 func (s *UserService) UpdateUser(
 	ctx context.Context,
-	updateStruct models.CreateUser,
+	updateStruct models.PatchUser,
 	id string,
 ) (models.User, error) {
 	// Validate the input struct
@@ -123,11 +122,16 @@ func (s *UserService) UpdateUser(
 		return models.User{}, errors.ErrInvalidUser
 	}
 
+	cacheKey := utils.UserKey(id)
+
+	utils.DeleteDataFromRedis(cacheKey, s.rdb, ctx)
+
 	// Perform the update in the repository
 	err = s.repo.UpdateUser(ctx, update, id)
 	if err != nil {
 		return models.User{}, err
 	}
+
 	return s.GetUser(ctx, id, defaultFilterUsers)
 }
 
@@ -137,5 +141,7 @@ func (s *UserService) DeleteUser(
 	ctx context.Context,
 	id string,
 ) error {
+	utils.DeleteDataFromRedis(utils.UserKey(id), s.rdb, ctx)
+
 	return s.repo.DeleteUser(ctx, id)
 }
