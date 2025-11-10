@@ -102,7 +102,7 @@ func (s *CardService) GetCardsInDeck(
 ) ([]models.Card, bool, error) {
 	limit := utils.ParseLimit(limit_str)
 
-	cacheKey := fmt.Sprintf("%s:cards:limit%d:cursor%s", utils.DeckKey(deckID), limit, cursor)
+	cacheKey := fmt.Sprintf("%s:cards:limit%d", utils.DeckKey(deckID), limit)
 	if cursor != "" {
 		cacheKey = fmt.Sprintf("%s:cursor:%s", cacheKey, cursor)
 	}

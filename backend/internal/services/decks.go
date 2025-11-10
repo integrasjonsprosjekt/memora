@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
@@ -298,6 +299,9 @@ func (s *DeckService) invalidateUserDecksCacheByEmail(email string) {
 	iter := s.rdb.Scan(bgCtx, 0, pattern, 0).Iterator()
 	for iter.Next(bgCtx) {
 		utils.DeleteDataFromRedis(iter.Val(), s.rdb, bgCtx)
+	}
+	if err := iter.Err(); err != nil {
+		slog.Error("Error invalidating user decks cache", slog.Any("error", err))
 	}
 }
 

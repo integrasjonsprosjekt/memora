@@ -393,5 +393,5 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 	}
 
 	// No more cards to paginate through
-	return cards[:limit], "", false, nil
+	return cards, "", false, nil
 }
