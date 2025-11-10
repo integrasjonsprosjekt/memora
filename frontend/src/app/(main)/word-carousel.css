@@ -1,5 +1,3 @@
-/* https://codepen.io/dmack/pen/BYbyQB */
-
 .word-carousel-container {
   display: inline-flex;
   height: 1.5em;
@@ -10,7 +8,6 @@
 
 .word-carousel {
   display: block;
-  animation: slide-up 12s ease infinite;
   position: relative;
   font-weight: 600;
   color: hsl(var(--foreground));
@@ -21,46 +18,4 @@
   height: 1.5em;
   line-height: 1.5em;
   color: var(--primary);
-}
-
-@keyframes slide-up {
-  0% {
-    top: 0;
-  }
-  14.28% {
-    top: 0;
-  }
-  16.67% {
-    top: -1.5em;
-  }
-  30.95% {
-    top: -1.5em;
-  }
-  33.33% {
-    top: -3em;
-  }
-  47.61% {
-    top: -3em;
-  }
-  50% {
-    top: -4.5em;
-  }
-  64.28% {
-    top: -4.5em;
-  }
-  66.67% {
-    top: -6em;
-  }
-  80.95% {
-    top: -6em;
-  }
-  83.33% {
-    top: -7.5em;
-  }
-  97.61% {
-    top: -7.5em;
-  }
-  100% {
-    top: -9em;
-  }
 }

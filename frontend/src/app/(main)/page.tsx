@@ -1,11 +1,50 @@
+'use client';
+
 import { Brain, WifiSync, Sparkles } from 'lucide-react';
 import './word-carousel.css';
 import { MarkdownRenderer } from '@/components/markdown';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useEffect, useMemo } from 'react';
 
 const ROTATING_WORDS = ['languages', 'subjects', 'vocabulary', 'history', 'science', 'anything'];
 
+// Generate keyframes dynamically based on word count
+function generateKeyframes(wordCount: number, animationName: string) {
+  const showDuration = 85; // Percentage of time showing each word
+  const stepPercentage = 100 / wordCount;
+
+  let keyframes = `@keyframes ${animationName} {\n  0% { top: 0; }\n`;
+
+  for (let i = 0; i < wordCount; i++) {
+    const showUntil = i * stepPercentage + (stepPercentage * showDuration) / 100;
+    const transitionTo = (i + 1) * stepPercentage;
+    const position = -1.5 * i;
+
+    keyframes += `  ${showUntil.toFixed(2)}% { top: ${position}em; }\n`;
+    keyframes += `  ${transitionTo.toFixed(2)}% { top: ${-1.5 * (i + 1)}em; }\n`;
+  }
+
+  keyframes += `}`;
+  return keyframes;
+}
+
 export default function Page() {
+  const animationName = useMemo(() => `word-slide-${ROTATING_WORDS.length}`, []);
+  const animationDuration = ROTATING_WORDS.length * 2; // 2 seconds per word
+
+  useEffect(() => {
+    // Inject dynamic keyframes
+    const styleId = 'word-carousel-animation';
+    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
+    }
+
+    styleElement.textContent = generateKeyframes(ROTATING_WORDS.length, animationName);
+  }, [animationName]);
   return (
     <div className="flex flex-1 flex-col p-4 pt-0">
       <div className="flex flex-1 flex-col gap-8">
@@ -17,12 +56,18 @@ export default function Page() {
           <p className="text-muted-foreground mb-6 text-lg md:text-xl">
             A flashcard app that uses spaced repetition to help you memorize{' '}
             <span className="word-carousel-container">
-              <span className="word-carousel">
+              <span
+                className="word-carousel"
+                style={{
+                  animation: `${animationName} ${animationDuration}s ease infinite`,
+                }}
+              >
                 {ROTATING_WORDS.map((word, index) => (
                   <span key={index} className="word-carousel-item">
                     {word}
                   </span>
                 ))}
+                {/* Duplicate first word for seamless loop */}
                 <span className="word-carousel-item">{ROTATING_WORDS[0]}</span>
               </span>
             </span>
