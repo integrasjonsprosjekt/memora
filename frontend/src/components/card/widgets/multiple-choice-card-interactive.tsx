@@ -6,6 +6,7 @@ import { CardComponentProps } from '../types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { MarkdownRenderer } from '@/components/markdown';
 
 export function MultipleChoiceCardInteractive({
   card,
@@ -50,7 +51,7 @@ export function MultipleChoiceCardInteractive({
                 onCheckedChange={(checked) => handleCheckboxChange(key, checked as boolean)}
               />
               <Label htmlFor={key} className="cursor-pointer">
-                {key}
+                <MarkdownRenderer>{key}</MarkdownRenderer>
               </Label>
             </div>
           ))}
@@ -61,7 +62,7 @@ export function MultipleChoiceCardInteractive({
             <div className="flex items-center space-x-2" key={key}>
               <RadioGroupItem value={key} id={key} />
               <Label htmlFor={key} className="cursor-pointer">
-                {key}
+                <MarkdownRenderer>{key}</MarkdownRenderer>
               </Label>
             </div>
           ))}

@@ -5,6 +5,7 @@ import { OrderedCard as OrderedCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { GripVertical } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MarkdownRenderer } from '@/components/markdown';
 
 export function OrderedCardInteractive({
   card,
@@ -109,7 +110,9 @@ export function OrderedCardInteractive({
                 }`}
               >
                 <GripVertical size={15} className="text-muted-foreground" />
-                <span>{item}</span>
+                <span>
+                  <MarkdownRenderer>{item}</MarkdownRenderer>
+                </span>
               </div>
             </div>
           </div>

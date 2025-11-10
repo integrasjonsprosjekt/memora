@@ -4,6 +4,7 @@ import { JSX, useState, useEffect } from 'react';
 import { FillBlanksCard as FillBlanksCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
 import { Input } from '@/components/ui/input';
+import { MarkdownRenderer } from '@/components/markdown';
 
 export function FillBlanksCardInteractive({
   card,
@@ -30,7 +31,9 @@ export function FillBlanksCardInteractive({
       {parts.map((part, index) => (
         <span key={index} className="inline-flex items-baseline">
           {/* Render text part */}
-          <span>{part}</span>
+          <span>
+            <MarkdownRenderer inline>{part}</MarkdownRenderer>
+          </span>
           {/* Render input field if there's a corresponding answer */}
           {index < parts.length - 1 && index < card.answers.length && (
             <Input
