@@ -59,8 +59,8 @@ export function MarkdownRenderer({ children, className, skeleton, inline = false
           .use(remarkGfm)
           .use(remarkMath)
           .use(remarkRehype)
-          .use(rehypeKatex)
           .use(rehypeSanitize, katexSchema)
+          .use(rehypeKatex)
           .use(rehypeHighlight)
           .use(rehypeStringify)
           .process(children);
