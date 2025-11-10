@@ -62,3 +62,7 @@ func DeckCardKey(deckID, cardID string) string {
 func UserEmailDecksKey(email string) string {
 	return "user:email:" + email + ":decks"
 }
+
+func UserKeyRateLimit(userID string) string {
+	return "rate_limit:user:" + userID
+}

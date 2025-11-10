@@ -237,30 +237,21 @@ func (s *DeckService) DeleteDeck(
 	ctx context.Context,
 	id, ownerEmail string,
 ) error {
-	deck := make(chan models.Deck, 1)
-
-	// Get deck to know owner and shared users
-	go func() {
-		defer close(deck)
-		d, err := s.repo.GetOneDeck(ctx, id, []string{"owner_id", "shared_emails"})
-		if err != nil {
-			return
-		}
-		deck <- d
-	}()
-
-	err := s.repo.DeleteDeck(ctx, id)
+	deck, err := s.repo.GetOneDeck(ctx, id, []string{"owner_id", "shared_emails"})
 	if err != nil {
 		return err
 	}
 
-	d := <-deck
+	err = s.repo.DeleteDeck(ctx, id)
+	if err != nil {
+		return err
+	}
 
 	// Invalidate for owner
 	s.invalidateUserDecksCacheByEmail(ownerEmail)
 
 	// Invalidate for all shared users
-	s.invalidateUserDecksCacheByEmails(d.SharedEmails)
+	s.invalidateUserDecksCacheByEmails(deck.SharedEmails)
 
 	utils.DeleteDataFromRedis(utils.DeckKey(id), s.rdb, ctx)
 

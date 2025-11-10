@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"log"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
@@ -52,7 +51,6 @@ func (s *UserService) GetUser(
 	// Try to get the user from the cache
 	cachedUser, err := utils.GetDataFromRedis[models.User](cacheKey, s.rdb, ctx)
 	if err == nil {
-		log.Println("cache hit")
 		return cachedUser, nil
 	}
 
@@ -82,7 +80,6 @@ func (s *UserService) GetDecks(
 	cacheKey := utils.UserEmailDecksKey(email)
 	cachedDecks, err := utils.GetDataFromRedis[models.UserDecks](cacheKey, s.rdb, ctx)
 	if err == nil {
-		log.Println("cache hit")
 		return cachedDecks, nil
 	}
 

@@ -8,3 +8,5 @@ const BLANKS_CARD = "blanks"
 
 const OPP_ADD = "add"
 const OPP_REMOVE = "remove"
+
+const REQUESTS_PER_MINUTE = 80
