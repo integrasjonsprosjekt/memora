@@ -21,6 +21,7 @@ type Services struct {
 	Users *UserService
 	Decks *DeckService
 	Auth  *AuthService
+	Rdb   *redis.Client
 }
 
 // NewServices creates a new Services struct with the provided repositories and validator.
@@ -38,5 +39,6 @@ func NewServices(repos *firebase.Repositories, validate *validator.Validate) *Se
 		Users: NewUserService(deps),
 		Decks: NewDeckService(deps),
 		Auth:  NewAuthService(deps),
+		Rdb:   deps.Redis,
 	}
 }
