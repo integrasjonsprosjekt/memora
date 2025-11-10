@@ -151,19 +151,19 @@ func (r *FirestoreUserRepo) AddUser(
 		mockDeck := models.CreateDeck{
 			Title:   "Default Deck",
 			OwnerID: id,
+			SharedEmails: []string{},
 		}
 		if err := tx.Set(deckRef, mockDeck); err != nil {
 			return err
 		}
 
-		cardsCollection := deckRef.Collection("cards")
+		cardsCollection := deckRef.Collection(config.CardsCollection)
 		mockCards := getMockCards()
 		for _, card := range mockCards {
 			cardRef := cardsCollection.NewDoc()
 			if err := tx.Set(cardRef, card); err != nil {
 				return err
 			}
-
 		}
 
 		return nil
