@@ -27,7 +27,13 @@ func GetDataFromRedis[T any](key string, rdb *redis.Client, ctx context.Context)
 	return result, err
 }
 
-func SetDataToRedis[T any](key string, data T, rdb *redis.Client, ctx context.Context, ttl time.Duration) {
+func SetDataToRedis[T any](
+	key string,
+	data T,
+	rdb *redis.Client,
+	ctx context.Context,
+	ttl time.Duration,
+) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		slog.Error("Error marshalling data to JSON", slog.Any("err", err))
