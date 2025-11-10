@@ -323,7 +323,7 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 	if hasMoreUnstudied {
 		// Get the new pagination cursor and return
 		nextCursor = "unstudied_" + lastUnstudiedID
-		return cards, nextCursor, true, nil
+		return cards[:limit], nextCursor, true, nil
 	}
 
 	// We need more cards, fetch studied cards based on due date
@@ -393,5 +393,5 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 	}
 
 	// No more cards to paginate through
-	return cards, "", false, nil
+	return cards[:limit], "", false, nil
 }
