@@ -120,3 +120,31 @@
     margin: 0.5em 0;
   }
 }
+
+.inline {
+  @apply inline-block;
+}
+
+/* KaTeX styles - normalize to match markdown text size */
+.markdown {
+  /* Inline math */
+  :global(.katex) {
+    font-size: 1em;
+  }
+
+  /* Display math */
+  :global(.katex-display) {
+    font-size: 1em;
+  }
+
+  /* Ensure KaTeX inherits line height */
+  :global(.katex),
+  :global(.katex-display) {
+    line-height: inherit;
+  }
+
+  /* Adjust display math margins to match other block elements */
+  :global(.katex-display) {
+    margin-block: 0.5em 0;
+  }
+}
