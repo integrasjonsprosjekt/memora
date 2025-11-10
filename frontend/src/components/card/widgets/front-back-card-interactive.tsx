@@ -3,7 +3,7 @@
 import { JSX, useState, useEffect } from 'react';
 import { FrontBackCard as FrontBackCardType } from '@/types/card';
 import { CardComponentProps } from '../types';
-import { ClientMarkdownRenderer } from '@/components/markdown/client-markdown-renderer';
+import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
 import { cn } from '@/lib/utils';
 
 export function FrontBackCardInteractive({
@@ -29,7 +29,7 @@ export function FrontBackCardInteractive({
   return (
     <div className={cn(className, 'cursor-pointer py-5')} onClick={() => setIsFlipped(true)}>
       <div>
-        <ClientMarkdownRenderer>{card.front}</ClientMarkdownRenderer>
+        <MarkdownRenderer>{card.front}</MarkdownRenderer>
       </div>
 
       <hr
@@ -45,7 +45,7 @@ export function FrontBackCardInteractive({
           isFlipped ? 'scale-y-100 opacity-100' : 'h-0 scale-y-0 opacity-0'
         )}
       >
-        <ClientMarkdownRenderer>{card.back}</ClientMarkdownRenderer>
+        <MarkdownRenderer>{card.back}</MarkdownRenderer>
       </div>
     </div>
   );
