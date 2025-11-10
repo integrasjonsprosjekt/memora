@@ -3,4 +3,5 @@ service-account-key.json
 test_service-account-key.json
 .env
 scripts/*
-
+tests/__pycache__
+tests/stress_test_users.json
