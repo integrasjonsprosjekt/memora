@@ -178,11 +178,6 @@ function DeckItem({
   const [isOpen, setIsOpen] = useState(shouldBeOpen);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     setIsOpen(shouldBeOpen);
@@ -224,16 +219,6 @@ function DeckItem({
   }
 
   const hoverAnimation = 'transition-all duration-200 hover:translate-x-0.5';
-
-  if (!mounted) {
-    return (
-      <SidebarMenuItem>
-        <div className="px-2 py-1.5">
-          <Skeleton className="h-5 w-full" />
-        </div>
-      </SidebarMenuItem>
-    );
-  }
 
   return (
     <>
