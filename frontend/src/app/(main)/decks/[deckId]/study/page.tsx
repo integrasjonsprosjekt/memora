@@ -104,6 +104,12 @@ export default function Page({ params }: { params: Promise<{ deckId: string }> }
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
+        // Don't submit if user is typing in an input or textarea
+        const activeElement = document.activeElement;
+        if (activeElement instanceof HTMLTextAreaElement) {
+          return;
+        }
+
         if (!isChecked && !isRating && checkButtonRef.current) {
           checkButtonRef.current();
         } else if (doneButtonRef.current) {
