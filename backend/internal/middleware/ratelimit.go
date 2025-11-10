@@ -24,7 +24,7 @@ func RateLimit(requestsPerMinute int, rdb *redis.Client) gin.HandlerFunc {
 		// Use a pipeline to batch commands
 		pipe := rdb.Pipeline()
 		incr := pipe.Incr(ctx, rateLimitKey)
-		pipe.Expire(ctx, rateLimitKey, time.Minute) // Set TTL to 1 minute
+		pipe.ExpireNX(ctx, rateLimitKey, time.Minute) // Set TTL to 1 minute
 		_, err = pipe.Exec(ctx)
 		if err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -35,5 +35,7 @@ func RateLimit(requestsPerMinute int, rdb *redis.Client) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusTooManyRequests)
 			return
 		}
+
+		c.Next()
 	}
 }
