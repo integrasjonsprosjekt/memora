@@ -295,6 +295,15 @@ func getMockCards() []any {
 			},
 			Type: utils.MULTIPLE_CHOICE_CARD,
 		},
+		models.MultipleChoiceCard{
+			Question: "What can you do with Memora?",
+			Options: map[string]bool{
+				"Create flashcards": true,
+				"Organize decks":    true,
+				"Order food":        false,
+			},
+			Type: utils.MULTIPLE_CHOICE_CARD,
+		},
 		models.OrderedCard{
 			Question: "Arrange the steps to create a deck in order.",
 			Options:  []string{"Create an account", "Add a deck", "Add cards to the deck"},
