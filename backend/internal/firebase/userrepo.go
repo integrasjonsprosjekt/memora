@@ -149,8 +149,8 @@ func (r *FirestoreUserRepo) AddUser(
 
 		deckRef := r.client.Collection(config.DecksCollection).NewDoc()
 		mockDeck := models.CreateDeck{
-			Title:   "Default Deck",
-			OwnerID: id,
+			Title:        "Default Deck",
+			OwnerID:      id,
 			SharedEmails: []string{},
 		}
 		if err := tx.Set(deckRef, mockDeck); err != nil {
