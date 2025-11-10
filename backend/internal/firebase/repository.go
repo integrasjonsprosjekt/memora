@@ -15,7 +15,11 @@ type Repositories struct {
 }
 
 // NewRepositories creates a new Repositories struct with the provided Firestore client.
-func NewRepositories(client *firestore.Client, auth *FirebaseAuthRepo, redis *redis.Client) *Repositories {
+func NewRepositories(
+	client *firestore.Client,
+	auth *FirebaseAuthRepo,
+	redis *redis.Client,
+) *Repositories {
 	return &Repositories{
 		User:  NewFirestoreUserRepo(client),
 		Card:  NewFirestoreCardRepo(client),
