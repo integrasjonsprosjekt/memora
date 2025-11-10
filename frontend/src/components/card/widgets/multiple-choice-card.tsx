@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { MultipleChoiceCardInteractive } from './multiple-choice-card-interactive';
+import { MarkdownRenderer } from '@/components/markdown';
 
 export function MultipleChoiceCard({
   card,
@@ -31,7 +32,7 @@ export function MultipleChoiceCardThumbnail({
             <div className="flex items-center space-x-2" key={key}>
               <Checkbox id={key} checked={card.options[key]} className="pointer-events-none" />
               <Label htmlFor={key} className="pointer-events-none">
-                {key}
+                <MarkdownRenderer>{key}</MarkdownRenderer>
               </Label>
             </div>
           ))}
@@ -42,7 +43,7 @@ export function MultipleChoiceCardThumbnail({
             <div className="flex items-center space-x-2" key={key}>
               <RadioGroupItem value={key} id={key} className="pointer-events-none" />
               <Label htmlFor={key} className="pointer-events-none">
-                {key}
+                <MarkdownRenderer>{key}</MarkdownRenderer>
               </Label>
             </div>
           ))}
