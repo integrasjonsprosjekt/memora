@@ -34,7 +34,7 @@ export function MarkdownRenderer({ children, className, skeleton, inline = false
           ...defaultSchema,
           attributes: {
             ...defaultSchema.attributes,
-            '*': [...(defaultSchema.attributes?.['*'] || []), 'className', 'style'],
+            '*': [...(defaultSchema.attributes?.['*'] || []), 'className'],
             span: [...(defaultSchema.attributes?.span || []), 'className', 'style'],
             div: [...(defaultSchema.attributes?.div || []), 'className', 'style'],
           },
