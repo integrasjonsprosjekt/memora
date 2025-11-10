@@ -174,13 +174,20 @@ func (s *DeckService) UpdateDeck(
 		return models.Deck{}, err
 	}
 
-	utils.DeleteDataFromRedis(utils.DeckKey(deckID), s.rdb, ctx)
+	deck, err := s.repo.GetOneDeck(ctx, deckID, []string{"owner_id", "shared_emails"})
+	if err != nil {
+		return models.Deck{}, err
+	}
 
 	// Perform the update in the repository
 	if err := s.repo.UpdateDeck(ctx, updateMap, deckID); err != nil {
 		return models.Deck{}, err
 	}
 
+	s.invalidateUserDecksCacheByEmail(deck.OwnerID)
+	s.invalidateUserDecksCacheByEmails(deck.SharedEmails)
+
+	// Fetch and return the updated deck
 	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
 }
 
@@ -196,8 +203,6 @@ func (s *DeckService) UpdateCardInDeck(
 		return nil, err
 	}
 
-	utils.DeleteDataFromRedis(utils.DeckKey(deckID), s.rdb, ctx)
-
 	return s.GetCardInDeck(ctx, deckID, cardID)
 }
 
@@ -205,7 +210,7 @@ func (s *DeckService) UpdateCardInDeck(
 // Validates the input and returns the updated deck or an error if the operation fails.
 func (s *DeckService) UpdateEmailsInDeck(
 	ctx context.Context,
-	deckID string,
+	deckID, ownerEmail string,
 	emails models.UpdateDeckEmails,
 ) (models.Deck, error) {
 	var err error
@@ -228,6 +233,7 @@ func (s *DeckService) UpdateEmailsInDeck(
 		return models.Deck{}, err
 	}
 
+	s.invalidateUserDecksCacheByEmail(ownerEmail)
 	s.invalidateUserDecksCacheByEmails(emails.Emails)
 
 	// Fetch and return the updated deck
