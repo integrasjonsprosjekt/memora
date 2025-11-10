@@ -2,7 +2,7 @@ package models
 
 type CreateUser struct {
 	Name  string `json:"name" firestore:"name" validate:"required"`
-	Email string `json:"email" firestore:"email" validate:"required,email"`
+	Email string `json:"email" firestore:"email"`
 }
 
 type User struct {

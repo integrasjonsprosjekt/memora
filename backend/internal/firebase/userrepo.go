@@ -134,7 +134,7 @@ func (r *FirestoreUserRepo) GetDecks(
 	return decks, nil
 }
 
-// AddUser adds a new user to Firestore.
+// AddUser adds a new user to Firestore, with a mock deck.
 // Error on failure or if the email is already present.
 // Returns the new user's ID on success.
 func (r *FirestoreUserRepo) AddUser(
@@ -142,9 +142,32 @@ func (r *FirestoreUserRepo) AddUser(
 	user models.CreateUser,
 	id string,
 ) error {
-	// Email is unique, add the user to Firestore.
-	_, err := r.client.Collection(config.UsersCollection).Doc(id).Set(ctx, user)
-	return err
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		if err := tx.Set(r.client.Collection(config.UsersCollection).Doc(id), user); err != nil {
+			return err
+		}
+
+		deckRef := r.client.Collection(config.DecksCollection).NewDoc()
+		mockDeck := models.CreateDeck{
+			Title:  "Default Deck",
+			OwnerID: id,
+		}
+		if err := tx.Set(deckRef, mockDeck); err != nil {
+			return err
+		}
+
+		cardsCollection := deckRef.Collection("cards")
+		mockCards := getMockCards()
+		for _, card := range mockCards {
+			cardRef := cardsCollection.NewDoc()
+			if err := tx.Set(cardRef, card); err != nil {
+				return err
+			}
+			
+		}
+		
+		return nil
+	})
 }
 
 // UpdateUser updates fields of an existing user in Firestore.
@@ -253,4 +276,34 @@ func readDataFromIterator(iter *firestore.DocumentIterator) ([]models.DisplayDec
 	}
 
 	return results, nil
+}
+
+// getMockCards returns the default cards for a new user's deck
+func getMockCards() []any {
+    return []any{
+        models.FrontBackCard{
+            Front: "Welcome to Memora!",
+            Back:  "This is your first flashcard. Edit or delete it to get started.",
+            Type:  utils.FRONT_BACK_CARD,
+        },
+        models.MultipleChoiceCard{
+            Question: "What is Memora?",
+            Options: map[string]bool{
+                "A flashcard app":         true,
+                "A social media platform": false,
+                "A video game":            false,
+            },
+            Type: utils.MULTIPLE_CHOICE_CARD,
+        },
+        models.OrderedCard{
+            Question: "Arrange the steps to create a deck in order.",
+            Options:  []string{"Create an account", "Add a deck", "Add cards to the deck"},
+            Type:     utils.ORDERED_CARD,
+        },
+        models.BlanksCard{
+            Question: "Memora is a {} app for {}.",
+            Answers:  []string{"flashcard", "learning"},
+            Type:     utils.BLANKS_CARD,
+        },
+    }
 }
