@@ -262,6 +262,10 @@ func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 		}
 
 		var body models.UpdateDeckEmails
+		ownerEmail, err := utils.GetEmail(c)
+		if errors.HandleError(c, err) {
+			return
+		}
 
 		if err := c.ShouldBindBodyWithJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -270,7 +274,7 @@ func UpdateEmails(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
-		deck, err := deckRepo.UpdateEmailsInDeck(c.Request.Context(), deckID, body)
+		deck, err := deckRepo.UpdateEmailsInDeck(c.Request.Context(), deckID, ownerEmail, body)
 		if errors.HandleError(c, err) {
 			return
 		}

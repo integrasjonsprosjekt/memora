@@ -187,7 +187,7 @@ func (s *CardService) CreateCard(
 		return "", err
 	}
 
-	s.invalidateDeckCardsCache(deckID, "")
+	s.invalidateDeckCardsCache(deckID, id)
 
 	return id, nil
 }
