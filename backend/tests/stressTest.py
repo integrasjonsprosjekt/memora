@@ -25,6 +25,8 @@ class MemoraUser(HttpUser):
         self.auth_token = random.choice(TOKENS) if TOKENS else None
         
         self.create_test_user()
+        
+        self.create_decks_on_start(count=2)
     
     def create_test_user(self):
         payload = {
@@ -43,6 +45,28 @@ class MemoraUser(HttpUser):
                 response.success()
             else:
                 response.failure(f"Failed to create user: {response.text}")
+    
+    def create_decks_on_start(self, count=2):
+        for _ in range(count):
+            payload = {
+                "name": f"Initial Deck {self.generate_random_string(5)}",
+            }
+            headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
+            with self.client.post(
+                "/api/v1/decks/",
+                json=payload,
+                headers=headers,
+                catch_response=True,
+                name="Setup: Create Initial Deck"
+            ) as response:
+                if response.status_code == 201:
+                    data = response.json()
+                    deck_id = data.get("id")
+                    if deck_id:
+                        self.deck_ids.append(deck_id)
+                    response.success()
+                else:
+                    response.failure(f"Failed to create initial deck: {response.text}")
     
     @staticmethod
     def generate_random_string(length=10):
@@ -85,10 +109,36 @@ class MemoraUser(HttpUser):
             name="GET User Decks"
         ) as response:
             if response.status_code in [200, 404]:
+                self.deck_ids = [deck['id'] for deck in response.json()] if response.status_code == 200 else []
                 response.success()
             else:
                 response.failure(f"Get user decks failed: {response.status_code}")
     
+    @task(6)
+    def create_deck(self):
+        """Create a new deck."""
+        payload = {
+            "name": f"Deck {self.generate_random_string(5)}",
+            "description": "A test deck created during stress testing"
+        }
+        
+        headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
+        with self.client.post(
+            "/api/v1/decks/",
+            json=payload,
+            headers=headers,
+            catch_response=True,
+            name="POST Create Deck"
+        ) as response:
+            if response.status_code == 201:
+                data = response.json()
+                deck_id = data.get("id")
+                if deck_id:
+                    self.deck_ids.append(deck_id)
+                response.success()
+            else:
+                response.failure(f"Create deck failed: {response.text}")  
+                  
     @task(2)
     def update_deck(self):
         if not self.user_id:
@@ -230,7 +280,7 @@ class ReadOnlyUser(HttpUser):
     
     @task
     def read_health(self):
-        self.client.get("/status", name="Health Check ReadOnly")
+        self.client.get("/api/v1/status/", name="Health Check ReadOnly")
 
 class WriteHeavyUser(HttpUser):
     """
@@ -246,6 +296,5 @@ class WriteHeavyUser(HttpUser):
         for _ in range(3):
             payload = {
                 "name": f"Bulk Deck {MemoraUser.generate_random_string(5)}",
-                "description": "Bulk created deck"
             }
-            self.client.post("/api/v1/decks", json=payload, name="WriteHeavy: Create Deck")
+            self.client.post("/api/v1/decks/", json=payload, name="WriteHeavy: Create Deck")
