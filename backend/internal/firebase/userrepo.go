@@ -149,7 +149,7 @@ func (r *FirestoreUserRepo) AddUser(
 
 		deckRef := r.client.Collection(config.DecksCollection).NewDoc()
 		mockDeck := models.CreateDeck{
-			Title:  "Default Deck",
+			Title:   "Default Deck",
 			OwnerID: id,
 		}
 		if err := tx.Set(deckRef, mockDeck); err != nil {
@@ -163,9 +163,9 @@ func (r *FirestoreUserRepo) AddUser(
 			if err := tx.Set(cardRef, card); err != nil {
 				return err
 			}
-			
+
 		}
-		
+
 		return nil
 	})
 }
@@ -280,30 +280,30 @@ func readDataFromIterator(iter *firestore.DocumentIterator) ([]models.DisplayDec
 
 // getMockCards returns the default cards for a new user's deck
 func getMockCards() []any {
-    return []any{
-        models.FrontBackCard{
-            Front: "Welcome to Memora!",
-            Back:  "This is your first flashcard. Edit or delete it to get started.",
-            Type:  utils.FRONT_BACK_CARD,
-        },
-        models.MultipleChoiceCard{
-            Question: "What is Memora?",
-            Options: map[string]bool{
-                "A flashcard app":         true,
-                "A social media platform": false,
-                "A video game":            false,
-            },
-            Type: utils.MULTIPLE_CHOICE_CARD,
-        },
-        models.OrderedCard{
-            Question: "Arrange the steps to create a deck in order.",
-            Options:  []string{"Create an account", "Add a deck", "Add cards to the deck"},
-            Type:     utils.ORDERED_CARD,
-        },
-        models.BlanksCard{
-            Question: "Memora is a {} app for {}.",
-            Answers:  []string{"flashcard", "learning"},
-            Type:     utils.BLANKS_CARD,
-        },
-    }
+	return []any{
+		models.FrontBackCard{
+			Front: "Welcome to Memora!",
+			Back:  "This is your first flashcard. Edit or delete it to get started.",
+			Type:  utils.FRONT_BACK_CARD,
+		},
+		models.MultipleChoiceCard{
+			Question: "What is Memora?",
+			Options: map[string]bool{
+				"A flashcard app":         true,
+				"A social media platform": false,
+				"A video game":            false,
+			},
+			Type: utils.MULTIPLE_CHOICE_CARD,
+		},
+		models.OrderedCard{
+			Question: "Arrange the steps to create a deck in order.",
+			Options:  []string{"Create an account", "Add a deck", "Add cards to the deck"},
+			Type:     utils.ORDERED_CARD,
+		},
+		models.BlanksCard{
+			Question: "Memora is a {} app for {}.",
+			Answers:  []string{"flashcard", "learning"},
+			Type:     utils.BLANKS_CARD,
+		},
+	}
 }
