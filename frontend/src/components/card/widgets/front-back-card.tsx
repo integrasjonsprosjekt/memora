@@ -29,7 +29,6 @@ export function FrontBackCardThumbnail({ card, className }: CardComponentProps<F
 
       <hr className="border-border tap-highlight-transparent my-2 w-full border-t border-dashed" />
 
-      {/*<p>{card.back.length > 100 ? card.back.substring(0, 100) + '...' : card.back}</p>*/}
       <div>
         <MarkdownRenderer>{card.back}</MarkdownRenderer>
       </div>
