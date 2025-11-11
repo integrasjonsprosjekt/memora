@@ -162,7 +162,7 @@ func (s *DeckService) AddCardToDeck(
 // Validates the updated deck and returns the updated deck or an error if the operation fails.
 func (s *DeckService) UpdateDeck(
 	ctx context.Context,
-	deckID string,
+	deckID, ownerEmail string,
 	update models.UpdateDeck,
 ) (models.Deck, error) {
 	if err := s.validate.Struct(update); err != nil {
@@ -174,7 +174,7 @@ func (s *DeckService) UpdateDeck(
 		return models.Deck{}, err
 	}
 
-	deck, err := s.repo.GetOneDeck(ctx, deckID, []string{"owner_id", "shared_emails"})
+	deck, err := s.repo.GetOneDeck(ctx, deckID, []string{"shared_emails"})
 	if err != nil {
 		return models.Deck{}, err
 	}
@@ -184,8 +184,7 @@ func (s *DeckService) UpdateDeck(
 		return models.Deck{}, err
 	}
 
-	s.invalidateUserDecksCacheByEmail(deck.OwnerID)
-	s.invalidateUserDecksCacheByEmails(deck.SharedEmails)
+    s.invalidateDeckCaches(ctx, deckID, ownerEmail, deck.SharedEmails)
 
 	// Fetch and return the updated deck
 	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
@@ -233,8 +232,7 @@ func (s *DeckService) UpdateEmailsInDeck(
 		return models.Deck{}, err
 	}
 
-	s.invalidateUserDecksCacheByEmail(ownerEmail)
-	s.invalidateUserDecksCacheByEmails(emails.Emails)
+	s.invalidateDeckCaches(ctx, deckID, ownerEmail, emails.Emails)
 
 	// Fetch and return the updated deck
 	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
@@ -244,7 +242,7 @@ func (s *DeckService) DeleteDeck(
 	ctx context.Context,
 	id, ownerEmail string,
 ) error {
-	deck, err := s.repo.GetOneDeck(ctx, id, []string{"owner_id", "shared_emails"})
+	deck, err := s.repo.GetOneDeck(ctx, id, []string{"shared_emails"})
 	if err != nil {
 		return err
 	}
@@ -254,13 +252,7 @@ func (s *DeckService) DeleteDeck(
 		return err
 	}
 
-	// Invalidate for owner
-	s.invalidateUserDecksCacheByEmail(ownerEmail)
-
-	// Invalidate for all shared users
-	s.invalidateUserDecksCacheByEmails(deck.SharedEmails)
-
-	utils.DeleteDataFromRedis(utils.DeckKey(id), s.rdb, ctx)
+	s.invalidateDeckCaches(ctx, id, ownerEmail, deck.SharedEmails)
 
 	return nil
 }
@@ -297,11 +289,38 @@ func (s *DeckService) GetDueCardsInDeck(
 	return s.Cards.GetDueCardsInDeck(ctx, deckID, userID, limit, cursor)
 }
 
+func (s *DeckService) invalidateDeckCaches(ctx context.Context, deckID, ownerEmail string, sharedEmails []string) {
+    var wg sync.WaitGroup
+    
+    // Delete individual deck cache
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        utils.DeleteDataFromRedis(utils.DeckKey(deckID), s.rdb, ctx)
+    }()
+    
+    // Invalidate owner's deck list cache
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        s.invalidateUserDecksCacheByEmail(ownerEmail)
+    }()
+    
+    // Invalidate shared users' deck list caches
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        s.invalidateUserDecksCacheByEmails(sharedEmails)
+    }()
+    
+    wg.Wait()
+}
+
 func (s *DeckService) invalidateUserDecksCacheByEmail(email string) {
 	bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	pattern := fmt.Sprintf("user:email:%s:decks:*", email)
+	pattern := fmt.Sprintf("user:email:%s:decks*", email)
 	iter := s.rdb.Scan(bgCtx, 0, pattern, 0).Iterator()
 	for iter.Next(bgCtx) {
 		utils.DeleteDataFromRedis(iter.Val(), s.rdb, bgCtx)

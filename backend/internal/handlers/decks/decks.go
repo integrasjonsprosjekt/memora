@@ -206,12 +206,14 @@ func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body models.UpdateDeck
 		deckID := c.Param("deckID")
-		uid := c.GetString("uid")
-		email := c.GetString("email")
+		uid, err := utils.GetUID(c)
+		if errors.HandleError(c, err) {
+			return
+		}
 
-		canAccess, err := deckRepo.CheckIfUserCanAccessDeck(
+		canAccess, err := deckRepo.UserOwnsDeck(
 			c.Request.Context(),
-			deckID, uid, email,
+			deckID, uid,
 		)
 
 		if !canAccess || err != nil {
@@ -226,7 +228,12 @@ func PatchDeck(deckRepo *services.DeckService) gin.HandlerFunc {
 			return
 		}
 
-		deck, err := deckRepo.UpdateDeck(c.Request.Context(), deckID, body)
+		email, err := utils.GetEmail(c)
+		if errors.HandleError(c, err) {
+			return
+		}
+
+		deck, err := deckRepo.UpdateDeck(c.Request.Context(), deckID, email, body)
 		if errors.HandleError(c, err) {
 			return
 		}
