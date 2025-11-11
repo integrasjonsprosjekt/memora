@@ -17,9 +17,13 @@ x-backend: &backend
   hostname: backend
   container_name: backend
   environment:
-    GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/service-account-key.json
-    APP_HOST: 0.0.0.0
-    PORT: 8080
+    GOOGLE_APPLICATION_CREDENTIALS: "/run/secrets/service-account-key.json"
+    APP_HOST: "0.0.0.0"
+    PORT: "8080"
+    REDIS_ADDR: "redis:6379"
+    REDIS_PASSWORD: ""
+    GO_ENV: "development"
+    LOG_LEVEL: "debug"
   env_file:
     - path: ./backend/.env
       required: false
@@ -42,25 +46,28 @@ x-nginx: &nginx
     - 80:80
     - 443:443
 
+x-redis: &redis
+  image: redis:8-alpine
+  hostname: redis
+  container_name: redis
+
 services:
   backend-dev:
     <<: [*dev, *backend]
     image: golang:1.25
     ports:
       - 3000:3000
-    environment:
-      GO_ENV: development
-      LOG_LEVEL: debug
     volumes:
       - ./backend:/usr/src/app:ro
+    depends_on:
+      - redis-dev
     command: ["go", "run", "."]
 
   backend-prod:
     <<: [*prod, *backend]
     build: ./backend
-    environment:
-      GO_ENV: production
-      LOG_LEVEL: warn
+    depends_on:
+      - redis-prod
 
   frontend-dev:
     <<: [*dev, *frontend]
@@ -89,6 +96,20 @@ services:
     depends_on:
       - backend-prod
       - frontend-prod
+
+  redis-dev:
+    <<: [*dev, *redis]
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache:/data
+
+  redis-prod:
+    <<: [*prod, *redis]
+
+volumes:
+  cache:
+    driver: local
 
 networks:
   app:
