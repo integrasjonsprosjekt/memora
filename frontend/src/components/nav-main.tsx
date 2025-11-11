@@ -2,7 +2,7 @@
 
 import { FileBox, ChevronRight, Plus, Trash2, SquarePen, Share2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { use, useMemo, Suspense, useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth';
@@ -43,137 +43,27 @@ import { AddDeckMenu } from './add-deck-menu';
 import { deleteDeck } from '@/app/api';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { User } from 'firebase/auth';
 
 interface DecksResponse {
   owned_decks: Deck[];
   shared_decks: Deck[];
 }
 
-// Create a cache for deck promises
-let deckPromiseCache: Promise<DecksResponse> | null = null;
-let cacheInvalidationCounter = 0;
-
-function invalidateDeckCache() {
-  deckPromiseCache = null;
-  cacheInvalidationCounter++;
-}
-
-async function fetchDecks(user: User): Promise<DecksResponse> {
-  // Return cached promise if it exists
-  if (deckPromiseCache) {
-    return deckPromiseCache;
-  }
-
-  // Create new promise and cache it
-  const promise = (async () => {
-    try {
-      return await fetchApi<DecksResponse>('users/decks', { user });
-    } catch (error) {
-      console.error(`Error fetching decks:`, error);
-      // Remove failed promise from cache
-      deckPromiseCache = null;
-      throw error;
-    }
-  })();
-
-  deckPromiseCache = promise;
-  return promise;
-}
-
-const DeckCacheContext = createContext<() => void>(() => {});
-
-function DeckGroup({
-  title,
-  filterType,
-  action,
-  cacheKey,
-}: {
-  title: string;
-  filterType: 'owned' | 'shared';
-  action?: React.ReactNode;
-  cacheKey: number;
-}) {
-  const pathname = usePathname();
-  const { user } = useAuth();
-
-  const decksPromise = useMemo(() => {
-    if (!user) return Promise.resolve({ owned_decks: [], shared_decks: [] });
-    return fetchDecks(user);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, cacheKey]);
-
-  const decksResponse = use(decksPromise);
-
-  /**
-   * Helper to check if main deck item should be active
-   * Active only when NOT on a direct subpage (like /dashboard or /today)
-   * Still active on nested routes like /cards/{id}
-   */
-  const isDeckMainActive = (deckId: string) => {
-    if (!pathname) return false;
-
-    const deckBasePath = `/decks/${deckId}`;
-
-    // Not on this deck at all
-    if (!pathname.startsWith(deckBasePath)) return false;
-
-    const pathAfterDeck = pathname.slice(deckBasePath.length);
-
-    // If we're exactly at /decks/{id} or /decks/{id}/
-    if (!pathAfterDeck || pathAfterDeck === '/') return true;
-
-    // Check if there's a second slash (meaning it's a nested route like /cards/{id})
-    // Direct subpages like /dashboard or /today don't have a second slash
-    const remainingPath = pathAfterDeck.startsWith('/') ? pathAfterDeck.slice(1) : pathAfterDeck;
-    return remainingPath.includes('/');
-  };
-
-  const filteredDecks = filterType === 'owned' ? decksResponse.owned_decks || [] : decksResponse.shared_decks || [];
-
-  // Don't render the group if there are no decks
-  if (filteredDecks.length === 0) {
-    return null;
-  }
-
-  return (
-    <SidebarGroup>
-      <SidebarGroupLabel className="flex items-center justify-between pr-1">
-        <span>{title}</span>
-        {action}
-      </SidebarGroupLabel>
-      <SidebarMenu>
-        {filteredDecks.map((deck) => {
-          return (
-            <DeckItem
-              key={deck.id}
-              deck={deck}
-              pathname={pathname}
-              isDeckMainActive={isDeckMainActive}
-              isShared={filterType === 'shared'}
-            />
-          );
-        })}
-      </SidebarMenu>
-    </SidebarGroup>
-  );
-}
-
-// TODO: Why isn't this used?
 function DeckItem({
   deck,
   pathname,
   isDeckMainActive,
   isShared = false,
+  onDeckUpdated,
 }: {
   deck: Pick<Deck, 'id' | 'title'>;
   pathname: string | null;
   isDeckMainActive: (deckId: string) => boolean;
   isShared?: boolean;
+  onDeckUpdated: () => void;
 }) {
   const router = useRouter();
   const { user } = useAuth();
-  const invalidateCache = useContext(DeckCacheContext);
   const shouldBeOpen = pathname?.startsWith(`/decks/${deck.id}`) || false;
   const [isOpen, setIsOpen] = useState(shouldBeOpen);
   const [isEditing, setIsEditing] = useState(false);
@@ -186,7 +76,7 @@ function DeckItem({
   const handleEditClose = (open: boolean) => {
     setIsEditing(open);
     if (!open) {
-      invalidateCache();
+      onDeckUpdated();
     }
   };
 
@@ -196,10 +86,9 @@ function DeckItem({
     const res = await deleteDeck(user, deck.id);
     if (res.success) {
       if (shouldBeOpen) {
-        // Redirect to home
         router.push('/');
       }
-      invalidateCache();
+      onDeckUpdated();
       toast.success('Deck deleted', { icon: <Trash2 size={16} /> });
     } else {
       toast.error('Failed to delete deck');
@@ -270,10 +159,12 @@ function DeckItem({
         </ContextMenuTrigger>
 
         <ContextMenuContent>
-          <ContextMenuItem onClick={() => setIsEditing(true)}>
-            <SquarePen />
-            Edit
-          </ContextMenuItem>
+          {!isShared && (
+            <ContextMenuItem onClick={() => setIsEditing(true)}>
+              <SquarePen />
+              Edit
+            </ContextMenuItem>
+          )}
           <ContextMenuItem onClick={handleShare}>
             <Share2 />
             Share
@@ -314,51 +205,126 @@ function DeckItem({
   );
 }
 
-function DeckGroupSuspense({
+function DeckGroup({
   title,
+  decks,
   filterType,
   action,
-  cacheKey,
+  pathname,
+  onDeckUpdated,
 }: {
   title: string;
+  decks: Deck[];
   filterType: 'owned' | 'shared';
   action?: React.ReactNode;
-  cacheKey: number;
+  pathname: string | null;
+  onDeckUpdated: () => void;
 }) {
+  /**
+   * Helper to check if main deck item should be active
+   * Active only when NOT on a direct subpage (like /dashboard or /today)
+   * Still active on nested routes like /cards/{id}
+   */
+  const isDeckMainActive = (deckId: string) => {
+    if (!pathname) return false;
+
+    const deckBasePath = `/decks/${deckId}`;
+
+    // Not on this deck at all
+    if (!pathname.startsWith(deckBasePath)) return false;
+
+    const pathAfterDeck = pathname.slice(deckBasePath.length);
+
+    // If we're exactly at /decks/{id} or /decks/{id}/
+    if (!pathAfterDeck || pathAfterDeck === '/') return true;
+
+    // Check if there's a second slash (meaning it's a nested route like /cards/{id})
+    // Direct subpages like /dashboard or /today don't have a second slash
+    const remainingPath = pathAfterDeck.startsWith('/') ? pathAfterDeck.slice(1) : pathAfterDeck;
+    return remainingPath.includes('/');
+  };
+
+  // Don't render the group if there are no decks
+  if (decks.length === 0 && action === null) {
+    return null;
+  }
+
   return (
-    <Suspense
-      key={cacheKey}
-      fallback={
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center justify-between pr-1">
-            <span>{title}</span>
-            {action}
-          </SidebarGroupLabel>
-          <SidebarMenu>
-            <Skeleton className="mx-2 h-[20px] rounded-xl" />
-          </SidebarMenu>
-        </SidebarGroup>
-      }
-    >
-      <DeckGroup title={title} filterType={filterType} action={action} cacheKey={cacheKey} />
-    </Suspense>
+    <SidebarGroup>
+      <SidebarGroupLabel className="flex items-center justify-between pr-1">
+        <span>{title}</span>
+        {action}
+      </SidebarGroupLabel>
+      <SidebarMenu>
+        {decks.map((deck) => {
+          return (
+            <DeckItem
+              key={deck.id}
+              deck={deck}
+              pathname={pathname}
+              isDeckMainActive={isDeckMainActive}
+              isShared={filterType === 'shared'}
+              onDeckUpdated={onDeckUpdated}
+            />
+          );
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
   );
 }
 
 export function NavMain() {
-  const [cacheKey, setCacheKey] = useState(cacheInvalidationCounter);
-  const [isAddingDeck, setIsAddingDeck] = useState(false);
+  const pathname = usePathname();
   const { user } = useAuth();
+  const [decks, setDecks] = useState<DecksResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAddingDeck, setIsAddingDeck] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const handleInvalidateCache = () => {
-    invalidateDeckCache();
-    setCacheKey(cacheInvalidationCounter);
+  // Fetch decks whenever user changes or refreshTrigger changes
+  useEffect(() => {
+    if (!user) {
+      setDecks(null);
+      setIsLoading(false);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const fetchDecksData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetchApi<DecksResponse>('users/decks', { user });
+        if (!isCancelled) {
+          setDecks(response);
+        }
+      } catch (error) {
+        console.error('Error fetching decks:', error);
+        if (!isCancelled) {
+          setDecks({ owned_decks: [], shared_decks: [] });
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchDecksData();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [user, refreshTrigger]);
+
+  const handleRefresh = () => {
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleAddDeckClose = (open: boolean) => {
     setIsAddingDeck(open);
     if (!open) {
-      handleInvalidateCache();
+      handleRefresh();
     }
   };
 
@@ -366,24 +332,52 @@ export function NavMain() {
     return null;
   }
 
-  return (
-    <>
-      <DeckCacheContext.Provider value={handleInvalidateCache}>
-        <DeckGroupSuspense
-          title="Decks"
-          filterType="owned"
-          cacheKey={cacheKey}
-          action={
+  if (isLoading) {
+    return (
+      <>
+        <SidebarGroup>
+          <SidebarGroupLabel className="flex items-center justify-between pr-1">
+            <span>Decks</span>
             <button
               onClick={() => setIsAddingDeck(true)}
               className="hover:bg-sidebar-accent cursor-pointer rounded p-0.5"
             >
               <Plus className="h-4 w-4" />
             </button>
-          }
-        />
-        <DeckGroupSuspense title="Shared" filterType="shared" cacheKey={cacheKey} />
-      </DeckCacheContext.Provider>
+          </SidebarGroupLabel>
+          <SidebarMenu>
+            <Skeleton className="mx-2 h-[20px] rounded-xl" />
+          </SidebarMenu>
+        </SidebarGroup>
+        <AddDeckMenu open={isAddingDeck} onOpenChange={handleAddDeckClose} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <DeckGroup
+        title="Decks"
+        decks={decks?.owned_decks || []}
+        filterType="owned"
+        pathname={pathname}
+        onDeckUpdated={handleRefresh}
+        action={
+          <button
+            onClick={() => setIsAddingDeck(true)}
+            className="hover:bg-sidebar-accent cursor-pointer rounded p-0.5"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        }
+      />
+      <DeckGroup
+        title="Shared"
+        decks={decks?.shared_decks || []}
+        filterType="shared"
+        pathname={pathname}
+        onDeckUpdated={handleRefresh}
+      />
       <AddDeckMenu open={isAddingDeck} onOpenChange={handleAddDeckClose} />
     </>
   );
