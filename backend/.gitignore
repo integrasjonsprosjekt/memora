@@ -1,4 +1,5 @@
 memora
 service-account-key.json
+test_serivce-account-key.json
 .env
 scripts/*
