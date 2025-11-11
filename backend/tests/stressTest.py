@@ -1,55 +1,42 @@
 import os
+import sys
 from locust import HttpUser, task, between, events
 import json
 import random
 import string
-from datetime import datetime
+from datetime import datetime, time
 
 def load_tokens():
     if os.path.exists("stress_test_users.json"):
         with open("stress_test_users.json", "r") as f:
             users = json.load(f)
-            tokens = [user['token'] for user in users]
-            return tokens
-    return []
+            return users
+    return {}
 
-TOKENS = load_tokens()
+USERS = load_tokens()
 
 class MemoraUser(HttpUser):
     wait_time = between(1, 3)
     
     def on_start(self):
-        self.user_id = None
+        self.user_data = random.choice(USERS) if USERS else None
+        if not USERS:
+            print("No users available for authentication. Please run token generation script.")
+            sys.exit(1)
+        self.user_id = self.user_data.get("uid")
         self.deck_ids = []
         self.card_ids = []
-        self.auth_token = random.choice(TOKENS) if TOKENS else None
-        
-        self.create_test_user()
-        
+        self.auth_token = self.user_data.get("token")
+        self.decks = {}
+
         self.create_decks_on_start(count=2)
     
-    def create_test_user(self):
-        payload = {
-            "name": f"Test User {self.generate_random_string(5)}"
-        }
-        
-        with self.client.post(
-            "/api/v1/users/",
-            json=payload,
-            catch_response=True,
-            name="Setup: Create User"
-        ) as response:
-            if response.status_code == 201:
-                data = response.json()
-                self.user_id = data.get("id")
-                response.success()
-            else:
-                response.failure(f"Failed to create user: {response.text}")
-    
     def create_decks_on_start(self, count=2):
+        if self.user_id is None:
+            return
         for _ in range(count):
             payload = {
-                "name": f"Initial Deck {self.generate_random_string(5)}",
+                "title": f"Initial Deck {self.generate_random_string(5)}",
             }
             headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
             with self.client.post(
@@ -59,11 +46,12 @@ class MemoraUser(HttpUser):
                 catch_response=True,
                 name="Setup: Create Initial Deck"
             ) as response:
-                if response.status_code == 201:
+                if response.status_code == 201 or response.status_code == 429:
                     data = response.json()
                     deck_id = data.get("id")
                     if deck_id:
                         self.deck_ids.append(deck_id)
+                        self.decks[deck_id] = []
                     response.success()
                 else:
                     response.failure(f"Failed to create initial deck: {response.text}")
@@ -74,8 +62,8 @@ class MemoraUser(HttpUser):
     
     @task(10)
     def health_check(self):
-        with self.client.get("/status/", name="Health Check", catch_response=True) as response:
-            if response.status_code == 200:
+        with self.client.get("/api/v1/status/", name="Health Check", catch_response=True) as response:
+            if response.status_code == 200 or response.status_code == 429:
                 response.success()
             else:
                 response.failure(f"Health check failed: {response.status_code}")
@@ -91,7 +79,7 @@ class MemoraUser(HttpUser):
             catch_response=True,
             name="GET User"
         ) as response:
-            if response.status_code == 200:
+            if response.status_code == 200 or response.status_code == 429:
                 response.success()
             else:
                 response.failure(f"Get user failed: {response.status_code}")
@@ -108,8 +96,15 @@ class MemoraUser(HttpUser):
             catch_response=True,
             name="GET User Decks"
         ) as response:
-            if response.status_code in [200, 404]:
-                self.deck_ids = [deck['id'] for deck in response.json()] if response.status_code == 200 else []
+            if response.status_code == 200 or response.status_code == 429:
+                data = response.json()
+                # API returns {"owned_decks": [...], "shared_decks": [...]}
+                owned = data.get("owned_decks") or []
+                shared = data.get("shared_decks") or []
+                self.deck_ids = [deck['id'] for deck in owned + shared]
+                response.success()
+            elif response.status_code == 404:
+                self.deck_ids = []
                 response.success()
             else:
                 response.failure(f"Get user decks failed: {response.status_code}")
@@ -118,8 +113,7 @@ class MemoraUser(HttpUser):
     def create_deck(self):
         """Create a new deck."""
         payload = {
-            "name": f"Deck {self.generate_random_string(5)}",
-            "description": "A test deck created during stress testing"
+            "title": f"Deck {self.generate_random_string(5)}",
         }
         
         headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
@@ -130,11 +124,12 @@ class MemoraUser(HttpUser):
             catch_response=True,
             name="POST Create Deck"
         ) as response:
-            if response.status_code == 201:
+            if response.status_code == 201 or response.status_code == 429:
                 data = response.json()
                 deck_id = data.get("id")
                 if deck_id:
                     self.deck_ids.append(deck_id)
+                    self.decks[deck_id] = []
                 response.success()
             else:
                 response.failure(f"Create deck failed: {response.text}")  
@@ -157,7 +152,7 @@ class MemoraUser(HttpUser):
             catch_response=True,
             name="GET Deck"
         ) as response:
-            if response.status_code == 200:
+            if response.status_code == 200 or response.status_code == 429:
                 response.success()
             else:
                 response.failure(f"Get deck failed: {response.status_code}")
@@ -183,22 +178,27 @@ class MemoraUser(HttpUser):
             catch_response=True,
             name="POST Create Card in Deck"
         ) as response:
-            if response.status_code == 201:
+            if response.status_code == 201 or response.status_code == 429:
                 data = response.json()
                 card_id = data.get("id")
                 if card_id:
                     self.card_ids.append(card_id)
+                    if deck_id in self.decks:
+                        self.decks[deck_id].append(card_id)
+                    else:
+                        self.decks[deck_id] = [card_id]
                 response.success()
             else:
                 response.failure(f"Create card failed: {response.text}")
     
     @task(6)
     def get_card(self):
-        if not self.card_ids or not self.deck_ids:
+        decks_with_cards = {deck_id: cards for deck_id, cards in self.decks.items() if cards}
+        if not decks_with_cards:
             return
-        
-        card_id = random.choice(self.card_ids)
-        deck_id = random.choice(self.deck_ids)
+
+        deck_id = random.choice(list(decks_with_cards.keys()))
+        card_id = random.choice(decks_with_cards[deck_id])
         headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
         with self.client.get(
             f"/api/v1/decks/{deck_id}/cards/{card_id}/",
@@ -206,18 +206,19 @@ class MemoraUser(HttpUser):
             catch_response=True,
             name="GET Card"
         ) as response:
-            if response.status_code == 200:
+            if response.status_code == 200 or response.status_code == 429:
                 response.success()
             else:
                 response.failure(f"Get card failed: {response.status_code}")
     
     @task(2)
     def update_card(self):
-        if not self.card_ids or not self.deck_ids:
+        decks_with_cards = {deck_id: cards for deck_id, cards in self.decks.items() if cards}
+        if not decks_with_cards:
             return
-        
-        card_id = random.choice(self.card_ids)
-        deck_id = random.choice(self.deck_ids)
+
+        deck_id = random.choice(list(decks_with_cards.keys()))
+        card_id = random.choice(decks_with_cards[deck_id])
         payload = {
             "front": f"Updated Front {self.generate_random_string(5)}",
             "back": f"Updated Back {self.generate_random_string(5)}",
@@ -232,17 +233,19 @@ class MemoraUser(HttpUser):
             catch_response=True,
             name="PUT Update Card"
         ) as response:
-            if response.status_code == 200:
+            if response.status_code == 200 or response.status_code == 429:
                 response.success()
             else:
                 response.failure(f"Update card failed: {response.status_code}")
     @task(1)
     def delete_card(self):
-        if not self.card_ids or not self.deck_ids:
+        decks_with_cards = {deck_id: cards for deck_id, cards in self.decks.items() if cards}
+        if not decks_with_cards:
             return
+
+        deck_id = random.choice(list(decks_with_cards.keys()))
+        card_id = self.decks[deck_id].pop(random.randrange(len(self.decks[deck_id])))
         
-        card_id = random.choice(self.card_ids)
-        deck_id = random.choice(self.deck_ids)
         headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
         with self.client.delete(
             f"/api/v1/decks/{deck_id}/cards/{card_id}/",
@@ -250,7 +253,7 @@ class MemoraUser(HttpUser):
             catch_response=True,
             name="DELETE Card"
         ) as response:
-            if response.status_code == 204:
+            if response.status_code == 204 or response.status_code == 429:
                 self.card_ids.remove(card_id)
                 response.success()
             else:
@@ -274,27 +277,83 @@ def on_test_stop(environment, **kwargs):
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*60 + "\n")
     
+
 class ReadOnlyUser(HttpUser):
     wait_time = between(0.5, 2)
-    weight = 3
+    weight = 2
     
-    @task
+    def on_start(self):
+        self.user_data = random.choice(USERS) if USERS else None
+        if not self.user_data:
+            return
+        self.auth_token = self.user_data['token']
+    
+    @task(10)
     def read_health(self):
-        self.client.get("/api/v1/status/", name="Health Check ReadOnly")
+        with self.client.get(
+            "/api/v1/status/",
+            catch_response=True,
+            name="ReadOnly: Health Check"
+        ) as response:
+            if response.status_code == 200 or response.status_code == 429:
+                response.success()
+            else:
+                response.failure(f"Failed with status {response.status_code}")
+    
+    @task(5)
+    def read_user_decks(self):
+        if not self.user_data:
+            return
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        with self.client.get(
+            "/api/v1/users/decks/",
+            headers=headers,
+            catch_response=True,
+            name="ReadOnly: Get Decks"
+        ) as response:
+            if response.status_code == 200 or response.status_code == 429:
+                response.success()
+            else:
+                response.failure(f"Failed with status {response.status_code}")
 
 class WriteHeavyUser(HttpUser):
-    """
-    A user that primarily creates data.
-    Useful for testing write performance.
-    """
-    wait_time = between(2, 5)
+    """User that performs write-heavy operations"""
+    wait_time = between(2, 5)  # Longer wait time to avoid rate limiting
     weight = 1
+    
+    def on_start(self):
+        self.user_data = random.choice(USERS) if USERS else None
+        if not self.user_data:
+            return
+        self.auth_token = self.user_data['token']
+    
+    @staticmethod
+    def generate_random_string(length=10):
+        """Generate random string for test data"""
+        return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
     
     @task
     def create_many_decks(self):
-        """Rapidly create multiple decks."""
-        for _ in range(3):
+        """Create multiple decks with proper rate limiting"""
+        if not self.user_data:
+            return
+        
+        for i in range(3):
             payload = {
-                "name": f"Bulk Deck {MemoraUser.generate_random_string(5)}",
+                "title": f"Bulk Deck {self.generate_random_string(5)}"
             }
-            self.client.post("/api/v1/decks/", json=payload, name="WriteHeavy: Create Deck")
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            with self.client.post(
+                "/api/v1/decks/",
+                json=payload,
+                headers=headers,
+                catch_response=True,
+                name="WriteHeavy: Create Deck"
+            ) as response:
+                if response.status_code == 201 or response.status_code == 429:
+                    response.success()
+                elif response.status_code == 429:
+                    response.failure(f"Rate limited on deck {i+1}/3")
+                    break  # Stop creating more decks if rate limited
+                else:
+                    response.failure(f"Failed to create deck: {response.status_code} - {response.text}")

@@ -3,24 +3,56 @@ from firebase_admin import credentials, auth
 import json
 import os
 import sys
+import requests
 
 class FirebaseTokenGenerator:
-    def __init__(self, service_account_path="../test_service-account-key.json"):
-       if not firebase_admin._apps:
+    def __init__(self, service_account_path="../test_service-account-key.json"):        
+        if not firebase_admin._apps:
             cred = credentials.Certificate(service_account_path)
             firebase_admin.initialize_app(cred)
     
     def create_custom_token(self, uid, additional_claims=None):
-        return auth.create_custom_token(uid, additional_claims).decode("utf-8")
+        return auth.create_custom_token(uid, additional_claims)
     
+    def exchange_custom_token_for_id_token(self, custom_token):        
+        resp = requests.post(
+            "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken",
+            params={"key": os.getenv("FIREBASE_API_KEY", "")},
+            json={"token": custom_token.decode("utf-8"), "returnSecureToken": True},
+        )
+        if resp.status_code == 200:
+            return resp.json()["idToken"]
+        else:
+            print("Error exchanging token:", resp.text)
+            return None
+    def register_user_in_backend(self, id_token):
+        headers = {'Authorization': f"Bearer {id_token}"}
+        payload = {"name": "Stress Test User"}
+        
+        resp = requests.post(
+            "http://localhost:8080/api/v1/users/",
+            headers=headers,
+            json=payload
+        )
+        if resp.status_code == 201:
+            print("User registered successfully.")
+        else:
+            print("Error registering user:", resp.text)
+
     def create_user_and_token(self, email=None, password=None, display_name=None):
         try:
             user = auth.create_user(
                 email=email,
-                display_name=display_name,
+                password=password,
+                display_name=display_name
             )
             custom_token = auth.create_custom_token(user.uid)
-            return user.uid, custom_token.decode("utf-8")
+
+            id_token = self.exchange_custom_token_for_id_token(custom_token)
+            if id_token:
+                self.register_user_in_backend(id_token)
+            return user.uid, id_token
+
         except Exception as e:
             print(f"Error creating user: {e}")
             return None, None
