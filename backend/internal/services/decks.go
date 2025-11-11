@@ -184,7 +184,7 @@ func (s *DeckService) UpdateDeck(
 		return models.Deck{}, err
 	}
 
-    s.invalidateDeckCaches(ctx, deckID, ownerEmail, deck.SharedEmails)
+	s.invalidateDeckCaches(ctx, deckID, ownerEmail, deck.SharedEmails)
 
 	// Fetch and return the updated deck
 	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
@@ -289,31 +289,35 @@ func (s *DeckService) GetDueCardsInDeck(
 	return s.Cards.GetDueCardsInDeck(ctx, deckID, userID, limit, cursor)
 }
 
-func (s *DeckService) invalidateDeckCaches(ctx context.Context, deckID, ownerEmail string, sharedEmails []string) {
-    var wg sync.WaitGroup
-    
-    // Delete individual deck cache
-    wg.Add(1)
-    go func() {
-        defer wg.Done()
-        utils.DeleteDataFromRedis(utils.DeckKey(deckID), s.rdb, ctx)
-    }()
-    
-    // Invalidate owner's deck list cache
-    wg.Add(1)
-    go func() {
-        defer wg.Done()
-        s.invalidateUserDecksCacheByEmail(ownerEmail)
-    }()
-    
-    // Invalidate shared users' deck list caches
-    wg.Add(1)
-    go func() {
-        defer wg.Done()
-        s.invalidateUserDecksCacheByEmails(sharedEmails)
-    }()
-    
-    wg.Wait()
+func (s *DeckService) invalidateDeckCaches(
+	ctx context.Context,
+	deckID, ownerEmail string,
+	sharedEmails []string,
+) {
+	var wg sync.WaitGroup
+
+	// Delete individual deck cache
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		utils.DeleteDataFromRedis(utils.DeckKey(deckID), s.rdb, ctx)
+	}()
+
+	// Invalidate owner's deck list cache
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		s.invalidateUserDecksCacheByEmail(ownerEmail)
+	}()
+
+	// Invalidate shared users' deck list caches
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		s.invalidateUserDecksCacheByEmails(sharedEmails)
+	}()
+
+	wg.Wait()
 }
 
 func (s *DeckService) invalidateUserDecksCacheByEmail(email string) {
