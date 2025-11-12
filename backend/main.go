@@ -34,8 +34,8 @@ func main() {
 	validate := validator.New()
 
 	// Initialize repositories and services
-	repos := firebase.NewRepositories(client, auth, rbd)
-	services := services.NewServices(repos, validate)
+	repos := firebase.NewRepositories(client, auth)
+	services := services.NewServices(repos, validate, rbd)
 
 	// Set up and run the router
 	r := router.New()

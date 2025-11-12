@@ -13,6 +13,7 @@ type ServiceDeps struct {
 	DeckRepo firebase.DeckRepository
 	AuthRepo firebase.FirebaseAuth
 	Redis    *redis.Client
+	Cache    *CacheService
 	Validate *validator.Validate
 }
 
@@ -25,13 +26,14 @@ type Services struct {
 }
 
 // NewServices creates a new Services struct with the provided repositories and validator.
-func NewServices(repos *firebase.Repositories, validate *validator.Validate) *Services {
+func NewServices(repos *firebase.Repositories, validate *validator.Validate, rdb *redis.Client) *Services {
 	deps := &ServiceDeps{
 		UserRepo: repos.User,
 		CardRepo: repos.Card,
 		DeckRepo: repos.Deck,
 		AuthRepo: repos.Auth,
-		Redis:    repos.Redis,
+		Redis:    rdb,
+		Cache:    NewCacheService(rdb),
 		Validate: validate,
 	}
 
@@ -39,6 +41,6 @@ func NewServices(repos *firebase.Repositories, validate *validator.Validate) *Se
 		Users: NewUserService(deps),
 		Decks: NewDeckService(deps),
 		Auth:  NewAuthService(deps),
-		Rdb:   deps.Redis,
+		Rdb:   rdb,
 	}
 }

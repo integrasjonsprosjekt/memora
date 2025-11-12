@@ -6,10 +6,8 @@ import (
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
-	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/redis/go-redis/v9"
 )
 
 // Default filter for all fields, used when updating a user
@@ -18,7 +16,7 @@ var defaultFilterUsers = "email,name"
 // UserService provides methods for managing users.
 type UserService struct {
 	repo     firebase.UserRepository
-	rdb      *redis.Client
+	cache    *CacheService
 	validate *validator.Validate
 }
 
@@ -28,7 +26,7 @@ func NewUserService(
 ) *UserService {
 	return &UserService{
 		repo:     deps.UserRepo,
-		rdb:      deps.Redis,
+		cache:    deps.Cache,
 		validate: deps.Validate,
 	}
 }
@@ -49,18 +47,19 @@ func (s *UserService) GetUser(
 	cacheKey := utils.UserKey(id)
 
 	// Try to get the user from the cache
-	cachedUser, err := utils.GetDataFromRedis[models.User](cacheKey, s.rdb, ctx)
+	var user models.User
+	err = s.cache.Get(ctx, cacheKey, &user)
 	if err == nil {
-		return cachedUser, nil
+		return user, nil
 	}
 
-	user, err := s.repo.GetUser(ctx, id, filterParsed)
+	user, err = s.repo.GetUser(ctx, id, filterParsed)
 	if err != nil {
 		return models.User{}, err
 	}
 
 	// Store the user in the cache for future requests
-	utils.SetDataToRedis(cacheKey, user, s.rdb, ctx, 5*time.Minute)
+	s.cache.SetAsync(cacheKey, user, UserTTL)
 
 	return user, nil
 }
@@ -78,23 +77,19 @@ func (s *UserService) GetDecks(
 	}
 
 	cacheKey := utils.UserEmailDecksKey(email)
-	cachedDecks, err := utils.GetDataFromRedis[models.UserDecks](cacheKey, s.rdb, ctx)
+	var decks models.UserDecks
+	err = s.cache.Get(ctx, cacheKey, &decks)
 	if err == nil {
-		return cachedDecks, nil
+		return decks, nil
 	}
 
-	decks, err := s.repo.GetDecks(ctx, id, filterParsed)
+	decks, err = s.repo.GetDecks(ctx, id, filterParsed)
 	if err != nil {
 		return models.UserDecks{}, err
 	}
 
-	go func() {
-		bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		utils.SetDataToRedis(cacheKey, decks, s.rdb, bgCtx, 5*time.Minute)
-	}()
+	s.cache.SetAsync(cacheKey, decks, UserTTL)
 
-	// Return the list of decks
 	return decks, nil
 }
 
@@ -131,15 +126,13 @@ func (s *UserService) UpdateUser(
 		return models.User{}, errors.ErrInvalidUser
 	}
 
-	cacheKey := utils.UserKey(id)
-
-	utils.DeleteDataFromRedis(cacheKey, s.rdb, ctx)
-
 	// Perform the update in the repository
 	err = s.repo.UpdateUser(ctx, update, id)
 	if err != nil {
 		return models.User{}, err
 	}
+
+	s.cache.Delete(ctx, utils.UserKey(id))
 
 	return s.GetUser(ctx, id, defaultFilterUsers)
 }
@@ -150,7 +143,12 @@ func (s *UserService) DeleteUser(
 	ctx context.Context,
 	id string,
 ) error {
-	utils.DeleteDataFromRedis(utils.UserKey(id), s.rdb, ctx)
+	err := s.repo.DeleteUser(ctx, id)
+	if err != nil {
+		return err
+	}
 
-	return s.repo.DeleteUser(ctx, id)
+	s.cache.Delete(ctx, utils.UserKey(id))
+
+	return nil
 }
