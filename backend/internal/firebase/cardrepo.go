@@ -338,7 +338,7 @@ func (r *FirestoreCardRepo) GetDueCardsInDeck(
 			Collection(config.DecksCollection).Doc(deckID).
 			Collection(config.UsersCollection).Doc(userID).
 			Collection(config.ProgressCollection).
-			OrderBy("due", firestore.Asc).
+			OrderBy("due", firestore.Desc).
 			Limit(remaining + 1)
 
 		// Apply cursor if provided in previous query
