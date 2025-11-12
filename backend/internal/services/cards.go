@@ -4,17 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"memora/internal/errors"
 	"memora/internal/firebase"
 	"memora/internal/models"
 	"memora/internal/utils"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/redis/go-redis/v9"
 )
 
 // Used to get the type of card based on request
@@ -28,7 +25,7 @@ var cardRegistry = map[string]func() models.Card{
 // CardService provides methods for managing cards.
 type CardService struct {
 	repo     firebase.CardRepository
-	rdb      *redis.Client
+	cache    *CacheService
 	validate *validator.Validate
 }
 
@@ -38,7 +35,7 @@ func NewCardService(
 ) *CardService {
 	return &CardService{
 		repo:     deps.CardRepo,
-		rdb:      deps.Redis,
+		cache:    deps.Cache,
 		validate: deps.Validate,
 	}
 }
@@ -49,45 +46,35 @@ func (s *CardService) GetCardInDeck(
 	ctx context.Context,
 	deckID, cardID string,
 ) (models.Card, error) {
-	// Check if the card is cached
+	// Try cache first
 	cacheKey := utils.DeckCardKey(deckID, cardID)
-	cachedCard, err := utils.GetDataFromRedis[json.RawMessage](cacheKey, s.rdb, ctx)
-	if err == nil {
-		card, err := GetCardStruct(cachedCard, fmt.Errorf("internal server error"))
-		if err != nil {
-			return nil, err
+	var rawCard json.RawMessage
+	if err := s.cache.Get(ctx, cacheKey, &rawCard); err == nil {
+		card, err := GetCardStruct(rawCard, fmt.Errorf("internal server error"))
+		if err == nil {
+			return card, nil
 		}
-
-		return card, nil
 	}
 
+	// Cache miss - fetch from Firestore
 	doc, err := s.repo.GetCardInDeck(ctx, deckID, cardID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Convert the document to JSON
 	raw, err := json.Marshal(doc)
 	if err != nil {
 		return nil, err
 	}
 
-	// Convert the JSON to the appropriate card struct based on its type
 	card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
 	if err != nil {
 		return nil, err
 	}
-
 	card.SetID(cardID)
 
-	// Cache the card for future requests
-	go func() {
-		// Create new context with timeout for the background operation
-		cacheCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		utils.SetDataToRedis(cacheKey, card, s.rdb, cacheCtx, 10*time.Minute)
-	}()
+	// Cache for next time
+	s.cache.SetAsync(cacheKey, raw, CardTTL)
 
 	return card, nil
 }
@@ -107,8 +94,9 @@ func (s *CardService) GetCardsInDeck(
 		cacheKey = fmt.Sprintf("%s:cursor:%s", cacheKey, cursor)
 	}
 
-	cached, err := utils.GetDataFromRedis[models.CacheResult](cacheKey, s.rdb, ctx)
-	if err == nil {
+	// Try cache first
+	var cached models.CacheResult
+	if err := s.cache.Get(ctx, cacheKey, &cached); err == nil {
 		var cards []models.Card
 		for _, raw := range cached.CardsJSON {
 			card, err := GetCardStruct(raw, fmt.Errorf("internal server error"))
@@ -117,18 +105,15 @@ func (s *CardService) GetCardsInDeck(
 			}
 			cards = append(cards, card)
 		}
-
 		return cards, cached.HasMore, nil
 	}
 
-	// Fetch raw card documents from the repository
+	// Cache miss - fetch from Firestore
 	docs, hasMore, err := s.repo.GetCardsInDeck(ctx, deckID, limit, cursor)
 	if err != nil {
 		return nil, false, err
 	}
 
-	// Convert each document to the appropriate card struct
-	// based on its type
 	var cards []models.Card
 	var cardsJSON []json.RawMessage
 	for _, doc := range docs {
@@ -148,19 +133,12 @@ func (s *CardService) GetCardsInDeck(
 		cards = append(cards, card)
 	}
 
-	go func() {
-		// Create new context with timeout for the background operation
-		cacheCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		utils.SetDataToRedis(
-			cacheKey,
-			models.CacheResult{CardsJSON: cardsJSON, HasMore: hasMore},
-			s.rdb,
-			cacheCtx,
-			10*time.Minute,
-		)
-	}()
+	// Cache the result
+	s.cache.SetAsync(
+		cacheKey,
+		models.CacheResult{CardsJSON: cardsJSON, HasMore: hasMore},
+		CardListTTL,
+	)
 
 	return cards, hasMore, nil
 }
@@ -187,7 +165,7 @@ func (s *CardService) CreateCard(
 		return "", err
 	}
 
-	s.invalidateDeckCardsCache(deckID, id)
+	s.cache.DeletePattern(ctx, utils.DeckCardsKey(deckID) + "*")
 
 	return id, nil
 }
@@ -235,7 +213,7 @@ func (s CardService) UpdateCard(
 		return err
 	}
 
-	s.invalidateDeckCardsCache(deckID, cardID)
+	s.cache.DeletePattern(ctx, utils.DeckCardsKey(deckID) + "*")
 
 	return nil
 }
@@ -251,7 +229,7 @@ func (s *CardService) DeleteCard(
 		return err
 	}
 
-	s.invalidateDeckCardsCache(deckID, cardID)
+	s.cache.DeletePattern(ctx, utils.DeckCardsKey(deckID) + "*")
 
 	return nil
 }
@@ -398,37 +376,4 @@ func (s *CardService) GetDueCardsInDeck(
 	}
 
 	return cards, nextCursor, hasMore, nil
-}
-
-func (s *CardService) invalidateDeckCardsCache(
-	deckID string,
-	cardID string,
-) {
-	var wg sync.WaitGroup
-
-	bgCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		pattern := fmt.Sprintf("%s:cards:*", utils.DeckKey(deckID))
-		iter := s.rdb.Scan(bgCtx, 0, pattern, 0).Iterator()
-		for iter.Next(bgCtx) {
-			utils.DeleteDataFromRedis(iter.Val(), s.rdb, bgCtx)
-		}
-		if err := iter.Err(); err != nil {
-			slog.Error("Error invalidating deck cards cache: ", slog.Any("error", err))
-		}
-	}()
-
-	if cardID != "" {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			pattern := utils.DeckCardKey(deckID, cardID)
-			utils.DeleteDataFromRedis(pattern, s.rdb, bgCtx)
-		}()
-	}
-	wg.Wait()
 }
