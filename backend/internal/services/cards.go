@@ -306,7 +306,7 @@ func (s *CardService) UpdateCardProgress(
 		if err == errors.ErrInvalidId {
 			progress = models.CardProgress{
 				EaseFactor:   2500,
-				Reps:         1,
+				Reps:         0,
 				Lapses:       0,
 				Interval:     0,
 				LastReviewed: time.Time{},

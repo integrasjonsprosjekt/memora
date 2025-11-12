@@ -134,13 +134,19 @@ func (r *FirestoreUserRepo) GetDecks(
 }
 
 // AddUser adds a new user to Firestore, with a mock deck.
-// Error on failure or if the email is already present.
+// Error on failure.
 // Returns the new user's ID on success.
 func (r *FirestoreUserRepo) AddUser(
 	ctx context.Context,
 	user models.CreateUser,
 	id string,
 ) error {
+	// Check if user already exists as the frontend may call this multiple times
+	_, err := utils.GetDocumentIfExists(r.client, ctx, config.UsersCollection, id)
+	if err == nil {
+		return nil
+	}
+
 	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 		if err := tx.Set(r.client.Collection(config.UsersCollection).Doc(id), user); err != nil {
 			return err
