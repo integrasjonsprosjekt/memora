@@ -44,6 +44,7 @@ func (c *CacheService) Set(ctx context.Context, key string, value any, ttl time.
 	err = c.rdb.Set(ctx, key, data, ttl).Err()
 	if err != nil {
 		slog.Error("failed to set cache value", "error", err)
+		return err
 	}
 	return nil
 }
@@ -66,6 +67,7 @@ func (c *CacheService) Delete(ctx context.Context, keys ...string) error {
 	err := c.rdb.Del(ctx, keys...).Err()
 	if err != nil {
 		slog.Error("failed to delete cache keys", "error", err)
+		return err
 	}
 	return nil
 }
