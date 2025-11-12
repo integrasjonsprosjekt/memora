@@ -83,7 +83,7 @@ func (c *CacheService) DeleteAsync(keys ...string) {
 
 func (c *CacheService) DeletePattern(ctx context.Context, pattern string) error {
 	iter := c.rdb.Scan(ctx, 0, pattern, 0).Iterator()
-	
+
 	var keys []string
 	for iter.Next(ctx) {
 		keys = append(keys, iter.Val())

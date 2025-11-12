@@ -26,7 +26,11 @@ type Services struct {
 }
 
 // NewServices creates a new Services struct with the provided repositories and validator.
-func NewServices(repos *firebase.Repositories, validate *validator.Validate, rdb *redis.Client) *Services {
+func NewServices(
+	repos *firebase.Repositories,
+	validate *validator.Validate,
+	rdb *redis.Client,
+) *Services {
 	deps := &ServiceDeps{
 		UserRepo: repos.User,
 		CardRepo: repos.Card,

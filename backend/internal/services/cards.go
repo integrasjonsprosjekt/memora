@@ -165,7 +165,7 @@ func (s *CardService) CreateCard(
 		return "", err
 	}
 
-	s.cache.DeletePattern(ctx, utils.DeckCardsKey(deckID) + "*")
+	s.cache.DeletePattern(ctx, utils.DeckCardsKey(deckID)+"*")
 
 	return id, nil
 }
@@ -213,7 +213,7 @@ func (s CardService) UpdateCard(
 		return err
 	}
 
-	s.cache.DeletePattern(ctx, utils.DeckCardsKey(deckID) + "*")
+	s.cache.DeletePattern(ctx, utils.DeckCardsKey(deckID)+"*")
 
 	return nil
 }
@@ -229,7 +229,7 @@ func (s *CardService) DeleteCard(
 		return err
 	}
 
-	s.cache.DeletePattern(ctx, utils.DeckCardsKey(deckID) + "*")
+	s.cache.DeletePattern(ctx, utils.DeckCardsKey(deckID)+"*")
 
 	return nil
 }
