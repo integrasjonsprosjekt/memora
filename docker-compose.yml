@@ -47,7 +47,7 @@ services:
     <<: [*dev, *backend]
     image: golang:1.25
     ports:
-      - ${APP_PORT:-8080}:${APP_PORT:-8080}
+      - 3000:3000
     environment:
       GO_ENV: development
       LOG_LEVEL: debug
@@ -66,7 +66,7 @@ services:
     <<: [*dev, *frontend]
     image: node:24-alpine
     ports:
-      - ${APP_PORT:-3000}:${APP_PORT:-3000}
+      - 8080:8080
     volumes:
       - ./frontend:/usr/src/app
     command: ["npm", "run", "dev"]
