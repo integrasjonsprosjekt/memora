@@ -60,30 +60,18 @@ func (c *CacheService) SetAsync(key string, value any, ttl time.Duration) {
 	}()
 }
 
-func (c *CacheService) Delete(ctx context.Context, keys ...string) error {
+func (c *CacheService) Delete(ctx context.Context, keys ...string) {
 	if len(keys) == 0 {
-		return nil
+		return
 	}
 	err := c.rdb.Del(ctx, keys...).Err()
 	if err != nil {
 		slog.Error("failed to delete cache keys", "error", err)
-		return err
+		return
 	}
-	return nil
 }
 
-func (c *CacheService) DeleteAsync(keys ...string) {
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), CacheOpTimeout)
-		defer cancel()
-		err := c.Delete(ctx, keys...)
-		if err != nil {
-			slog.Error("failed to delete cache keys asynchronously", "error", err)
-		}
-	}()
-}
-
-func (c *CacheService) DeletePattern(ctx context.Context, pattern string) error {
+func (c *CacheService) DeletePattern(ctx context.Context, pattern string) {
 	iter := c.rdb.Scan(ctx, 0, pattern, 0).Iterator()
 
 	var keys []string
@@ -93,8 +81,8 @@ func (c *CacheService) DeletePattern(ctx context.Context, pattern string) error 
 
 	if err := iter.Err(); err != nil {
 		slog.Error("failed to scan cache keys", "error", err)
-		return err
+		return
 	}
 
-	return c.Delete(ctx, keys...)
+	c.Delete(ctx, keys...)
 }
