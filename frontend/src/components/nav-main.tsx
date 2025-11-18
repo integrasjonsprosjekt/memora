@@ -245,7 +245,7 @@ function DeckGroup({
   };
 
   // Don't render the group if there are no decks
-  if (decks.length === 0 && action === null) {
+  if (decks.length === 0 && !action) {
     return null;
   }
 
@@ -377,6 +377,7 @@ export function NavMain() {
         filterType="shared"
         pathname={pathname}
         onDeckUpdated={handleRefresh}
+        action={null}
       />
       <AddDeckMenu open={isAddingDeck} onOpenChange={handleAddDeckClose} />
     </>
