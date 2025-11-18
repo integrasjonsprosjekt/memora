@@ -16,14 +16,12 @@ x-prod: &prod
 x-backend: &backend
   hostname: backend
   container_name: backend
-  environment:
+  environment: &backend-env
     GOOGLE_APPLICATION_CREDENTIALS: "/run/secrets/service-account-key.json"
     APP_HOST: "0.0.0.0"
     PORT: "8080"
     REDIS_ADDR: "redis:6379"
     REDIS_PASSWORD: ""
-    GO_ENV: "development"
-    LOG_LEVEL: "debug"
   env_file:
     - path: ./backend/.env
       required: false
@@ -59,6 +57,10 @@ services:
       - 3000:3000
     volumes:
       - ./backend:/usr/src/app:ro
+    environment:
+      <<: *backend-env
+      GO_ENV: "development"
+      LOG_LEVEL: "debug"
     depends_on:
       - redis-dev
     command: ["go", "run", "."]
