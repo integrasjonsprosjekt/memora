@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList } from '@/components/ui/breadcrumb';
 import { Deck } from '@/types/deck';
 import { DeckBreadcrumb } from './deck-breadcrumb';
 import { useAuth } from '@/context/auth';
@@ -50,10 +44,6 @@ export default function Layout({
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbPage>Decks</BreadcrumbPage>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
         {loading ? (
           <BreadcrumbItem>
             <Skeleton className="h-4 w-24" />

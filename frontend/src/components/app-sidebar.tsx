@@ -21,11 +21,6 @@ import {
 } from '@/components/ui/sidebar';
 
 const data = {
-  user: {
-    name: 'user',
-    email: 'm@example.com',
-    avatar: '/logo.svg',
-  },
   actions: [
     {
       name: 'Dashboard',
