@@ -216,10 +216,11 @@ func (s *DeckService) UpdateEmailsInDeck(
 		return models.Deck{}, errors.ErrInvalidDeck
 	}
 
-	deck, err := s.repo.GetOneDeck(ctx, deckID, []string{"shared_emails"})
+	oldDeck, err := s.repo.GetOneDeck(ctx, deckID, []string{"shared_emails"})
 	if err != nil {
 		return models.Deck{}, err
 	}
+	oldShared := oldDeck.SharedEmails
 
 	// Perform the appropriate operation based on the Opp field
 	switch emails.Opp {
@@ -234,8 +235,15 @@ func (s *DeckService) UpdateEmailsInDeck(
 		return models.Deck{}, err
 	}
 
-	// Invalidate relevant caches
-	s.invalidateDeckCaches(deckID, ownerEmail, deck.SharedEmails)
+	newDeck, err := s.repo.GetOneDeck(ctx, deckID, []string{"shared_emails"})
+	if err != nil {
+		return models.Deck{}, err
+	}
+	newShared := newDeck.SharedEmails
+
+	// Invalidate caches for both old and new shared emails
+	allShared := append(oldShared, newShared...)
+	s.invalidateDeckCaches(deckID, ownerEmail, allShared)
 
 	// Fetch and return the updated deck
 	return s.GetOneDeck(ctx, deckID, defaultFilterDecks)
