@@ -60,13 +60,16 @@ export default function Page({ params }: { params: Promise<{ deckId: string }> }
         const url = `decks/${deckId}/cards/due?limit=${limit}${cursorParam ? `&cursor=${cursorParam}` : ''}`;
         const response = await fetchApi<DueCardsResponse>(url, { user });
 
+        // Validate that cards is an array
+        const cardsArray = Array.isArray(response.cards) ? response.cards : [];
+
         if (isInitial) {
-          setCards(response.cards);
+          setCards(cardsArray);
         } else {
-          setCards((prev) => [...prev, ...response.cards]);
+          setCards((prev) => [...prev, ...cardsArray]);
         }
-        setCursor(response.next_cursor);
-        setHasMore(response.has_more);
+        setCursor(response.next_cursor || '');
+        setHasMore(response.has_more || false);
       } catch (error) {
         console.error(error);
         setError('Failed to load due cards');
@@ -96,10 +99,10 @@ export default function Page({ params }: { params: Promise<{ deckId: string }> }
     setRefreshKey((prev) => prev + 1);
 
     // If we're approaching the end and there are more cards, fetch the next batch
-    if (cards.length > 0 && currentIndex >= cards.length - 3 && hasMore && !fetchingMore) {
+    if (Array.isArray(cards) && cards.length > 0 && currentIndex >= cards.length - 3 && hasMore && !fetchingMore) {
       fetchDueCards(cursor, false);
     }
-  }, [currentIndex, cards.length, hasMore, cursor, fetchingMore, fetchDueCards]);
+  }, [currentIndex, cards, hasMore, cursor, fetchingMore, fetchDueCards]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
