@@ -67,8 +67,8 @@ export function CardThumbnail({
 
   const cardContent = (
     <>
-      <div className="flex-1 overflow-y-auto">{children}</div>
-      <div className="mt-auto pt-2">
+      <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+      <div className="mt-auto flex-shrink-0 pt-2">
         {tags?.map((tag, index) => (
           <Badge key={index} variant="outline">
             {tag}
@@ -77,7 +77,7 @@ export function CardThumbnail({
       </div>
     </>
   );
-  const cardContentClassName = 'flex flex-1 flex-col';
+  const cardContentClassName = 'flex min-h-0 flex-1 flex-col';
 
   return (
     <>
