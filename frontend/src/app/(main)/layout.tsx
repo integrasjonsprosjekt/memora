@@ -8,7 +8,6 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
 
 export default function RootLayout({
   breadcrumb,
@@ -51,7 +50,7 @@ export default function RootLayout({
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn('size-7', 'animate-in fade-in slide-in-from-left-2 rounded-full duration-200')}
+                className="animate-in fade-in slide-in-from-left-2 size-7 rounded-full duration-200"
                 onClick={handleBack}
               >
                 <ArrowLeft />
