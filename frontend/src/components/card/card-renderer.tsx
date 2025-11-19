@@ -83,7 +83,7 @@ export function RenderCardThumbnail({
       clickable={clickable}
       onSuccess={onSuccess}
     >
-      {cardComponent}
+      <div className="overflow-hidden">{cardComponent}</div>
     </CardThumbnail>
   );
 }
