@@ -81,11 +81,11 @@ export default function CardPage({ params }: { params: Promise<{ deckId: string;
 
   if (loading) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-between px-4 pb-8 sm:px-6 lg:px-8">
-        <div className="flex w-full flex-1 items-center justify-center">
-          <Skeleton className="h-[400px] w-full max-w-sm -translate-y-30 rounded-2xl sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl" />
+      <div className="flex h-full flex-col px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto pt-8 pb-24">
+          <Skeleton className="h-[400px] w-full max-w-sm rounded-2xl sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex justify-center gap-2 pt-8">
           <Skeleton className="h-10 w-20 rounded-md" />
           <Skeleton className="h-10 w-24 rounded-md" />
         </div>
@@ -113,17 +113,17 @@ export default function CardPage({ params }: { params: Promise<{ deckId: string;
 
   return (
     <>
-      <div className="flex flex-1 flex-col items-center justify-between px-4 pb-8 sm:px-6 lg:px-8">
-        <div className="flex w-full flex-1 items-center justify-center">
+      <div className="flex h-full flex-col px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto pt-8 pb-24">
           <RenderCardThumbnail
             key={`${card.id}-${refreshKey}`}
             card={card}
             deckId={deckId}
             clickable={false}
-            className="max-w-sm -translate-y-30 transform px-10 py-5 text-xl sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl"
+            className="max-w-sm px-10 py-5 text-xl sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex justify-center gap-2 pt-8">
           <Button variant="outline" onClick={() => setEditOpen(true)}>
             <SquarePen />
             Edit
