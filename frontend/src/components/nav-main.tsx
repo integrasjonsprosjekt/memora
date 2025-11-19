@@ -1,6 +1,6 @@
 'use client';
 
-import { FileBox, ChevronRight, Plus, Trash2, SquarePen, Share2 } from 'lucide-react';
+import { FileBox, ChevronRight, Plus, Trash2, SquarePen, Copy } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -100,7 +100,7 @@ function DeckItem({
     const url = `${window.location.origin}/decks/${deck.id}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success('Link copied to clipboard', { icon: <Share2 size={16} /> });
+      toast.success('Link copied to clipboard', { icon: <Copy size={16} /> });
     } catch (error) {
       console.error('Failed to copy link:', error);
       toast.error('Failed to copy link');
@@ -166,8 +166,8 @@ function DeckItem({
             </ContextMenuItem>
           )}
           <ContextMenuItem onClick={handleShare}>
-            <Share2 />
-            Share
+            <Copy />
+            Copy link
           </ContextMenuItem>
           {!isShared && (
             <>
