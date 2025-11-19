@@ -99,10 +99,10 @@ export default function Page({ params }: { params: Promise<{ deckId: string }> }
     setRefreshKey((prev) => prev + 1);
 
     // If we're approaching the end and there are more cards, fetch the next batch
-    if (Array.isArray(cards) && cards.length > 0 && currentIndex >= cards.length - 3 && hasMore && !fetchingMore) {
+    if (cards.length > 0 && currentIndex >= cards.length - 3 && hasMore && !fetchingMore) {
       fetchDueCards(cursor, false);
     }
-  }, [currentIndex, cards, hasMore, cursor, fetchingMore, fetchDueCards]);
+  }, [currentIndex, cards.length, hasMore, cursor, fetchingMore, fetchDueCards]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
