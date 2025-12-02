@@ -4,14 +4,17 @@ from locust import HttpUser, task, between, events
 import json
 import random
 import string
-from datetime import datetime, time
+from datetime import datetime
 
 def load_tokens():
     if os.path.exists("stress_test_users.json"):
         with open("stress_test_users.json", "r") as f:
             users = json.load(f)
             return users
-    return {}
+    return []
+
+def generate_random_string(length=10):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 USERS = load_tokens()
 
@@ -36,7 +39,7 @@ class MemoraUser(HttpUser):
             return
         for _ in range(count):
             payload = {
-                "title": f"Initial Deck {self.generate_random_string(5)}",
+                "title": f"Initial Deck {generate_random_string(5)}",
             }
             headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
             with self.client.post(
@@ -57,10 +60,6 @@ class MemoraUser(HttpUser):
                     response.success()  # Rate limited, but don't fail
                 else:
                     response.failure(f"Failed to create initial deck: {response.text}")
-    
-    @staticmethod
-    def generate_random_string(length=10):
-        return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
     
     @task(10)
     def health_check(self):
@@ -121,7 +120,7 @@ class MemoraUser(HttpUser):
     def create_deck(self):
         """Create a new deck."""
         payload = {
-            "title": f"Deck {self.generate_random_string(5)}",
+            "title": f"Deck {generate_random_string(5)}",
         }
         
         headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
@@ -151,7 +150,7 @@ class MemoraUser(HttpUser):
         
         deck_id = random.choice(self.deck_ids)
         payload = {
-            "title": f"Updated Deck {self.generate_random_string(5)}"
+            "title": f"Updated Deck {generate_random_string(5)}"
         }
         
         headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
@@ -185,7 +184,7 @@ class MemoraUser(HttpUser):
         
         headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
         with self.client.post(
-            f"/api/v1/decks/{deck_id}/cards",
+            f"/api/v1/decks/{deck_id}/cards/",
             json=payload,
             headers=headers,
             catch_response=True,
@@ -216,7 +215,7 @@ class MemoraUser(HttpUser):
         card_id = random.choice(decks_with_cards[deck_id])
         headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
         with self.client.get(
-            f"/api/v1/decks/{deck_id}/cards/{card_id}",
+            f"/api/v1/decks/{deck_id}/cards/{card_id}/",
             headers=headers,
             catch_response=True,
             name="GET Card"
@@ -237,8 +236,8 @@ class MemoraUser(HttpUser):
         deck_id = random.choice(list(decks_with_cards.keys()))
         card_id = random.choice(decks_with_cards[deck_id])
         payload = {
-            "front": f"Updated Front {self.generate_random_string(5)}",
-            "back": f"Updated Back {self.generate_random_string(5)}",
+            "front": f"Updated Front {generate_random_string(5)}",
+            "back": f"Updated Back {generate_random_string(5)}",
             "type": "front_back"
         }
         
@@ -268,7 +267,7 @@ class MemoraUser(HttpUser):
         
         headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
         with self.client.delete(
-            f"/api/v1/decks/{deck_id}/cards/{card_id}",
+            f"/api/v1/decks/{deck_id}/cards/{card_id}/",
             headers=headers,
             catch_response=True,
             name="DELETE Card"
@@ -316,7 +315,7 @@ class ReadOnlyUser(HttpUser):
     @task(10)
     def read_health(self):
         with self.client.get(
-            "/api/v1/status",
+            "/api/v1/status/",
             catch_response=True,
             name="ReadOnly: Health Check"
         ) as response:
@@ -333,7 +332,7 @@ class ReadOnlyUser(HttpUser):
             return
         headers = {"Authorization": f"Bearer {self.auth_token}"}
         with self.client.get(
-            "/api/v1/users/decks",
+            "/api/v1/users/decks/",
             headers=headers,
             catch_response=True,
             name="ReadOnly: Get Decks"
@@ -357,11 +356,6 @@ class WriteHeavyUser(HttpUser):
             return
         self.auth_token = self.user_data['token']
     
-    @staticmethod
-    def generate_random_string(length=10):
-        """Generate random string for test data"""
-        return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-    
     @task
     def create_many_decks(self):
         """Create multiple decks with proper rate limiting"""
@@ -370,7 +364,7 @@ class WriteHeavyUser(HttpUser):
         
         for i in range(3):
             payload = {
-                "title": f"Bulk Deck {self.generate_random_string(5)}"
+                "title": f"Bulk Deck {generate_random_string(5)}"
             }
             headers = {"Authorization": f"Bearer {self.auth_token}"}
             with self.client.post(

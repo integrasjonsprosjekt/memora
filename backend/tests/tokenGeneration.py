@@ -1,9 +1,14 @@
+from random import random
+import string
 import firebase_admin
 from firebase_admin import credentials, auth
 import json
 import os
 import sys
 import requests
+
+def generate_random_string(length=10):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 class FirebaseTokenGenerator:
     def __init__(self, service_account_path="../test_service-account-key.json"):        
@@ -29,16 +34,17 @@ class FirebaseTokenGenerator:
         headers = {'Authorization': f"Bearer {id_token}"}
         payload = {"name": "Stress Test User"}
         
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:8080")
         resp = requests.post(
-            "http://localhost:8080/api/v1/users/",
+            f"{backend_url}/api/v1/users/",
             headers=headers,
             json=payload
         )
         if resp.status_code == 201:
             print("User registered successfully.")
         else:
-            print("Error registering user:", resp.text)
-
+            print(f"Error registering user (status {resp.status_code}): {resp.text}")
+            
     def create_user_and_token(self, email=None, password=None, display_name=None):
         try:
             user = auth.create_user(
@@ -58,10 +64,10 @@ class FirebaseTokenGenerator:
             return None, None
     
     def create_multiple_users(self, count=10):
-        users=[]
+        users = []
         for i in range(count):
             email = f"stresstest_{i}@example.com"
-            password = "password"
+            password = generate_random_string(12)
             display_name = f"Stress Test User {i}"
             uid, token = self.create_user_and_token(email, password, display_name)
             if uid:
