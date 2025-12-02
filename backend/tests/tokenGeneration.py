@@ -97,7 +97,7 @@ if __name__ == "__main__":
     
     if args.delete_file:
         try:
-            with(open(args.delete_file, 'r') as f):
+            with open(args.delete_file, 'r') as f:
                 user_data = json.load(f)
             generator.delete_multiple_users(user_data)
             os.remove(args.delete_file)
