@@ -1,4 +1,4 @@
-from random import random
+import random
 import string
 import firebase_admin
 from firebase_admin import credentials, auth
